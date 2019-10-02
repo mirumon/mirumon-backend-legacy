@@ -2,7 +2,7 @@ from typing import List, Dict, Union
 
 from pydantic import BaseModel
 
-from schemas.events import EventTypeEnum
+from app.schemas.events_enum import EventTypeEnum
 
 
 class Event(BaseModel):
