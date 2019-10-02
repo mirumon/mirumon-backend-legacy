@@ -1,9 +1,9 @@
 from enum import Enum
 
 
-class EventTypeEnum(str, Enum):
-    overview = "overview"
+class EventTypeEnum(Enum):
     registration = "registration"
+    overview = "overview"
     os = "os"
     system = "system"
     hardware = "hardware"
@@ -18,4 +18,3 @@ class EventTypeEnum(str, Enum):
 
     def __str__(self):
         return self.value
-
