@@ -1,0 +1,23 @@
+import json
+import logging
+
+from loguru import logger
+from loguru._defaults import LOGURU_FORMAT
+
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:  # pragma: no cover
+        logger_opt = logger.opt(depth=7, exception=record.exc_info)
+        logger_opt.log(record.levelname, record.getMessage())
+
+
+def format_record(record: dict) -> str:
+    format_string = LOGURU_FORMAT + "\n"
+
+    if record["extra"].get("payload") is not None:
+        record["extra"]["payload"] = json.dumps(
+            record["extra"]["payload"], indent=4, ensure_ascii=False
+        )
+        format_string += "<level>{extra[payload]}</level>\n"
+
+    return format_string
