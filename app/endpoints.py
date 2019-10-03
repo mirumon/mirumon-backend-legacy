@@ -13,6 +13,8 @@ from app.manager import get_client_manager, ClientsManager
 from app.schemas.events import EventInRequest, Event, EventInResponse
 from app.schemas.events_enum import EventTypeEnum
 from app.schemas.registration import ComputerRegistration
+from app.schemas.status_enum import StatusEnum
+from app.schemas.statuses import Status
 
 router = APIRouter()
 
@@ -63,10 +65,16 @@ async def websocket_endpoint(
 ):
     await websocket.accept()
     payload = await websocket.receive_json()
-    computer = ComputerRegistration(**payload)
-    manager.add_client(mac_address=computer.mac_address, websocket=websocket)
+    try:
+        computer = ComputerRegistration(**payload)
+        manager.add_client(mac_address=computer.mac_address, websocket=websocket)
 
-    await websocket.send_json({"status": "ok"})  # todo create status enum
+        await websocket.send_json(Status(status=StatusEnum.registration_success))
+    except ValidationError:
+        await websocket.send_json(Status(status=StatusEnum.registration_failed))
+        await websocket.close(401)
+        return
+
     try:
         while True:
             payload = await websocket.receive_json()
