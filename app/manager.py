@@ -9,23 +9,23 @@ from app.schemas.events import EventInResponse
 
 
 class ClientsManager:
-    _websockets: Dict[str, WebSocket] = {}
+    _clients: Dict[str, WebSocket] = {}
     _events: Dict[str, Optional[Union[List, Dict]]] = {}
 
     def add_client(self, *, mac_address: str, websocket: WebSocket) -> None:
-        self._websockets[mac_address] = websocket
+        self._clients[mac_address] = websocket
 
     def remove_client(self, mac_address: str) -> None:
-        del self._websockets[mac_address]
+        del self._clients[mac_address]
 
     def get_client(self, mac_address: str) -> WebSocket:
-        return self._websockets[mac_address]
+        return self._clients[mac_address]
 
-    def get_all_clients(self):
-        return self._websockets.items()
+    def clients(self):
+        return self._clients.items()
 
     def has_connection(self, mac_address: str) -> bool:
-        return mac_address in self._websockets
+        return mac_address in self._clients
 
     def generate_event(self, payload: Optional[Union[List, Dict]] = None) -> str:
         event_id = str(uuid.uuid4())
@@ -39,7 +39,7 @@ class ClientsManager:
         del self._events[event_id]
 
     async def wait_event_from_client(
-        self, event_id: str, mac_address: str
+            self, event_id: str, mac_address: str
     ) -> EventInResponse:
         while self._events[event_id] is None:
             if not self.has_connection(mac_address=mac_address):
