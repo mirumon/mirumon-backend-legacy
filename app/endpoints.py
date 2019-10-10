@@ -1,8 +1,8 @@
 import logging
 from json import JSONDecodeError
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Path, Depends
+from fastapi import APIRouter, Depends, Path
 from fastapi import HTTPException
 from loguru import logger
 from pydantic import ValidationError
@@ -23,7 +23,9 @@ router = APIRouter()
 @router.get("/computers/events", response_model=List[EventTypeEnum], tags=["pc"])
 def events_list() -> List[EventTypeEnum]:
     return [
-        event.value for event in EventTypeEnum if event != EventTypeEnum.registration
+        event.value
+        for event in EventTypeEnum
+        if event not in (EventTypeEnum.registration, EventTypeEnum.details)
     ]
 
 
@@ -45,9 +47,9 @@ async def computers_list(manager: ClientsManager = Depends(get_client_manager)):
     "/computers/{mac_address}/{event_type}", response_model=EventInResponse, tags=["pc"]
 )
 async def computer_details(
-        mac_address: str,
-        event_type: EventTypeEnum = Path(default=EventTypeEnum.details),
-        manager: ClientsManager = Depends(get_client_manager),
+    mac_address: str,
+    event_type: EventTypeEnum,
+    manager: ClientsManager = Depends(get_client_manager),
 ) -> EventInResponse:
     try:
         websocket = manager.get_client(mac_address)
@@ -68,7 +70,7 @@ async def computer_details(
 
 @router.websocket("/ws")
 async def websocket_endpoint(
-        websocket: WebSocket, manager: ClientsManager = Depends(get_client_manager)
+    websocket: WebSocket, manager: ClientsManager = Depends(get_client_manager)
 ):
     await websocket.accept()
     payload = await websocket.receive_json()

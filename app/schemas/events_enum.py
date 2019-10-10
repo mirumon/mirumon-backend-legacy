@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class EventTypeEnum(Enum):
+class EventTypeEnum(str, Enum):
     registration = "registration"
     auth: str = "auth"
 

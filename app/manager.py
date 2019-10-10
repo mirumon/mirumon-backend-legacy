@@ -39,7 +39,7 @@ class ClientsManager:
         del self._events[event_id]
 
     async def wait_event_from_client(
-            self, event_id: str, mac_address: str
+        self, event_id: str, mac_address: str
     ) -> EventInResponse:
         while self._events[event_id] is None:
             if not self.has_connection(mac_address=mac_address):
