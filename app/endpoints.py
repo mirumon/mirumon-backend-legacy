@@ -1,8 +1,7 @@
-import logging
 from json import JSONDecodeError
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from loguru import logger
 from pydantic import ValidationError
@@ -21,9 +20,9 @@ router = APIRouter()
 
 
 @router.get("/computers/events", response_model=List[EventTypeEnum], tags=["pc"])
-def events_list() -> List[EventTypeEnum]:
+def events_list() -> List[str]:
     return [
-        event.value
+        event
         for event in EventTypeEnum
         if event not in (EventTypeEnum.registration, EventTypeEnum.details)
     ]
@@ -60,12 +59,12 @@ async def computer_details(
 
         await websocket.send_json(event.dict())
 
-        payload = await manager.wait_event_from_client(
+        event_response = await manager.wait_event_from_client(
             event_id=event_id, mac_address=mac_address
         )
     except (KeyError, RuntimeError):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="PC not found")
-    return payload
+    return event_response
 
 
 @router.websocket("/ws")
@@ -88,13 +87,13 @@ async def websocket_endpoint(
         while True:
             payload = await websocket.receive_json()
             response = EventInResponse(**payload)
-            logging.debug(response)
+            logger.debug(response)
             manager.set_event_response(
-                event_id=response.event.id, payload=response.payload
+                event_id=response.event.id, event=response
             )
     except WebSocketDisconnect:
-        logging.info(f"ws closed {computer.mac_address}")
+        logger.info(f"ws closed {computer.mac_address}")
     except (JSONDecodeError, ValidationError):
-        logging.warning("validation error")
+        logger.warning("validation error")
     finally:
         manager.remove_client(computer.mac_address)

@@ -10,7 +10,7 @@ from app.schemas.events import EventInResponse
 
 class ClientsManager:
     _clients: Dict[str, WebSocket] = {}
-    _events: Dict[str, Optional[Union[List, Dict]]] = {}
+    _events: Dict[str, Optional[EventInResponse]] = {}
 
     def add_client(self, *, mac_address: str, websocket: WebSocket) -> None:
         self._clients[mac_address] = websocket
@@ -27,13 +27,13 @@ class ClientsManager:
     def has_connection(self, mac_address: str) -> bool:
         return mac_address in self._clients
 
-    def generate_event(self, payload: Optional[Union[List, Dict]] = None) -> str:
+    def generate_event(self, events: Optional[EventInResponse] = None) -> str:
         event_id = str(uuid.uuid4())
-        self._events[event_id] = payload
+        self._events[event_id] = events
         return event_id
 
-    def set_event_response(self, event_id: str, payload: Union[List, Dict]) -> None:
-        self._events[event_id] = payload
+    def set_event_response(self, event_id: str, event: EventInResponse) -> None:
+        self._events[event_id] = event
 
     def remove_event(self, event_id: str) -> None:
         del self._events[event_id]
