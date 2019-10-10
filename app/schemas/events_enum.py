@@ -2,24 +2,24 @@ from enum import Enum
 
 
 class EventTypeEnum(str, Enum):
-    registration = "registration"
+    registration: str = "registration"
     auth: str = "auth"
 
-    details = "details"
+    details: str = "details"
 
-    users = "users"
+    users: str = "users"
 
-    system = "system"
-    hardware = "hardware"
-    storage = "storage"
-    network = "network"
+    system: str = "system"
+    hardware: str = "hardware"
+    storage: str = "storage"
+    network: str = "network"
 
-    devices = "devices"
+    devices: str = "devices"
 
-    installed_programs = "installed-programs"
-    startup_programs = "startup-programs"
-    services = "services"
-    processes = "processes"
+    installed_programs: str = "installed-programs"
+    startup_programs: str = "startup-programs"
+    services: str = "services"
+    processes: str = "processes"
 
     def __str__(self):
         return self.value
