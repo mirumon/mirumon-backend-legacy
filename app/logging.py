@@ -12,12 +12,11 @@ class InterceptHandler(logging.Handler):
 
 
 def format_record(record: dict) -> str:
-    format_string = LOGURU_FORMAT + "\n"
-
+    format_string = LOGURU_FORMAT
     if record["extra"].get("payload") is not None:
         record["extra"]["payload"] = json.dumps(
             record["extra"]["payload"], indent=4, ensure_ascii=False
         )
-        format_string += "<level>{extra[payload]}</level>\n"
-
+        format_string += "\n<level>{extra[payload]}</level>"
+    format_string += "{exception}\n"
     return format_string
