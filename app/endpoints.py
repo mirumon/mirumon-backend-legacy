@@ -1,17 +1,14 @@
 from json import JSONDecodeError
-from typing import List
+from typing import List, cast
 
-from fastapi import APIRouter, Depends
-from fastapi import HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from pydantic import ValidationError
-from starlette.status import HTTP_404_NOT_FOUND
-from starlette.websockets import WebSocket, WebSocketDisconnect
+from starlette import status, websockets
 
-from app.manager import get_client_manager, ClientsManager
+from app import managers, services
 from app.schemas.computers.overview import ComputerInList
-from app.schemas.computers.registration import ComputerInRegistration
-from app.schemas.events import EventInRequest, Event, EventInResponse
+from app.schemas.events import Event, EventInRequest, EventInResponse
 from app.schemas.events_enum import EventTypeEnum
 from app.schemas.status_enum import StatusEnum
 from app.schemas.statuses import Status
@@ -24,12 +21,14 @@ def events_list() -> List[str]:
     return [
         event
         for event in EventTypeEnum
-        if event not in (EventTypeEnum.registration, EventTypeEnum.details)
+        if event not in {EventTypeEnum.registration, EventTypeEnum.details}
     ]
 
 
 @router.get("/computers", response_model=List[ComputerInList], tags=["pc"])
-async def computers_list(manager: ClientsManager = Depends(get_client_manager)):
+async def computers_list(
+    manager: managers.ClientsManager = Depends(managers.get_client_manager)
+) -> List[ComputerInList]:
     computers = []
     for mac_address, websocket in manager.clients():
         event_id = manager.generate_event()
@@ -38,7 +37,7 @@ async def computers_list(manager: ClientsManager = Depends(get_client_manager)):
         computer = await manager.wait_event_from_client(
             event_id=event_id, mac_address=mac_address
         )
-        computers.append(computer.payload)
+        computers.append(cast(ComputerInList, computer.payload))
     return computers
 
 
@@ -48,52 +47,53 @@ async def computers_list(manager: ClientsManager = Depends(get_client_manager)):
 async def computer_details(
     mac_address: str,
     event_type: EventTypeEnum,
-    manager: ClientsManager = Depends(get_client_manager),
+    manager: managers.ClientsManager = Depends(managers.get_client_manager),
 ) -> EventInResponse:
     try:
         websocket = manager.get_client(mac_address)
-        event_id = manager.generate_event()
+    except KeyError as missed_websocker_error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PC not found"
+        ) from missed_websocker_error
 
-        event = EventInRequest(event=Event(type=event_type, id=event_id))
-        logger.debug(event)
+    event_id = manager.generate_event()
 
-        await websocket.send_json(event.dict())
+    event = EventInRequest(event=Event(type=event_type, id=event_id))
+    logger.debug(event)
 
-        event_response = await manager.wait_event_from_client(
+    await websocket.send_json(event.dict())
+
+    try:
+        return await manager.wait_event_from_client(
             event_id=event_id, mac_address=mac_address
         )
-    except (KeyError, RuntimeError):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="PC not found")
-    return event_response
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="PC disconnected"
+        )
 
 
 @router.websocket("/ws")
 async def websocket_endpoint(
-    websocket: WebSocket, manager: ClientsManager = Depends(get_client_manager)
-):
+    websocket: websockets.WebSocket,
+    manager: managers.ClientsManager = Depends(managers.get_client_manager),
+) -> None:
     await websocket.accept()
-    payload = await websocket.receive_json()
     try:
-        computer = ComputerInRegistration(**payload)
-        manager.add_client(mac_address=computer.mac_address, websocket=websocket)
-
-        await websocket.send_json(Status(status=StatusEnum.registration_success))
+        computer = await services.process_registration(websocket)
     except ValidationError:
-        await websocket.send_json(Status(status=StatusEnum.registration_failed))
-        await websocket.close(401)
         return
 
-    try:
-        while True:
-            payload = await websocket.receive_json()
-            response = EventInResponse(**payload)
-            logger.debug(response)
-            manager.set_event_response(
-                event_id=response.event.id, event=response
-            )
-    except WebSocketDisconnect:
-        logger.info(f"ws closed {computer.mac_address}")
-    except (JSONDecodeError, ValidationError):
-        logger.warning("validation error")
-    finally:
-        manager.remove_client(computer.mac_address)
+    manager.add_client(mac_address=computer.mac_address, websocket=websocket)
+    await websocket.send_json(Status(status=StatusEnum.registration_success))
+
+    while True:
+        try:
+            await services.process_incoming_event(websocket, manager)
+        except websockets.WebSocketDisconnect:
+            logger.info(f"ws closed {computer.mac_address}")
+        except (JSONDecodeError, ValidationError):
+            logger.warning("validation error")
+        finally:
+            manager.remove_client(computer.mac_address)
+            break

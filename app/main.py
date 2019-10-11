@@ -13,11 +13,11 @@ app.include_router(router=router)
 
 
 @logger.catch
-async def startup():
+async def startup() -> None:
     logger.info("startup app")
 
 
-async def shutdown():
+async def shutdown() -> None:
     logger.info("shutdown app")
 
 

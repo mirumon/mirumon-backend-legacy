@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import Dict, Optional, Union, List
+from typing import Dict, ItemsView, Optional, cast
 
 from starlette.websockets import WebSocket
 
@@ -9,19 +9,20 @@ from app.schemas.events import EventInResponse
 
 
 class ClientsManager:
-    _clients: Dict[str, WebSocket] = {}
-    _events: Dict[str, Optional[EventInResponse]] = {}
+    def __init__(self) -> None:
+        self._clients: Dict[str, WebSocket] = {}
+        self._events: Dict[str, Optional[EventInResponse]] = {}
 
     def add_client(self, *, mac_address: str, websocket: WebSocket) -> None:
         self._clients[mac_address] = websocket
 
     def remove_client(self, mac_address: str) -> None:
-        del self._clients[mac_address]
+        self._clients.pop(mac_address)
 
     def get_client(self, mac_address: str) -> WebSocket:
         return self._clients[mac_address]
 
-    def clients(self):
+    def clients(self) -> ItemsView[str, WebSocket]:
         return self._clients.items()
 
     def has_connection(self, mac_address: str) -> bool:
@@ -36,7 +37,7 @@ class ClientsManager:
         self._events[event_id] = event
 
     def remove_event(self, event_id: str) -> None:
-        del self._events[event_id]
+        self._events.pop(event_id)
 
     async def wait_event_from_client(
         self, event_id: str, mac_address: str
@@ -46,7 +47,8 @@ class ClientsManager:
                 self.remove_event(event_id)
                 raise RuntimeError
             await asyncio.sleep(REST_SLEEP_TIME)
-        return self._events.pop(event_id)
+
+        return cast(EventInResponse, self._events.pop(event_id))
 
 
 _manager = ClientsManager()

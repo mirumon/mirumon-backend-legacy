@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class EventTypeEnum(str, Enum):
+class EventTypeEnum(str, Enum):  # noqa: WPS600
     registration: str = "registration"
     auth: str = "auth"
 
@@ -21,5 +21,5 @@ class EventTypeEnum(str, Enum):
     services: str = "services"
     processes: str = "processes"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
