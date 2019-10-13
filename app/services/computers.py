@@ -24,6 +24,7 @@ class ClientsManager:
     def get_client(self, mac_address: str) -> Client:
         return self._clients[mac_address]
 
+    @property
     def clients(self) -> List[Client]:
         return list(self._clients.values())
 
@@ -45,7 +46,7 @@ async def clients_list(
     clients_manager: ClientsManager, events_manager: EventsManager
 ) -> List[ComputerInList]:
     computers = []
-    for client in clients_manager.clients():
+    for client in clients_manager.clients:
         event = events_manager.generate_event(UserEventType.computers_list)
         await client.send_event(EventInRequest(event=event))
         computer = await events_manager.wait_event_from_client(
