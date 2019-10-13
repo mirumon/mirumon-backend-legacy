@@ -17,7 +17,7 @@ class Client:
     async def send_event(self, event: Event) -> None:
         await self.websocket.send_json(EventInRequest(event=event).dict())
 
-    async def get_event(self) -> EventInResponse:
+    async def read_event(self) -> EventInResponse:
         payload = await self.websocket.receive_json()
         logger.debug(payload)
         return EventInResponse(**payload)
