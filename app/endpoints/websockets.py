@@ -38,7 +38,11 @@ async def clients_websocket_endpoint(
         try:
             await process_incoming_event(client, events_manager)
         except websockets.WebSocketDisconnect:
-            logger.info(f"ws closed {client.mac_address}")
+            logger.info(
+                "{0} WebSocket {1} [closed]".format(
+                    websocket.scope["client"], websocket.scope["raw_path"]
+                )
+            )
         except (JSONDecodeError, ValidationError):
             logger.warning("validation error")
             client.close()
