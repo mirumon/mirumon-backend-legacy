@@ -5,12 +5,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.schemas.computers.overview import ComputerInList
 from app.schemas.computers.registration import ComputerInRegistration
-from app.schemas.events import (
-    ComputerEventType,
-    EventInRequest,
-    EventInWS,
-    UserEventType,
-)
+from app.schemas.events import EventInRequest, EventInWS, UserEventType
 from app.schemas.statuses import Status, StatusEnum
 from app.services.clients import Client
 from app.services.events import EventsManager
@@ -51,7 +46,7 @@ async def clients_list(
 ) -> List[ComputerInList]:
     computers = []
     for client in clients_manager.clients():
-        event = events_manager.generate_event(ComputerEventType.details)
+        event = events_manager.generate_event(UserEventType.computers_list)
         await client.send_event(EventInRequest(event=event))
         computer = await events_manager.wait_event_from_client(
             event_id=event.id, client=client

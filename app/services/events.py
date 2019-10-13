@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Union, cast
 
 from starlette import websockets
 
-from app.schemas.events import ComputerEventType, Event, EventInResponse
+from app.schemas.events import ComputerEventType, Event, EventInResponse, UserEventType
 from app.services.computers import Client
 
 
@@ -13,7 +13,9 @@ class EventsManager:
         self._events: Dict[str, Optional[EventInResponse]] = {}
         self._asyncio_events: Dict[str, asyncio.Event] = {}
 
-    def generate_event(self, event_type: ComputerEventType) -> Event:
+    def generate_event(
+        self, event_type: Union[ComputerEventType, UserEventType]
+    ) -> Event:
         event_id = str(uuid.uuid4())
         event = Event(type=event_type, id=event_id)
         self._events[event_id] = EventInResponse(event=event)
