@@ -23,5 +23,5 @@ class Client:
     def is_connected(self) -> bool:
         return self.websocket.state == WebSocketState.CONNECTED
 
-    def close(self, code: int = 1000) -> None:
-        self.websocket.close(code)
+    async def close(self, code: int = 1000) -> None:
+        await self.websocket.close(code)

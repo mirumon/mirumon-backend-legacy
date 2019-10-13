@@ -45,7 +45,7 @@ async def clients_websocket_endpoint(
             )
         except (JSONDecodeError, ValidationError):
             logger.warning("validation error")
-            client.close()
+            await client.close()
         finally:
             clients_manager.remove_client(client)
             break
