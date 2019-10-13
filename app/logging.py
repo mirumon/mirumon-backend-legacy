@@ -2,7 +2,7 @@ import json
 import logging
 
 from loguru import logger
-from loguru._defaults import LOGURU_FORMAT
+from loguru._defaults import LOGURU_FORMAT  # noqa: WPS436
 
 
 class InterceptHandler(logging.Handler):
@@ -17,6 +17,6 @@ def format_record(record: dict) -> str:
         record["extra"]["payload"] = json.dumps(
             record["extra"]["payload"], indent=4, ensure_ascii=False
         )
-        format_string += "\n<level>{extra[payload]}</level>"
-    format_string += "{exception}\n"
+        format_string = "".join((format_string, "\n<level>{extra[payload]}</level>"))
+    format_string = "".join((format_string, "{exception}\n"))
     return format_string
