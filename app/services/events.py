@@ -17,24 +17,24 @@ from app.services.computers import Client
 
 class EventsManager:
     def __init__(self) -> None:
-        self._events: Dict[str, Optional[EventInResponse]] = {}
-        self._asyncio_events: Dict[str, asyncio.Event] = {}
+        self._events: Dict[uuid.UUID, Optional[EventInResponse]] = {}
+        self._asyncio_events: Dict[uuid.UUID, asyncio.Event] = {}
 
     def generate_event(
         self, event_type: Union[ComputerEventType, UserEventType]
     ) -> Event:
-        event_id = str(uuid.uuid4())
+        event_id = uuid.uuid4()
         event = Event(type=event_type, id=event_id)
         self._events[event_id] = EventInResponse(event=event)
         return Event(id=event_id, type=event_type)
 
-    def set_event_response(self, event_id: str, event: EventInResponse) -> None:
+    def set_event_response(self, event_id: uuid.UUID, event: EventInResponse) -> None:
         self._events[event_id] = event
         self._asyncio_events[event_id].set()
 
     # todo create events methods
     async def wait_event_from_client(
-        self, event_id: str, client: Client
+        self, event_id: uuid.UUID, client: Client
     ) -> EventPayload:
         event = asyncio.Event()
         self._asyncio_events[event_id] = event
@@ -46,7 +46,7 @@ class EventsManager:
                     raise websockets.WebSocketDisconnect
         return cast(EventInResponse, self._events.pop(event_id)).payload
 
-    def remove_event(self, event_id: str) -> None:
+    def remove_event(self, event_id: uuid.UUID) -> None:
         self._events.pop(event_id)
 
 
