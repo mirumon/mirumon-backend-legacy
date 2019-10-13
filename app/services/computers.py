@@ -1,33 +1,19 @@
-from typing import Dict, List
+from typing import Dict, List, cast
 
-from loguru import logger
 from pydantic import ValidationError
-from starlette.websockets import WebSocket, WebSocketDisconnect, WebSocketState
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from app.schemas.computers.overview import ComputerInList
 from app.schemas.computers.registration import ComputerInRegistration
-from app.schemas.events import Event, EventInRequest, EventInResponse
+from app.schemas.events import (
+    ComputerEventType,
+    EventInRequest,
+    EventInWS,
+    UserEventType,
+)
 from app.schemas.statuses import Status, StatusEnum
-
-
-class Client:
-    def __init__(self, mac_address: str, websocket: WebSocket) -> None:
-        self.mac_address = mac_address
-        self.websocket = websocket
-
-    async def send_event(self, event: Event) -> None:
-        await self.websocket.send_json(EventInRequest(event=event).dict())
-
-    async def read_event(self) -> EventInResponse:
-        payload = await self.websocket.receive_json()
-        logger.debug(payload)
-        return EventInResponse(**payload)
-
-    @property
-    async def is_connected(self) -> bool:
-        return self.websocket.state == WebSocketState.CONNECTED
-
-    def close(self, code: int = 1000) -> None:
-        self.websocket.close(code)
+from app.services.clients import Client
+from app.services.events import EventsManager
 
 
 class ClientsManager:
@@ -58,6 +44,34 @@ async def client_registration(websocket: WebSocket) -> Client:
 
     await websocket.send_json(Status(status=StatusEnum.registration_success).dict())
     return Client(mac_address=computer.mac_address, websocket=websocket)
+
+
+async def clients_list(
+    clients_manager: ClientsManager, events_manager: EventsManager
+) -> List[ComputerInList]:
+    computers = []
+    for client in clients_manager.clients():
+        event = events_manager.generate_event(ComputerEventType.details)
+        await client.send_event(EventInRequest(event=event))
+        computer = await events_manager.wait_event_from_client(
+            event_id=event.id, client=client
+        )
+        computers.append(cast(ComputerInList, computer))
+    return computers
+
+
+async def clients_event_process(
+    event: EventInWS,
+    websocket: WebSocket,
+    clients_manager: ClientsManager,
+    events_manager: EventsManager,
+) -> None:
+    if event.event_type == UserEventType.computers_list:
+        computers = await clients_list(clients_manager, events_manager)
+        event.payload = computers
+        await websocket.send_json(event)
+    else:
+        await websocket.send_json(event)
 
 
 _clients_manager = ClientsManager()

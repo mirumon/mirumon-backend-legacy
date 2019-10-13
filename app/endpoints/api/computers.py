@@ -1,23 +1,19 @@
-from typing import Dict, List, Union, cast
+from typing import Dict, List, Union
 
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
 from app.schemas.computers.overview import ComputerInList
-from app.schemas.events import EventInResponse, EventTypeEnum
-from app.services.computers import ClientsManager, get_clients_manager
+from app.schemas.events import ComputerEventType, EventInRequest, EventInResponse
+from app.services.computers import ClientsManager, clients_list, get_clients_manager
 from app.services.events import EventsManager, get_events_manager
 
 router = APIRouter()
 
 
-@router.get("/computers/events", response_model=List[EventTypeEnum], tags=["pc"])
+@router.get("/computers/events", response_model=List[ComputerEventType], tags=["pc"])
 def events_list() -> List[str]:
-    return [
-        event
-        for event in EventTypeEnum
-        if event not in {EventTypeEnum.registration, EventTypeEnum.details}
-    ]
+    return [event for event in ComputerEventType]
 
 
 @router.get("/computers", response_model=List[ComputerInList], tags=["pc"])
@@ -25,15 +21,7 @@ async def computers_list(
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
 ) -> List[ComputerInList]:
-    computers = []
-    for client in clients_manager.clients():
-        event = events_manager.generate_event(EventTypeEnum.details)
-        await client.send_event(event)
-        computer = await events_manager.wait_event_from_client(
-            event_id=event.id, client=client
-        )
-        computers.append(cast(ComputerInList, computer))
-    return cast(List, computers)
+    return await clients_list(clients_manager, events_manager)
 
 
 @router.get(
@@ -41,7 +29,7 @@ async def computers_list(
 )
 async def computer_details(
     mac_address: str,
-    event_type: EventTypeEnum,
+    event_type: ComputerEventType,
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
 ) -> Union[List, Dict]:
@@ -53,7 +41,7 @@ async def computer_details(
         ) from missed_websocket_error
 
     event = events_manager.generate_event(event_type)
-    await client.send_event(event)
+    await client.send_event(EventInRequest(event=event))
     try:
         return await events_manager.wait_event_from_client(
             event_id=event.id, client=client
