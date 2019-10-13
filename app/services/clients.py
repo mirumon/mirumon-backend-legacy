@@ -20,7 +20,7 @@ class Client:
         return EventInResponse(**payload)
 
     @property
-    async def is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         return self.websocket.state == WebSocketState.CONNECTED
 
     def close(self, code: int = 1000) -> None:

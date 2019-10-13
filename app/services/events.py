@@ -1,10 +1,17 @@
 import asyncio
 import uuid
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, Optional, Union, cast
 
 from starlette import websockets
 
-from app.schemas.events import ComputerEventType, Event, EventInResponse, UserEventType
+from app.config import REST_SLEEP_TIME
+from app.schemas.events import (
+    ComputerEventType,
+    Event,
+    EventInResponse,
+    EventPayload,
+    UserEventType,
+)
 from app.services.computers import Client
 
 
@@ -28,12 +35,15 @@ class EventsManager:
     # todo create events methods
     async def wait_event_from_client(
         self, event_id: str, client: Client
-    ) -> Union[List, Dict]:
+    ) -> EventPayload:
         event = asyncio.Event()
         self._asyncio_events[event_id] = event
-        await event.wait()
-        if not client.is_connected:
-            raise websockets.WebSocketDisconnect
+        while not event.is_set():
+            try:
+                await asyncio.wait_for(event.wait(), REST_SLEEP_TIME)
+            except asyncio.futures.TimeoutError:
+                if not client.is_connected:
+                    raise websockets.WebSocketDisconnect
         return cast(EventInResponse, self._events.pop(event_id)).payload
 
     def remove_event(self, event_id: str) -> None:
