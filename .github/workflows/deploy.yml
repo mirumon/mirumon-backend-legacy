@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  release:
+    types: published
+
+jobs:
+  build:
+    name: BuildImage
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Verify that tag is the same as in application and available in docker registry
+        env:
+          TAG: ${{ GITHUB_REF }}
+        run: |
+          test $(python -c "import app.versions; print(app.versions.get_app_version())") = $TAG
+          ./scripts/check-container-version mirumon/mirumon-backend:$TAG
+      - name: Publish to registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: mirumon/mirumon-backend
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
+      - users: actions/checkout@master
+      - name: Deploy service with traefik over ssh
+      - uses: appleboy/ssh-action@master
+        env:
+          TAG: ${{ GITHUB_REF }}
+          MIRUMON_BACKEND_DOMAIND: ${{ secrets.MIRUMON_BACKEND_DOMAIND }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            docker pull mirumon/mirumon-backend:$TAG
+            true || docker rm -f mirumon_backend
+            docker run -d \
+              --name mirumon_backend \
+              --network web \
+              --restart always \
+              --label "traefik.enable=true" \
+              --label "traefik.docker.network=web\" \
+              --label "traefik.http.routers.mirumon-backend.rule=Host(\`$MIRUMON_BACKEND_DOMAIN\`)" \
+              --label "traefik.http.routers.mirumon-backend.entrypoints=web-secure" \
+              --label "traefik.http.routers.mirumon-backend.tls.certresolver=letsencrypt" \
+              --label "traefik.http.routers.mirumon-backend.middlewares=http-to-https@file" \
+              --label "traefik.http.services.mirumon-backend.loadbalancer.server.port=8000" \
+              mirumon/mirumon-backend:$TAG

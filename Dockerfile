@@ -1,11 +1,12 @@
-FROM python:3.7
+FROM python:3.7.4
 
 ENV PYTHONUNBUFFERED 1
+EXPOSE 8000
 
-WORKDIR /mirumon-backend
+WORKDIR /app
 
-COPY poetry.lock /mirumon-backend
-COPY pyproject.toml /mirumon-backend
+COPY poetry.lock .
+COPY pyproject.toml .
 
 RUN pip install poetry && \
     poetry config settings.virtualenvs.create false && \
@@ -13,8 +14,4 @@ RUN pip install poetry && \
 
 COPY . .
 
-EXPOSE 8000
-
 CMD uvicorn --host 0.0.0.0 app.main:app
-
-

@@ -3,9 +3,5 @@
 set -e
 set -x
 
-
-flake8 app
-mypy --disallow-untyped-defs --no-implicit-optional app
-
-black --check app tests
-isort --recursive --check-only --multi-line=3 --trailing-comma --line-width 88 --force-grid-wrap=0 --combine-as app tests
+bash ./scripts/lint-code
+bash ./scripts/lint-style
