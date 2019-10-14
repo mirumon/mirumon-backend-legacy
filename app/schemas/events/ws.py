@@ -1,8 +1,9 @@
 from enum import Enum
+from typing import Dict, List, Union
 
 from pydantic import BaseModel
 
-from app.schemas.events.base import EventPayload, EventType
+EventPayload = Union[List, Dict]
 
 
 class WSEventType(str, Enum):  # noqa: WPS600
@@ -28,5 +29,5 @@ class WSEventType(str, Enum):  # noqa: WPS600
 
 
 class EventInWS(BaseModel):
-    event_type: EventType
+    event_type: WSEventType
     payload: EventPayload

@@ -4,8 +4,8 @@ from typing import Dict, Optional, cast
 
 from loguru import logger
 from starlette import websockets
-from app.config import REST_MAX_RESPONSE_TIME
-from app.config import REST_SLEEP_TIME
+
+from app.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
 from app.schemas.events.base import Event, EventInResponse, EventPayload, EventType
 from app.services.computers import Client
 
