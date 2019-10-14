@@ -4,22 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
-from app.schemas.computers.overview import ComputerInList
-from app.schemas.events import (
-    ComputerEventType,
-    EventInRequest,
-    EventInResponse,
-    EventPayload,
-)
+from app.schemas.computers.details import ComputerInList
+from app.schemas.events.base import EventInRequest, EventInResponse, EventPayload
+from app.schemas.events.rest import RestEventType
 from app.services.computers import ClientsManager, clients_list, get_clients_manager
 from app.services.events import EventsManager, get_events_manager
 
 router = APIRouter()
 
 
-@router.get("/computers/events", response_model=List[ComputerEventType], tags=["pc"])
+@router.get("/computers/events", response_model=List[RestEventType], tags=["pc"])
 def events_list() -> List[str]:
-    return [event for event in ComputerEventType]
+    return [event for event in RestEventType]
 
 
 @router.get("/computers", response_model=List[ComputerInList], tags=["pc"])
@@ -35,7 +31,7 @@ async def computers_list(
 )
 async def computer_events(
     mac_address: str,
-    event_type: ComputerEventType,
+    event_type: RestEventType,
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
 ) -> EventPayload:

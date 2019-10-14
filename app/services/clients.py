@@ -3,7 +3,7 @@ from typing import Union
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.schemas.events import EventInRequest, EventInResponse, EventInWS
+from app.schemas.events.base import EventInRequest, EventInResponse
 
 
 class Client:
@@ -11,8 +11,9 @@ class Client:
         self.mac_address = mac_address
         self.websocket = websocket
 
-    async def send_event(self, event: Union[EventInRequest, EventInWS]) -> None:
-        await self.websocket.send_json(event.dict())
+    async def send_event(self, event: EventInRequest) -> None:
+        logger.debug(event)
+        await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
         payload = await self.websocket.receive_json()

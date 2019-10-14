@@ -4,17 +4,17 @@ from pydantic import BaseModel
 
 
 class ComputerDetails(BaseModel):  # todo create models
+    mac_address: str
     name: str
     domain: str
     workgroup: str
-    users: List
     current_user: Dict
-    logon_users: List
     os: List
-    enviroment: List
 
 
 class ComputerInList(BaseModel):
+    mac_address: str
     name: str
     username: str
     domain: str
+    workgroup: str

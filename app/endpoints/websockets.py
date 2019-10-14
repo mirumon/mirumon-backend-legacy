@@ -5,7 +5,8 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette import websockets
 
-from app.schemas.events import EventInWS
+from app.schemas.events.base import EventErrorResponse
+from app.schemas.events.ws import EventInWS
 from app.services.computers import (
     ClientsManager,
     client_registration,
@@ -63,8 +64,7 @@ async def api_websocket_endpoint(
         try:
             event = EventInWS(**payload)
         except (JSONDecodeError, ValidationError) as validation_error:
-            logger.warning("validation error")
-            await websocket.send_json({"error": validation_error.args})
+            await websocket.send_json(EventErrorResponse(error=validation_error.args))
         else:
             await clients_event_process(
                 event, websocket, clients_manager, events_manager

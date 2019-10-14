@@ -1,17 +1,11 @@
 import asyncio
 import uuid
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, cast
 
 from starlette import websockets
 
 from app.config import REST_SLEEP_TIME
-from app.schemas.events import (
-    ComputerEventType,
-    Event,
-    EventInResponse,
-    EventPayload,
-    UserEventType,
-)
+from app.schemas.events.base import Event, EventInResponse, EventPayload, EventType
 from app.services.computers import Client
 
 
@@ -20,9 +14,7 @@ class EventsManager:
         self._events: Dict[uuid.UUID, Optional[EventInResponse]] = {}
         self._asyncio_events: Dict[uuid.UUID, asyncio.Event] = {}
 
-    def generate_event(
-        self, event_type: Union[ComputerEventType, UserEventType]
-    ) -> Event:
+    def generate_event(self, event_type: EventType) -> Event:
         event_id = uuid.uuid4()
         event = Event(type=event_type, id=event_id)
         self._events[event_id] = EventInResponse(event=event)
