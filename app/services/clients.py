@@ -1,5 +1,3 @@
-from typing import Union
-
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
@@ -22,7 +20,12 @@ class Client:
 
     @property
     def is_connected(self) -> bool:
-        return self.websocket.state == WebSocketState.CONNECTED
+        return self.websocket.client_state.value == WebSocketState.CONNECTED.value
 
     async def close(self, code: int = 1000) -> None:
         await self.websocket.close(code)
+        logger.info(
+            "{0} WebSocket {1} [closed]".format(
+                self.websocket.scope["client"], self.websocket.scope["raw_path"]
+            )
+        )
