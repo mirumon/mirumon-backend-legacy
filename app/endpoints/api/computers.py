@@ -33,7 +33,7 @@ async def computers_list(
 @router.get(
     "/computers/{mac_address}/{event_type}", response_model=EventInResponse, tags=["pc"]
 )
-async def computer_details(
+async def computer_events(
     mac_address: str,
     event_type: ComputerEventType,
     clients_manager: ClientsManager = Depends(get_clients_manager),
@@ -53,6 +53,11 @@ async def computer_details(
             event_id=event.id, client=client
         )
     except WebSocketDisconnect:
+        if client.is_connected:
+            error_detail = f"{event_type} event is not supported by PC"
+        else:
+            error_detail = "PC disconnected"
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="PC disconnected"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"error": error_detail},
         )
