@@ -32,22 +32,16 @@ async def clients_websocket_endpoint(
     try:
         client = await client_registration(websocket)
     except websockets.WebSocketDisconnect:
-        return logger.info(f"registration failed")
+        return
     clients_manager.add_client(client)
-
     while True:
         try:
             await process_incoming_event(client, events_manager)
-        except websockets.WebSocketDisconnect:
-            logger.info(
-                "{0} WebSocket {1} [closed]".format(
-                    websocket.scope["client"], websocket.scope["raw_path"]
-                )
-            )
-        except (JSONDecodeError, ValidationError):
+        except (JSONDecodeError, ValidationError) as error:
             logger.warning("validation error")
+            await websocket.send_json(EventErrorResponse(error=error.args))
+        except websockets.WebSocketDisconnect:
             await client.close()
-        finally:
             clients_manager.remove_client(client)
             break
 
