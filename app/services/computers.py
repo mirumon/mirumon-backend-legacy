@@ -57,7 +57,7 @@ async def clients_list(
             computer = await events_manager.wait_event_from_client(
                 event_id=event.id, client=client
             )
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, ValidationError):
             continue
         computers.append(cast(ComputerInList, computer))
     return computers
