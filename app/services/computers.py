@@ -53,9 +53,12 @@ async def clients_list(
     for client in clients_manager.clients:
         event = events_manager.generate_event(WSEventType.computers_list)
         await client.send_event(EventInRequest(event=event))
-        computer = await events_manager.wait_event_from_client(
-            event_id=event.id, client=client
-        )
+        try:
+            computer = await events_manager.wait_event_from_client(
+                event_id=event.id, client=client
+            )
+        except WebSocketDisconnect:
+            continue
         computers.append(cast(ComputerInList, computer))
     return computers
 
