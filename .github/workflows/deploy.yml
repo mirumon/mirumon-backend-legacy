@@ -17,6 +17,8 @@ jobs:
       - name: Verify that tag is the same as in application and available in docker registry
         env:
           TAG: ${{ GITHUB_REF }}
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           test $(python -c "import app.versions; print(app.versions.get_app_version())") = $TAG
           ./scripts/check-container-version mirumon/mirumon-backend:$TAG
