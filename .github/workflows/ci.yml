@@ -5,6 +5,7 @@ on:
     branches:
       - feature/*
       - fix/*
+      - master
 
 jobs:
   check-style:
