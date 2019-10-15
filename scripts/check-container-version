@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e
+
+# set username and password
+UNAME="$DOCKER_USER"
+UPASS="$DOCKER_PASSWORD"
+
+function docker_tag_exists() {
+    TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'${UNAME}'", "password": "'${UPASS}'"}' https://hub.docker.com/v2/users/login/ | jq -r .token)
+    EXISTS=$(curl -s -H "Authorization: JWT ${TOKEN}" https://hub.docker.com/v2/repositories/$1/tags/?page_size=10000 | jq -r "[.results | .[] | .name == \"$2\"] | any")
+    test $EXISTS = true
+}
+
+if [ -z "$1" ]; then
+  echo 'Usage: ./check-container-version image[:tag]' >&2
+  exit 1
+fi
+
+IMAGE="${1%:*}"
+TAG="${1##*:}"
+if [ "$IMAGE" = "$TAG" ]; then
+  TAG=latest
+fi
+
+if docker_tag_exists $IMAGE $TAG && test $TAG != latest; then
+    echo "$IMAGE:$TAG already exists! Wrong tag version"
+    exit 1
+else
+    echo "$IMAGE:$TAG does not exists. Can be used safely"
+fi

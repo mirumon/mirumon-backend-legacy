@@ -1,9 +1,15 @@
 [tool.poetry]
 name = "mirumon-backend"
-version = "0.0.1"
+version = "0.0.2"
 description = "Monitoring server"
-authors = ["Slyfoxy <khitrov34@gmail.com>"]
+authors = [
+    "Slyfoxy <khitrov34@gmail.com>",
+    "Nik Sidnev <snive2013@yandex.ru>"
+]
 license = "MIT"
+packages = [
+    { include = "app" }
+]
 
 
 [tool.poetry.dependencies]
@@ -11,6 +17,7 @@ python = "^3.7"
 fastapi = "^0.42.0"
 uvicorn = "^0.9.0"
 loguru = "^0.3.2"
+toml = "^0.10.0"
 
 
 [tool.poetry.dev-dependencies]
