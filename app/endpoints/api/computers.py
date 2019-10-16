@@ -5,7 +5,7 @@ from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
 from app.schemas.computers.details import ComputerInList
-from app.schemas.events.base import EventInRequest, EventInResponse, EventPayload
+from app.schemas.events.base import EventInRequest, EventPayload
 from app.schemas.events.rest import RestEventType
 from app.services.computers import ClientsManager, clients_list, get_clients_manager
 from app.services.events import EventsManager, get_events_manager
@@ -26,9 +26,7 @@ async def computers_list(
     return await clients_list(clients_manager, events_manager)
 
 
-@router.get(
-    "/computers/{mac_address}/{event_type}", response_model=EventInResponse, tags=["pc"]
-)
+@router.get("/computers/{mac_address}/{event_type}", tags=["pc"])
 async def computer_events(
     mac_address: str,
     event_type: RestEventType,
