@@ -1,9 +1,7 @@
-from typing import Union
-
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.schemas.events import EventInRequest, EventInResponse, EventInWS
+from app.schemas.events.base import EventInRequest, EventInResponse
 
 
 class Client:
@@ -11,8 +9,9 @@ class Client:
         self.mac_address = mac_address
         self.websocket = websocket
 
-    async def send_event(self, event: Union[EventInRequest, EventInWS]) -> None:
-        await self.websocket.send_json(event.dict())
+    async def send_event(self, event: EventInRequest) -> None:
+        logger.debug(event)
+        await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
         payload = await self.websocket.receive_json()
@@ -21,7 +20,12 @@ class Client:
 
     @property
     def is_connected(self) -> bool:
-        return self.websocket.state == WebSocketState.CONNECTED
+        return self.websocket.client_state.value == WebSocketState.CONNECTED.value
 
     async def close(self, code: int = 1000) -> None:
         await self.websocket.close(code)
+        logger.info(
+            "{0} WebSocket {1} [closed]".format(
+                self.websocket.scope["client"], self.websocket.scope["raw_path"]
+            )
+        )

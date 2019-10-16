@@ -5,7 +5,8 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette import websockets
 
-from app.schemas.events import EventInWS
+from app.schemas.events.base import EventErrorResponse
+from app.schemas.events.ws import EventInWS
 from app.services.computers import (
     ClientsManager,
     client_registration,
@@ -31,22 +32,16 @@ async def clients_websocket_endpoint(
     try:
         client = await client_registration(websocket)
     except websockets.WebSocketDisconnect:
-        return logger.info(f"registration failed")
+        return
     clients_manager.add_client(client)
-
     while True:
         try:
             await process_incoming_event(client, events_manager)
-        except websockets.WebSocketDisconnect:
-            logger.info(
-                "{0} WebSocket {1} [closed]".format(
-                    websocket.scope["client"], websocket.scope["raw_path"]
-                )
-            )
-        except (JSONDecodeError, ValidationError):
+        except (JSONDecodeError, ValidationError) as error:
             logger.warning("validation error")
+            await websocket.send_text(EventErrorResponse(error=error.args).json())
+        except websockets.WebSocketDisconnect:
             await client.close()
-        finally:
             clients_manager.remove_client(client)
             break
 
@@ -63,8 +58,7 @@ async def api_websocket_endpoint(
         try:
             event = EventInWS(**payload)
         except (JSONDecodeError, ValidationError) as validation_error:
-            logger.warning("validation error")
-            await websocket.send_json({"error": validation_error.args})
+            await websocket.send_json(EventErrorResponse(error=validation_error.args))
         else:
             await clients_event_process(
                 event, websocket, clients_manager, events_manager

@@ -4,22 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
-from app.schemas.computers.overview import ComputerInList
-from app.schemas.events import (
-    ComputerEventType,
-    EventInRequest,
-    EventInResponse,
-    EventPayload,
-)
+from app.schemas.computers.details import ComputerInList
+from app.schemas.events.base import EventInRequest, EventPayload
+from app.schemas.events.rest import RestEventType
 from app.services.computers import ClientsManager, clients_list, get_clients_manager
 from app.services.events import EventsManager, get_events_manager
 
 router = APIRouter()
 
 
-@router.get("/computers/events", response_model=List[ComputerEventType], tags=["pc"])
+@router.get("/computers/events", response_model=List[RestEventType], tags=["pc"])
 def events_list() -> List[str]:
-    return [event for event in ComputerEventType]
+    return [event for event in RestEventType]
 
 
 @router.get("/computers", response_model=List[ComputerInList], tags=["pc"])
@@ -30,12 +26,10 @@ async def computers_list(
     return await clients_list(clients_manager, events_manager)
 
 
-@router.get(
-    "/computers/{mac_address}/{event_type}", response_model=EventInResponse, tags=["pc"]
-)
-async def computer_details(
+@router.get("/computers/{mac_address}/{event_type}", tags=["pc"])
+async def computer_events(
     mac_address: str,
-    event_type: ComputerEventType,
+    event_type: RestEventType,
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
 ) -> EventPayload:
@@ -53,6 +47,11 @@ async def computer_details(
             event_id=event.id, client=client
         )
     except WebSocketDisconnect:
+        if client.is_connected:
+            error_detail = f"{event_type} event is not supported by PC"
+        else:
+            error_detail = "PC disconnected"
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="PC disconnected"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"error": error_detail},
         )
