@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mirumon-backend"
-version = "0.0.2"
+version = "0.0.3"
 description = "Monitoring server"
 authors = [
     "Slyfoxy <khitrov34@gmail.com>",
