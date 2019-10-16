@@ -1,0 +1,80 @@
+name: Deploy
+
+on:
+  release:
+    types: published
+
+jobs:
+  build:
+    name: BuildImage
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry config settings.virtualenvs.create false
+          poetry install --no-dev
+      - name: Verify that tag is the same as in application and available in docker registry
+        env:
+          IMAGE_NAME: mirumon/mirumon-backend
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
+          test $(python -c "import app.versions; print(app.versions.get_app_version())") = $TAG
+          ./scripts/check-container-version $IMAGE_NAME:$TAG
+      - name: Build image and publish to registry
+        env:
+          IMAGE_NAME: mirumon/mirumon-backend
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
+          docker build -t $IMAGE_NAME:$TAG -t $IMAGE_NAME:latest .
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+          docker push $IMAGE_NAME:$TAG
+          docker push $IMAGE_NAME:latest
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
+      - uses: actions/checkout@master
+      - name: Deploy service with traefik over ssh
+        env:
+          MIRUMON_BACKEND_DOMAIN: ${{ secrets.MIRUMON_BACKEND_DOMAIN }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
+          which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+          eval $(ssh-agent -s)
+          echo "add ssh key"
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST "
+            docker pull mirumon/mirumon-backend:$TAG && \
+            (docker rm -f mirumon_backend || true) && \
+            docker run -d \
+              --name mirumon_backend \
+              --network web \
+              --restart always \
+              --label \"traefik.enable=true\" \
+              --label \"traefik.docker.network=web\" \
+              --label \"traefik.http.routers.mirumon-backend.rule=Host(\\\`$MIRUMON_BACKEND_DOMAIN\\\`)\" \
+              --label \"traefik.http.routers.mirumon-backend.entrypoints=web-secure\" \
+              --label \"traefik.http.routers.mirumon-backend.tls.certresolver=letsencrypt\" \
+              --label \"traefik.http.routers.mirumon-backend.middlewares=http-to-https@file\" \
+              --label \"traefik.http.services.mirumon-backend.loadbalancer.server.port=8000\" \
+              mirumon/mirumon-backend:$TAG"
+

@@ -5,6 +5,9 @@ from loguru import logger
 from starlette.config import Config
 
 from app.logging import InterceptHandler, format_record
+from app.versions import get_app_version
+
+APP_VERSION = get_app_version()
 
 config = Config(".env")
 

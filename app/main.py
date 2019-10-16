@@ -1,14 +1,11 @@
-import logging
-
 from fastapi import FastAPI
 from loguru import logger
 
+from app.config import APP_VERSION, DEBUG
 from app.endpoints.api.computers import router as computers_router
 from app.endpoints.websockets import router as ws_router
 
-logging.basicConfig(level=logging.DEBUG)
-
-app = FastAPI()
+app = FastAPI(title="Mirumon service", version=APP_VERSION, debug=DEBUG)
 
 app.include_router(router=computers_router)
 app.include_router(router=ws_router)
