@@ -39,7 +39,7 @@ async def clients_websocket_endpoint(
             await process_incoming_event(client, events_manager)
         except (JSONDecodeError, ValidationError) as error:
             logger.warning("validation error")
-            await websocket.send_json(EventErrorResponse(error=error.args))
+            await websocket.send_text(EventErrorResponse(error=error.args).json())
         except websockets.WebSocketDisconnect:
             await client.close()
             clients_manager.remove_client(client)
