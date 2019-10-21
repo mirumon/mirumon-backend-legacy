@@ -30,7 +30,7 @@ async def client_registration(websocket: WebSocket) -> Client:
 
 
 async def clients_list(
-        clients_manager: ClientsManager, events_manager: EventsManager
+    clients_manager: ClientsManager, events_manager: EventsManager
 ) -> List[ComputerInList]:
     computers = []
     for client in clients_manager.clients:
@@ -47,10 +47,10 @@ async def clients_list(
 
 
 async def api_client_event_process(
-        event_request: WSEventInRequest,
-        websocket: WebSocket,
-        clients_manager: ClientsManager,
-        events_manager: EventsManager,
+    event_request: WSEventInRequest,
+    websocket: WebSocket,
+    clients_manager: ClientsManager,
+    events_manager: EventsManager,
 ) -> None:
     if event_request.event_type == WSEventType.computers_list:
         event_payload: List[ComputerInList] = await clients_list(
@@ -81,8 +81,7 @@ async def process_incoming_event(client: Client, manager: EventsManager) -> None
 
 
 async def process_incoming_ws_event(
-        websocket: WebSocket, clients_manager: ClientsManager,
-        events_manager: EventsManager
+    websocket: WebSocket, clients_manager: ClientsManager, events_manager: EventsManager
 ) -> None:
     payload = await websocket.receive_json()
     event = WSEventInRequest(**payload)

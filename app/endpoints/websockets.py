@@ -4,16 +4,13 @@ from pydantic import ValidationError
 from starlette import websockets
 from starlette.websockets import WebSocketDisconnect
 
-from app.services.computers import (
-    ClientsManager,
-    get_clients_manager,
+from app.services.computers import ClientsManager, get_clients_manager
+from app.services.event_handlers import (
+    client_registration,
+    process_incoming_event,
+    process_incoming_ws_event,
 )
-from app.services.event_handlers import client_registration, process_incoming_event, \
-    process_incoming_ws_event
-from app.services.events import (
-    EventsManager,
-    get_events_manager,
-)
+from app.services.events import EventsManager, get_events_manager
 
 router = APIRouter()
 
