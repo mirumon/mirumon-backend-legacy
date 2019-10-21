@@ -6,7 +6,7 @@ from loguru import logger
 from starlette import websockets
 
 from app.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from app.schemas.events.base import Event, EventInResponse, EventPayload, EventType
+from app.schemas.events.rest import EventInResponse, EventType, Event, EventPayload
 from app.services.computers import Client
 
 
@@ -27,7 +27,7 @@ class EventsManager:
 
     # todo create events methods
     async def wait_event_from_client(
-        self, event_id: uuid.UUID, client: Client
+            self, event_id: uuid.UUID, client: Client
     ) -> EventPayload:
         event = asyncio.Event()
         self._asyncio_events[event_id] = event
@@ -44,11 +44,6 @@ class EventsManager:
 
     def remove_event(self, event_id: uuid.UUID) -> None:
         self._events.pop(event_id)
-
-
-async def process_incoming_event(client: Client, manager: EventsManager) -> None:
-    response = await client.read_event()
-    manager.set_event_response(event_id=response.event.id, event=response)
 
 
 _events_manager = EventsManager()
