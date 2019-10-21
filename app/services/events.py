@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import Dict, Optional
+from typing import Dict, cast
 
 from loguru import logger
 from starlette import websockets
@@ -12,7 +12,7 @@ from app.services.computers import Client
 
 class EventsManager:
     def __init__(self) -> None:
-        self._events: Dict[uuid.UUID, Optional[EventInResponse]] = {}
+        self._events: Dict[uuid.UUID, EventInResponse] = {}
         self._asyncio_events: Dict[uuid.UUID, asyncio.Event] = {}
 
     def generate_event(self, event_type: EventType) -> Event:
@@ -40,7 +40,7 @@ class EventsManager:
                 if not client.is_connected or not response_time:
                     logger.debug("client disconnected while waiting event")
                     raise websockets.WebSocketDisconnect
-        return self._events.pop(event_id).payload  # type: ignore
+        return cast(EventPayload, self._events.pop(event_id).payload)
 
     def remove_event(self, event_id: uuid.UUID) -> None:
         self._events.pop(event_id)
