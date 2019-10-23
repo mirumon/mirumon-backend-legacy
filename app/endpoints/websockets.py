@@ -31,7 +31,6 @@ async def clients_websocket_endpoint(
         try:
             await process_incoming_event(client, events_manager)
         except ValidationError as error:
-            logger.warning("validation error")
             await websocket.send_text(error.json())
         except websockets.WebSocketDisconnect:
             await client.close()
