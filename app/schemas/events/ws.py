@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Dict, List, Union
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
-EventPayload = Union[List, Dict]
+from app.schemas.computers.details import ComputerDetails, ComputerInList
 
 
 class WSEventType(str, Enum):  # noqa: WPS600
@@ -28,6 +28,15 @@ class WSEventType(str, Enum):  # noqa: WPS600
         return self.value
 
 
-class EventInWS(BaseModel):
+class WSComputerPayload(BaseModel):
+    computer_id: str
+
+
+class WSEventInRequest(BaseModel):
     event_type: WSEventType
-    payload: EventPayload
+    payload: Optional[WSComputerPayload] = None
+
+
+class WSEventInResponse(BaseModel):
+    event_type: WSEventType
+    payload: Union[List[ComputerInList], ComputerDetails]

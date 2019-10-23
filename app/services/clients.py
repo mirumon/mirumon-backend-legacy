@@ -1,7 +1,7 @@
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.schemas.events.base import EventInRequest, EventInResponse
+from app.schemas.events.rest import EventInRequest, EventInResponse
 
 
 class Client:
@@ -26,6 +26,6 @@ class Client:
         await self.websocket.close(code)
         logger.info(
             "{0} WebSocket {1} [closed]".format(
-                self.websocket.scope["client"], self.websocket.scope["raw_path"]
+                self.websocket.scope.get("client"), self.websocket.scope.get("raw_path")
             )
         )

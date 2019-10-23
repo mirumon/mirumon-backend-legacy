@@ -5,9 +5,9 @@ from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
 from app.schemas.computers.details import ComputerInList
-from app.schemas.events.base import EventInRequest, EventPayload
-from app.schemas.events.rest import RestEventType
-from app.services.computers import ClientsManager, clients_list, get_clients_manager
+from app.schemas.events.rest import EventInRequest, EventPayload, RestEventType
+from app.services.computers import ClientsManager, get_clients_manager
+from app.services.event_handlers import clients_list
 from app.services.events import EventsManager, get_events_manager
 
 router = APIRouter()
@@ -52,6 +52,5 @@ async def computer_events(
         else:
             error_detail = "PC disconnected"
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"error": error_detail},
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail
         )

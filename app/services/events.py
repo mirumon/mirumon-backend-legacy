@@ -1,18 +1,18 @@
 import asyncio
 import uuid
-from typing import Dict, Optional, cast
+from typing import Dict, cast
 
 from loguru import logger
 from starlette import websockets
 
 from app.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from app.schemas.events.base import Event, EventInResponse, EventPayload, EventType
+from app.schemas.events.rest import Event, EventInResponse, EventPayload, EventType
 from app.services.computers import Client
 
 
 class EventsManager:
     def __init__(self) -> None:
-        self._events: Dict[uuid.UUID, Optional[EventInResponse]] = {}
+        self._events: Dict[uuid.UUID, EventInResponse] = {}
         self._asyncio_events: Dict[uuid.UUID, asyncio.Event] = {}
 
     def generate_event(self, event_type: EventType) -> Event:
@@ -40,15 +40,10 @@ class EventsManager:
                 if not client.is_connected or not response_time:
                     logger.debug("client disconnected while waiting event")
                     raise websockets.WebSocketDisconnect
-        return cast(EventInResponse, self._events.pop(event_id)).payload
+        return cast(EventPayload, self._events.pop(event_id).payload)
 
     def remove_event(self, event_id: uuid.UUID) -> None:
         self._events.pop(event_id)
-
-
-async def process_incoming_event(client: Client, manager: EventsManager) -> None:
-    response = await client.read_event()
-    manager.set_event_response(event_id=response.event.id, event=response)
 
 
 _events_manager = EventsManager()
