@@ -9,12 +9,13 @@ from app.versions import get_app_version
 
 APP_VERSION = get_app_version()
 
+REST_SLEEP_TIME = 0.5
+REST_MAX_RESPONSE_TIME = 20.0
+
 config = Config(".env")
 
 DEBUG = config("DEBUG", cast=bool, default=False)
 
-REST_SLEEP_TIME: float = 0.5
-REST_MAX_RESPONSE_TIME: float = 20
 
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
