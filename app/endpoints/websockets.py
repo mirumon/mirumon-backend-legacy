@@ -49,7 +49,7 @@ async def api_websocket_endpoint(
         try:
             await process_incoming_ws_event(websocket, clients_manager, events_manager)
         except ValidationError as validation_error:
-            await websocket.send_json(validation_error.json())
+            await websocket.send_text(validation_error.json())
         except KeyError:
             await websocket.send_json({"error": "PC not found"})
         except WebSocketDisconnect:
