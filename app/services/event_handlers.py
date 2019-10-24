@@ -72,7 +72,7 @@ async def api_client_event_process(
     event_response = WSEventInResponse(
         event_type=event_request.event_type, payload=event_payload
     )
-    await websocket.send_json(event_response.json())
+    await websocket.send_text(event_response.json())
 
 
 async def process_incoming_event(client: Client, manager: EventsManager) -> None:
