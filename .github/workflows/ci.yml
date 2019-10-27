@@ -59,7 +59,7 @@ jobs:
       - name: Run tests with pytest
         run: ./scripts/test-cov-xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+        run: bash <(curl -s https://codecov.io/bash) -t $TOKEN -B $REF
+        env:
+          TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          REF: ${{ github.ref }}

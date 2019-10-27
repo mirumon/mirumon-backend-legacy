@@ -58,8 +58,10 @@ async def api_client_event_process(
         )
     elif event_request.payload:
         mac_address = event_request.payload.computer_id
+
         client = clients_manager.get_client(mac_address)
-        event = events_manager.generate_event(WSEventType.details)
+        event = events_manager.generate_event(event_request.event_type)
+
         await client.send_event(EventInRequest(event=event))
         event_payload = await events_manager.wait_event_from_client(  # type: ignore
             event_id=event.id, client=client
@@ -76,8 +78,8 @@ async def api_client_event_process(
 
 
 async def process_incoming_event(client: Client, manager: EventsManager) -> None:
-    response = await client.read_event()
-    manager.set_event_response(event_id=response.event.id, event=response)
+    event_response = await client.read_event()
+    manager.set_event_response(event_id=event_response.event.id, event=event_response)
 
 
 async def process_incoming_ws_event(

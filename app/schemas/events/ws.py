@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 
 from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.software import InstalledProgram
 
 
 class WSEventType(str, Enum):  # noqa: WPS600
@@ -39,4 +40,4 @@ class WSEventInRequest(BaseModel):
 
 class WSEventInResponse(BaseModel):
     event_type: WSEventType
-    payload: Union[List[ComputerInList], ComputerDetails]
+    payload: Union[ComputerDetails, List[ComputerInList], List[InstalledProgram]]
