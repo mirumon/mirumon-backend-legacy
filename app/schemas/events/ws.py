@@ -4,6 +4,14 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 
 from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.hardware import (
+    HardwareModel,
+    MotherBoardModel,
+    NetworkAdapterModel,
+    PhysicalDiskModel,
+    ProcessorModel,
+    VideoControllerModel,
+)
 from app.schemas.computers.software import InstalledProgram
 
 
@@ -11,19 +19,14 @@ class WSEventType(str, Enum):  # noqa: WPS600
     computers_list: str = "computers-list"
     details: str = "details"
 
-    users: str = "users"
-
-    system: str = "system"
     hardware: str = "hardware"
-    storage: str = "storage"
-    network: str = "network"
-
-    devices: str = "devices"
+    hardware_mother: str = "hardware:motherboard"
+    hardware_cpu: str = "hardware:cpu"
+    hardware_gpu: str = "hardware:gpu"
+    hardware_network: str = "hardware:network"
+    hardware_disks: str = "hardware:disks"
 
     installed_programs: str = "installed-programs"
-    startup_programs: str = "startup-programs"
-    services: str = "services"
-    processes: str = "processes"
 
     def __str__(self) -> str:
         return self.value
@@ -40,4 +43,14 @@ class WSEventInRequest(BaseModel):
 
 class WSEventInResponse(BaseModel):
     event_type: WSEventType
-    payload: Union[ComputerDetails, List[ComputerInList], List[InstalledProgram]]
+    payload: Union[
+        ComputerDetails,
+        List[ComputerInList],
+        List[InstalledProgram],
+        MotherBoardModel,
+        List[NetworkAdapterModel],
+        List[PhysicalDiskModel],
+        List[ProcessorModel],
+        List[VideoControllerModel],
+        HardwareModel,
+    ]
