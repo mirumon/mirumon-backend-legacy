@@ -86,5 +86,6 @@ async def process_incoming_ws_event(
     websocket: WebSocket, clients_manager: ClientsManager, events_manager: EventsManager
 ) -> None:
     payload = await websocket.receive_json()
+    logger.debug(payload)
     event = WSEventInRequest(**payload)
     await api_client_event_process(event, websocket, clients_manager, events_manager)

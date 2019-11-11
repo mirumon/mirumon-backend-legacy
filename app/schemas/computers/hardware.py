@@ -51,7 +51,7 @@ class PhysicalDiskModel(BaseModel):
 
 
 class HardwareModel(BaseModel):
-    mother: MotherBoardModel
+    motherboard: MotherBoardModel
     cpu: List[ProcessorModel]
     gpu: List[VideoControllerModel]
     network: List[NetworkAdapterModel]
