@@ -5,24 +5,6 @@ from app.main import app
 client = TestClient(app)
 
 
-def test_computers_events():
-    response = client.get("/computers/events")
-    assert response.status_code == 200
-    assert response.json() == [
-        "details",
-        "users",
-        "system",
-        "hardware",
-        "storage",
-        "network",
-        "devices",
-        "installed-programs",
-        "startup-programs",
-        "services",
-        "processes",
-    ]
-
-
 def test_client_websocket_connect_failed():
     with client.websocket_connect("clients/ws") as websocket:
         websocket.send_json({"mac-address": "123456789"})
