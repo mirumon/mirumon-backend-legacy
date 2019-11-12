@@ -1,9 +1,19 @@
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.hardware import (
+    HardwareModel,
+    MotherBoardModel,
+    NetworkAdapterModel,
+    PhysicalDiskModel,
+    ProcessorModel,
+    VideoControllerModel,
+)
+from app.schemas.computers.software import InstalledProgram
 from app.schemas.events.ws import WSEventType
 
 
@@ -23,7 +33,17 @@ class RestEventType(str, Enum):  # noqa: WPS600
         return self.value
 
 
-EventPayload = Union[List, Dict]
+EventPayload = Union[
+    List[ComputerInList],
+    ComputerDetails,
+    HardwareModel,
+    MotherBoardModel,
+    List[NetworkAdapterModel],
+    List[PhysicalDiskModel],
+    List[ProcessorModel],
+    List[VideoControllerModel],
+    List[InstalledProgram],
+]
 
 EventType = Union[RestEventType, WSEventType]
 

@@ -44,13 +44,13 @@ class WSEventInRequest(BaseModel):
 class WSEventInResponse(BaseModel):
     event_type: WSEventType
     payload: Union[
-        ComputerDetails,
         List[ComputerInList],
-        List[InstalledProgram],
+        ComputerDetails,
+        HardwareModel,
         MotherBoardModel,
         List[NetworkAdapterModel],
         List[PhysicalDiskModel],
         List[ProcessorModel],
         List[VideoControllerModel],
-        HardwareModel,
+        List[InstalledProgram],
     ]
