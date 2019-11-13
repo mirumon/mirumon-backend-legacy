@@ -18,7 +18,7 @@ async def client_registration(websocket: WebSocket) -> Client:
     try:
         computer = ComputerDetails(**payload)
     except ValidationError as wrong_schema_error:
-        logger.info(f"registration failed")
+        logger.info(f"registration failed: {wrong_schema_error.json()}")
         await websocket.send_text(Status(status=StatusType.registration_failed).json())
         await websocket.close()
         raise WebSocketDisconnect from wrong_schema_error
@@ -86,5 +86,6 @@ async def process_incoming_ws_event(
     websocket: WebSocket, clients_manager: ClientsManager, events_manager: EventsManager
 ) -> None:
     payload = await websocket.receive_json()
+    logger.debug(payload)
     event = WSEventInRequest(**payload)
     await api_client_event_process(event, websocket, clients_manager, events_manager)

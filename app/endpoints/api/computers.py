@@ -1,4 +1,4 @@
-from typing import List, Tuple, Type, TypeVar, Union
+from typing import List, Tuple, Type, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -6,6 +6,14 @@ from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
 from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.hardware import (
+    HardwareModel,
+    MotherBoardModel,
+    NetworkAdapterModel,
+    PhysicalDiskModel,
+    ProcessorModel,
+    VideoControllerModel,
+)
 from app.schemas.computers.software import InstalledProgram
 from app.schemas.events.rest import EventInRequest, RestEventType
 from app.services.computers import ClientsManager, get_clients_manager
@@ -15,7 +23,7 @@ from app.services.events import EventsManager, get_events_manager
 router = APIRouter()
 
 
-@router.get("/computers", response_model=List[ComputerInList], tags=["pc"])
+@router.get("/computers", response_model=List[ComputerInList], tags=["PC List"])
 async def computers_list(
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
@@ -28,20 +36,21 @@ EventModels = Tuple[Tuple[RestEventType, Type[APIModelT]], ...]
 
 
 def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> None:
-    for event_type, model in event_models:
-        path = "computers/{0}/{1}".format("{mac_address}", event_type)
+    for api_event_type, response_model in event_models:
+        path = "/computers/{0}/{1}".format("{mac_address}", api_event_type)
 
         @api_router.get(  # noqa: WPS430
             path,
-            response_model=model,
-            summary=f"{event_type} Computer Event",
+            response_model=response_model,
+            summary=f"Computer Event {api_event_type}",
             tags=["PC Events"],
         )
         async def generic_api_route(
             mac_address: str,
             clients_manager: ClientsManager = Depends(get_clients_manager),
             events_manager: EventsManager = Depends(get_events_manager),
-        ) -> Union[dict, list]:
+            event_type: RestEventType = api_event_type,
+        ) -> response_model:  # type: ignore
             try:
                 client = clients_manager.get_client(mac_address)
             except KeyError as missed_websocket_error:
@@ -66,7 +75,13 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
 
 events = (
     (RestEventType.details, ComputerDetails),
-    (RestEventType.installed_programs, InstalledProgram),
+    (RestEventType.hardware, HardwareModel),
+    (RestEventType.hardware_mother, MotherBoardModel),
+    (RestEventType.hardware_cpu, List[ProcessorModel]),
+    (RestEventType.hardware_gpu, List[VideoControllerModel]),
+    (RestEventType.hardware_network, List[NetworkAdapterModel]),
+    (RestEventType.hardware_disks, List[PhysicalDiskModel]),
+    (RestEventType.installed_programs, List[InstalledProgram]),
 )
 
 generate_event_routes(router, events)
