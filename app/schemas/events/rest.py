@@ -34,7 +34,7 @@ class RestEventType(str, Enum):  # noqa: WPS600
 
 
 EventPayload = Union[
-    List[ComputerInList],
+    ComputerInList,
     ComputerDetails,
     HardwareModel,
     MotherBoardModel,
