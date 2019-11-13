@@ -1,4 +1,4 @@
-from typing import List, Tuple, Type, TypeVar
+from typing import Callable, List, Tuple, Type, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -14,6 +14,7 @@ from app.schemas.computers.hardware import (
     ProcessorModel,
     VideoControllerModel,
 )
+from app.schemas.computers.shutdown import Shutdown
 from app.schemas.computers.software import InstalledProgram
 from app.schemas.events.rest import EventInRequest, RestEventType
 from app.services.computers import ClientsManager, get_clients_manager
@@ -35,11 +36,13 @@ APIModelT = TypeVar("APIModelT", bound=BaseModel)
 EventModels = Tuple[Tuple[RestEventType, Type[APIModelT]], ...]
 
 
-def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> None:
+def generate_event_routes(
+    api_router_method: Callable, event_models: EventModels
+) -> None:
     for api_event_type, response_model in event_models:
         path = "/computers/{0}/{1}".format("{mac_address}", api_event_type)
 
-        @api_router.get(  # noqa: WPS430
+        @api_router_method(  # noqa: WPS430
             path,
             response_model=response_model,
             summary=f"Computer Event {api_event_type}",
@@ -73,7 +76,7 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
                 )
 
 
-events = (
+get_events = (
     (RestEventType.details, ComputerDetails),
     (RestEventType.hardware, HardwareModel),
     (RestEventType.hardware_mother, MotherBoardModel),
@@ -83,5 +86,7 @@ events = (
     (RestEventType.hardware_disks, List[PhysicalDiskModel]),
     (RestEventType.installed_programs, List[InstalledProgram]),
 )
+generate_event_routes(router.get, get_events)
 
-generate_event_routes(router, events)
+post_events = ((RestEventType.shutdown, Shutdown),)
+generate_event_routes(router.post, post_events)

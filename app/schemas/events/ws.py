@@ -12,6 +12,7 @@ from app.schemas.computers.hardware import (
     ProcessorModel,
     VideoControllerModel,
 )
+from app.schemas.computers.shutdown import Shutdown
 from app.schemas.computers.software import InstalledProgram
 
 
@@ -27,6 +28,8 @@ class WSEventType(str, Enum):  # noqa: WPS600
     hardware_disks: str = "hardware:disks"
 
     installed_programs: str = "installed-programs"
+
+    shutdown: str = "shutdown"
 
     def __str__(self) -> str:
         return self.value
@@ -53,4 +56,5 @@ class WSEventInResponse(BaseModel):
         List[ProcessorModel],
         List[VideoControllerModel],
         List[InstalledProgram],
+        Shutdown,
     ]

@@ -13,6 +13,7 @@ from app.schemas.computers.hardware import (
     ProcessorModel,
     VideoControllerModel,
 )
+from app.schemas.computers.shutdown import Shutdown
 from app.schemas.computers.software import InstalledProgram
 from app.schemas.events.ws import WSEventType
 
@@ -29,6 +30,8 @@ class RestEventType(str, Enum):  # noqa: WPS600
 
     installed_programs: str = "installed-programs"
 
+    shutdown: str = "shutdown"
+
     def __str__(self) -> str:
         return self.value
 
@@ -43,6 +46,7 @@ EventPayload = Union[
     List[ProcessorModel],
     List[VideoControllerModel],
     List[InstalledProgram],
+    Shutdown,
 ]
 
 EventType = Union[RestEventType, WSEventType]
