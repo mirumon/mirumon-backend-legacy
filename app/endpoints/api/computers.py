@@ -1,11 +1,14 @@
+from json import JSONDecodeError
 from typing import Callable, List, Tuple, Type, TypeVar
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from starlette import status
+from starlette.requests import Request
 from starlette.websockets import WebSocketDisconnect
 
 from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.execute import ExecuteResult
 from app.schemas.computers.hardware import (
     HardwareModel,
     MotherBoardModel,
@@ -17,6 +20,7 @@ from app.schemas.computers.hardware import (
 from app.schemas.computers.shutdown import Shutdown
 from app.schemas.computers.software import InstalledProgram
 from app.schemas.events.rest import EventInRequest, RestEventType
+from app.services.clients import Client
 from app.services.computers import ClientsManager, get_clients_manager
 from app.services.event_handlers import clients_list
 from app.services.events import EventsManager, get_events_manager
@@ -36,6 +40,17 @@ APIModelT = TypeVar("APIModelT", bound=BaseModel)
 EventModels = Tuple[Tuple[RestEventType, Type[APIModelT]], ...]
 
 
+def get_client(
+    mac_address: str, clients_manager: ClientsManager = Depends(get_clients_manager)
+) -> Client:
+    try:
+        return clients_manager.get_client(mac_address)
+    except KeyError as missed_websocket_error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PC not found"
+        ) from missed_websocket_error
+
+
 def generate_event_routes(
     api_router_method: Callable, event_models: EventModels
 ) -> None:
@@ -49,20 +64,20 @@ def generate_event_routes(
             tags=["PC Events"],
         )
         async def generic_api_route(
-            mac_address: str,
-            clients_manager: ClientsManager = Depends(get_clients_manager),
+            request: Request,
+            client: Client = Depends(get_client),
             events_manager: EventsManager = Depends(get_events_manager),
+            # fixme fastapi use it like query param, but it not
             event_type: RestEventType = api_event_type,
         ) -> response_model:  # type: ignore
-            try:
-                client = clients_manager.get_client(mac_address)
-            except KeyError as missed_websocket_error:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="PC not found"
-                ) from missed_websocket_error
-
             event = events_manager.generate_event(event_type)
-            await client.send_event(EventInRequest(event=event))
+            try:
+                payload = await request.json() if await request.body() else None
+            except JSONDecodeError as decode_error:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail=decode_error.args
+                )
+            await client.send_event(EventInRequest(event=event, payload=payload))
             try:
                 return await events_manager.wait_event_from_client(
                     event_id=event.id, client=client
@@ -88,5 +103,8 @@ get_events = (
 )
 generate_event_routes(router.get, get_events)
 
-post_events = ((RestEventType.shutdown, Shutdown),)
+post_events = (
+    (RestEventType.shutdown, Shutdown),
+    (RestEventType.execute, ExecuteResult),
+)
 generate_event_routes(router.post, post_events)

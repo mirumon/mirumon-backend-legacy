@@ -1,10 +1,11 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
 
 from app.schemas.computers.details import ComputerDetails, ComputerInList
+from app.schemas.computers.execute import ExecuteResult
 from app.schemas.computers.hardware import (
     HardwareModel,
     MotherBoardModel,
@@ -32,11 +33,13 @@ class RestEventType(str, Enum):  # noqa: WPS600
 
     shutdown: str = "shutdown"
 
+    execute: str = "execute"
+
     def __str__(self) -> str:
         return self.value
 
 
-EventPayload = Union[
+PayloadInResponse = Union[
     ComputerInList,
     ComputerDetails,
     HardwareModel,
@@ -47,6 +50,7 @@ EventPayload = Union[
     List[VideoControllerModel],
     List[InstalledProgram],
     Shutdown,
+    ExecuteResult,
 ]
 
 EventType = Union[RestEventType, WSEventType]
@@ -59,8 +63,10 @@ class Event(BaseModel):
 
 class EventInRequest(BaseModel):
     event: Event
+    payload: Optional[Union[Dict, List]] = None
 
 
 class EventInResponse(BaseModel):
     event: Event
-    payload: Optional[EventPayload]  # must be optional. ClientsManager init it later
+    # fixme. must be optional. ClientsManager init it later
+    payload: Optional[PayloadInResponse]
