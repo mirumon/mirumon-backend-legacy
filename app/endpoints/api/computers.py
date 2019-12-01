@@ -57,13 +57,13 @@ def generate_event_routes(
     for api_event_type, response_model in event_models:
         path = "/computers/{0}/{1}".format("{mac_address}", api_event_type)
 
-        @api_router_method(  # noqa: WPS430
+        @api_router_method(
             path,
             response_model=response_model,
             summary=f"Computer Event {api_event_type}",
             tags=["PC Events"],
         )
-        async def generic_api_route(
+        async def generic_api_route(  # noqa: WPS430
             request: Request,
             client: Client = Depends(get_client),
             events_manager: EventsManager = Depends(get_events_manager),

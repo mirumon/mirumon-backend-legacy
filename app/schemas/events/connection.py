@@ -21,5 +21,6 @@ class StatusType(str, Enum):  # noqa: WPS600
 class Status(BaseModel):
     status: StatusType
 
-    def __str__(self) -> str:
+    # mypy complains about invalid overriding signature
+    def __str__(self) -> str:  # type: ignore
         return self.status
