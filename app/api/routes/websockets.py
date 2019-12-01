@@ -15,7 +15,7 @@ from app.services.events import EventsManager, get_events_manager
 router = APIRouter()
 
 
-@router.websocket("/clients/ws")
+@router.websocket("/service")
 async def clients_websocket_endpoint(
     websocket: websockets.WebSocket,
     clients_manager: ClientsManager = Depends(get_clients_manager),
@@ -38,7 +38,7 @@ async def clients_websocket_endpoint(
             break
 
 
-@router.websocket("/api/ws")
+@router.websocket("/clients")
 async def api_websocket_endpoint(
     websocket: websockets.WebSocket,
     clients_manager: ClientsManager = Depends(get_clients_manager),
@@ -53,5 +53,5 @@ async def api_websocket_endpoint(
         except KeyError:
             await websocket.send_json({"error": "PC not found"})
         except WebSocketDisconnect:
-            logger.debug("ws api client [disconnected]")
+            logger.debug("ws rest client [disconnected]")
             break

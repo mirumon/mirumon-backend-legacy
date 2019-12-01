@@ -28,7 +28,7 @@ from app.services.events import EventsManager, get_events_manager
 router = APIRouter()
 
 
-@router.get("/computers", response_model=List[ComputerInList], tags=["PC List"])
+@router.get("", response_model=List[ComputerInList], tags=["PC List"])
 async def computers_list(
     clients_manager: ClientsManager = Depends(get_clients_manager),
     events_manager: EventsManager = Depends(get_events_manager),
@@ -87,7 +87,7 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
             return generic_api_route
 
         api_router.add_api_route(
-            "/computers/{0}/{1}".format("{mac_address}", api_event_type),
+            "/{0}/{1}".format("{mac_address}", api_event_type),
             _generate_generic_api_route(api_event_type),
             methods=[api_method],
             response_model=response_model,
