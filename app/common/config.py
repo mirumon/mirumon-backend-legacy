@@ -1,6 +1,7 @@
 import logging
 import sys
 
+from databases import DatabaseURL
 from loguru import logger
 from starlette.config import Config
 
@@ -15,6 +16,7 @@ REST_MAX_RESPONSE_TIME = 20.0
 config = Config(".env")
 
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
+DATABASE_URL: DatabaseURL = config("DB_CONNECTION", cast=DatabaseURL)
 
 
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
