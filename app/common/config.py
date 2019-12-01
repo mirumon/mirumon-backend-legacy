@@ -4,8 +4,8 @@ import sys
 from loguru import logger
 from starlette.config import Config
 
-from app.logging import InterceptHandler, format_record
-from app.versions import get_app_version
+from app.common.logging import InterceptHandler, format_record
+from app.common.versions import get_app_version
 
 APP_VERSION = get_app_version()
 
@@ -14,7 +14,7 @@ REST_MAX_RESPONSE_TIME = 20.0
 
 config = Config(".env")
 
-DEBUG = config("DEBUG", cast=bool, default=False)
+DEBUG: bool = config("DEBUG", cast=bool, default=False)
 
 
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO

@@ -53,6 +53,7 @@ EventModels = Tuple[Tuple[RestEventType, str, Type[APIModelT]], ...]
 
 def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> None:
     for api_event_type, api_method, response_model in event_models:
+
         def _generate_generic_api_route(  # noqa: WPS430
             event_type: RestEventType = api_event_type,
         ) -> Callable:
