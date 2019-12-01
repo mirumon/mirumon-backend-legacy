@@ -36,10 +36,6 @@ async def computers_list(
     return await clients_list(clients_manager, events_manager)
 
 
-APIModelT = TypeVar("APIModelT", bound=BaseModel)
-EventModels = Tuple[Tuple[RestEventType, Type[APIModelT]], ...]
-
-
 def get_client(
     mac_address: str, clients_manager: ClientsManager = Depends(get_clients_manager)
 ) -> Client:
@@ -51,60 +47,71 @@ def get_client(
         ) from missed_websocket_error
 
 
-def generate_event_routes(
-    api_router_method: Callable, event_models: EventModels
-) -> None:
-    for api_event_type, response_model in event_models:
-        path = "/computers/{0}/{1}".format("{mac_address}", api_event_type)
+APIModelT = TypeVar("APIModelT", bound=BaseModel,)
+EventModels = Tuple[Tuple[RestEventType, str, Type[APIModelT]], ...]
 
-        @api_router_method(
-            path,
+
+def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> None:
+    for api_event_type, api_method, response_model in event_models:
+        def _generate_generic_api_route(  # noqa: WPS430
+            event_type: RestEventType = api_event_type,
+        ) -> Callable:
+            async def generic_api_route(  # noqa: WPS430
+                request: Request,
+                client: Client = Depends(get_client),
+                events_manager: EventsManager = Depends(get_events_manager),
+            ) -> response_model:  # type: ignore
+                event = events_manager.generate_event(event_type)
+                try:
+                    payload = await request.json() if await request.body() else None
+                except JSONDecodeError as decode_error:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=decode_error.args,
+                    )
+
+                await client.send_event(EventInRequest(event=event, payload=payload))
+                try:
+                    return await events_manager.wait_event_from_client(
+                        event_id=event.id, client=client
+                    )
+                except WebSocketDisconnect:
+                    raise HTTPException(
+                        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                        detail=f"{event_type} event is not supported by PC"
+                        if client.is_connected
+                        else "PC disconnected",
+                    )
+
+            return generic_api_route
+
+        api_router.add_api_route(
+            "/computers/{0}/{1}".format("{mac_address}", api_event_type),
+            _generate_generic_api_route(api_event_type),
+            methods=[api_method],
             response_model=response_model,
             summary=f"Computer Event {api_event_type}",
             tags=["PC Events"],
         )
-        async def generic_api_route(  # noqa: WPS430
-            request: Request,
-            client: Client = Depends(get_client),
-            events_manager: EventsManager = Depends(get_events_manager),
-            # fixme fastapi use it like query param, but it not
-            event_type: RestEventType = api_event_type,
-        ) -> response_model:  # type: ignore
-            event = events_manager.generate_event(event_type)
-            try:
-                payload = await request.json() if await request.body() else None
-            except JSONDecodeError as decode_error:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail=decode_error.args
-                )
-            await client.send_event(EventInRequest(event=event, payload=payload))
-            try:
-                return await events_manager.wait_event_from_client(
-                    event_id=event.id, client=client
-                )
-            except WebSocketDisconnect:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail=f"{event_type} event is not supported by PC"
-                    if client.is_connected
-                    else "PC disconnected",
-                )
 
+
+GET_METHOD = "GET"
+POST_METHOD = "POST"
 
 get_events = (
-    (RestEventType.details, ComputerDetails),
-    (RestEventType.hardware, HardwareModel),
-    (RestEventType.hardware_mother, MotherBoardModel),
-    (RestEventType.hardware_cpu, List[ProcessorModel]),
-    (RestEventType.hardware_gpu, List[VideoControllerModel]),
-    (RestEventType.hardware_network, List[NetworkAdapterModel]),
-    (RestEventType.hardware_disks, List[PhysicalDiskModel]),
-    (RestEventType.installed_programs, List[InstalledProgram]),
+    (RestEventType.details, GET_METHOD, ComputerDetails),
+    (RestEventType.hardware, GET_METHOD, HardwareModel),
+    (RestEventType.hardware_mother, GET_METHOD, MotherBoardModel),
+    (RestEventType.hardware_cpu, GET_METHOD, List[ProcessorModel]),
+    (RestEventType.hardware_gpu, GET_METHOD, List[VideoControllerModel]),
+    (RestEventType.hardware_network, GET_METHOD, List[NetworkAdapterModel]),
+    (RestEventType.hardware_disks, GET_METHOD, List[PhysicalDiskModel]),
+    (RestEventType.installed_programs, GET_METHOD, List[InstalledProgram]),
 )
-generate_event_routes(router.get, get_events)
+generate_event_routes(router, get_events)
 
 post_events = (
-    (RestEventType.shutdown, Shutdown),
-    (RestEventType.execute, ExecuteResult),
+    (RestEventType.shutdown, POST_METHOD, Shutdown),
+    (RestEventType.execute, POST_METHOD, ExecuteResult),
 )
-generate_event_routes(router.post, post_events)
+generate_event_routes(router, post_events)
