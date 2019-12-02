@@ -78,9 +78,9 @@ async def client(app: FastAPI) -> Client:
             transaction: Transaction = connection.transaction()
             await transaction.start()
             async with Client(
-                    app=app,
-                    base_url="http://testserver",
-                    headers={"Content-Type": "application/json"},
+                app=app,
+                base_url="http://testserver",
+                headers={"Content-Type": "application/json"},
             ) as client:
                 yield client
             await transaction.rollback()
