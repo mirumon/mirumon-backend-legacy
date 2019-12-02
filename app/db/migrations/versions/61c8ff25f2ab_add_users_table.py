@@ -24,6 +24,10 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+def register_uuid_extension() -> None:
+    op.execute("""
+    CREATE EXTENSION "uuid-ossp"
+    """)
 
 def create_updated_at_trigger() -> None:
     op.execute(
@@ -81,6 +85,7 @@ def create_users_table() -> None:
 
 
 def upgrade() -> None:
+    register_uuid_extension()
     create_updated_at_trigger()
     create_users_table()
 

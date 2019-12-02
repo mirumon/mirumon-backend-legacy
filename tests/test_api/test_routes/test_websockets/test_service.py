@@ -1,19 +1,15 @@
 from starlette.testclient import TestClient
 
-from app.main import app
 
-client = TestClient(app)
-
-
-def test_client_websocket_connect_failed():
-    with client.websocket_connect("/ws/service") as websocket:
+def test_client_websocket_connect_failed(websocket_client: TestClient) -> None:
+    with websocket_client.websocket_connect("/ws/service") as websocket:
         websocket.send_json({"mac-address": "123456789"})
         data = websocket.receive_json()
         assert data == {"status": "registration-failed"}
 
 
-def test_client_websocket_connect_success():
-    with client.websocket_connect("/ws/service") as websocket:
+def test_client_websocket_connect_success(websocket_client: TestClient) -> None:
+    with websocket_client.websocket_connect("/ws/service") as websocket:
         websocket.send_json(
             {
                 "mac_address": "5c:f3:70:92:a1:1d",
@@ -41,9 +37,3 @@ def test_client_websocket_connect_success():
         )
         data = websocket.receive_json()
         assert data == {"status": "registration-success"}
-
-
-def test_computers_list_empty():
-    response = client.get("/computers")
-    assert response.status_code == 200
-    assert response.json() == []
