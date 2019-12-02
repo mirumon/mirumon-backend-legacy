@@ -4,17 +4,6 @@ from app.db.errors import EntityDoesNotExist
 from app.db.repositories.base import BaseRepository
 from app.models.domain.users import User, UserInDB
 
-GET_USER_BY_EMAIL_QUERY = """
-SELECT id,
-       username,
-       salt,
-       hashed_password,
-       scopes,
-       created_at,
-       updated_at
-FROM users
-WHERE username = $1
-"""
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
        username,
