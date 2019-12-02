@@ -3,17 +3,7 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
-from app.schemas.computers.details import ComputerDetails, ComputerInList
-from app.schemas.computers.hardware import (
-    HardwareModel,
-    MotherBoardModel,
-    NetworkAdapterModel,
-    PhysicalDiskModel,
-    ProcessorModel,
-    VideoControllerModel,
-)
-from app.schemas.computers.shutdown import Shutdown
-from app.schemas.computers.software import InstalledProgram
+from app.models.schemas.computers import details, hardware, shutdown, software
 
 
 class WSEventType(str, Enum):  # noqa: WPS600
@@ -47,14 +37,14 @@ class WSEventInRequest(BaseModel):
 class WSEventInResponse(BaseModel):
     event_type: WSEventType
     payload: Union[
-        List[ComputerInList],
-        ComputerDetails,
-        HardwareModel,
-        MotherBoardModel,
-        List[NetworkAdapterModel],
-        List[PhysicalDiskModel],
-        List[ProcessorModel],
-        List[VideoControllerModel],
-        List[InstalledProgram],
-        Shutdown,
+        List[details.ComputerInList],
+        details.ComputerDetails,
+        hardware.HardwareModel,
+        hardware.MotherBoardModel,
+        List[hardware.NetworkAdapterModel],
+        List[hardware.PhysicalDiskModel],
+        List[hardware.ProcessorModel],
+        List[hardware.VideoControllerModel],
+        List[software.InstalledProgram],
+        shutdown.Shutdown,
     ]

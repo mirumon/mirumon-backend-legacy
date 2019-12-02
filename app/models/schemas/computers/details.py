@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.schemas.computers.user import User
+from app.models.schemas.computers.user import User
 
 
 class OperatingSystem(BaseModel):

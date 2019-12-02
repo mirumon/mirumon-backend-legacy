@@ -4,19 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.schemas.computers.details import ComputerDetails, ComputerInList
-from app.schemas.computers.execute import ExecuteResult
-from app.schemas.computers.hardware import (
-    HardwareModel,
-    MotherBoardModel,
-    NetworkAdapterModel,
-    PhysicalDiskModel,
-    ProcessorModel,
-    VideoControllerModel,
-)
-from app.schemas.computers.shutdown import Shutdown
-from app.schemas.computers.software import InstalledProgram
-from app.schemas.events.ws import WSEventType
+from app.models.schemas.computers import details, hardware, shutdown, software
+from app.models.schemas.events.ws import WSEventType
 
 
 class RestEventType(str, Enum):  # noqa: WPS600
@@ -40,17 +29,16 @@ class RestEventType(str, Enum):  # noqa: WPS600
 
 
 PayloadInResponse = Union[
-    ComputerInList,
-    ComputerDetails,
-    HardwareModel,
-    MotherBoardModel,
-    List[NetworkAdapterModel],
-    List[PhysicalDiskModel],
-    List[ProcessorModel],
-    List[VideoControllerModel],
-    List[InstalledProgram],
-    Shutdown,
-    ExecuteResult,
+    List[details.ComputerInList],
+    details.ComputerDetails,
+    hardware.HardwareModel,
+    hardware.MotherBoardModel,
+    List[hardware.NetworkAdapterModel],
+    List[hardware.PhysicalDiskModel],
+    List[hardware.ProcessorModel],
+    List[hardware.VideoControllerModel],
+    List[software.InstalledProgram],
+    shutdown.Shutdown,
 ]
 
 EventType = Union[RestEventType, WSEventType]

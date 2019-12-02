@@ -4,10 +4,14 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.schemas.computers.details import ComputerDetails, ComputerInList
-from app.schemas.events.connection import Status, StatusType
-from app.schemas.events.rest import EventInRequest
-from app.schemas.events.ws import WSEventInRequest, WSEventInResponse, WSEventType
+from app.models.schemas.computers.details import ComputerDetails, ComputerInList
+from app.models.schemas.events.connection import Status, StatusType
+from app.models.schemas.events.rest import EventInRequest
+from app.models.schemas.events.ws import (
+    WSEventInRequest,
+    WSEventInResponse,
+    WSEventType,
+)
 from app.services.clients import Client
 from app.services.computers import ClientsManager
 from app.services.events import EventsManager

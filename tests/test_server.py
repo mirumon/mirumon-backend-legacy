@@ -6,14 +6,14 @@ client = TestClient(app)
 
 
 def test_client_websocket_connect_failed():
-    with client.websocket_connect("clients/ws") as websocket:
+    with client.websocket_connect("/ws/service") as websocket:
         websocket.send_json({"mac-address": "123456789"})
         data = websocket.receive_json()
         assert data == {"status": "registration-failed"}
 
 
 def test_client_websocket_connect_success():
-    with client.websocket_connect("clients/ws") as websocket:
+    with client.websocket_connect("/ws/service") as websocket:
         websocket.send_json(
             {
                 "mac_address": "5c:f3:70:92:a1:1d",

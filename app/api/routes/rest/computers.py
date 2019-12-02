@@ -7,38 +7,25 @@ from starlette import status
 from starlette.requests import Request
 from starlette.websockets import WebSocketDisconnect
 
-from app.schemas.computers.details import ComputerDetails, ComputerInList
-from app.schemas.computers.execute import ExecuteResult
-from app.schemas.computers.hardware import (
-    HardwareModel,
-    MotherBoardModel,
-    NetworkAdapterModel,
-    PhysicalDiskModel,
-    ProcessorModel,
-    VideoControllerModel,
-)
-from app.schemas.computers.shutdown import Shutdown
-from app.schemas.computers.software import InstalledProgram
-from app.schemas.events.rest import EventInRequest, RestEventType
-from app.services.clients import Client
-from app.services.computers import ClientsManager, get_clients_manager
-from app.services.event_handlers import clients_list
-from app.services.events import EventsManager, get_events_manager
+from app.models.schemas.computers import details, execute, hardware, shutdown, software
+from app.models.schemas.events.rest import EventInRequest, RestEventType
+from app.services import clients, computers, event_handlers, events
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[ComputerInList], tags=["PC List"])
+@router.get("", response_model=List[details.ComputerInList], tags=["PC List"])
 async def computers_list(
-    clients_manager: ClientsManager = Depends(get_clients_manager),
-    events_manager: EventsManager = Depends(get_events_manager),
-) -> List[ComputerInList]:
-    return await clients_list(clients_manager, events_manager)
+    clients_manager: computers.ClientsManager = Depends(computers.get_clients_manager),
+    events_manager: events.EventsManager = Depends(events.get_events_manager),
+) -> List[details.ComputerInList]:
+    return await event_handlers.clients_list(clients_manager, events_manager)
 
 
 def get_client(
-    mac_address: str, clients_manager: ClientsManager = Depends(get_clients_manager)
-) -> Client:
+    mac_address: str,
+    clients_manager: computers.ClientsManager = Depends(computers.get_clients_manager),
+) -> clients.Client:
     try:
         return clients_manager.get_client(mac_address)
     except KeyError as missed_websocket_error:
@@ -59,8 +46,10 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
         ) -> Callable:
             async def generic_api_route(  # noqa: WPS430
                 request: Request,
-                client: Client = Depends(get_client),
-                events_manager: EventsManager = Depends(get_events_manager),
+                client: clients.Client = Depends(get_client),
+                events_manager: events.EventsManager = Depends(
+                    events.get_events_manager
+                ),
             ) -> response_model:  # type: ignore
                 event = events_manager.generate_event(event_type)
                 try:
@@ -100,19 +89,19 @@ GET_METHOD = "GET"
 POST_METHOD = "POST"
 
 get_events = (
-    (RestEventType.details, GET_METHOD, ComputerDetails),
-    (RestEventType.hardware, GET_METHOD, HardwareModel),
-    (RestEventType.hardware_mother, GET_METHOD, MotherBoardModel),
-    (RestEventType.hardware_cpu, GET_METHOD, List[ProcessorModel]),
-    (RestEventType.hardware_gpu, GET_METHOD, List[VideoControllerModel]),
-    (RestEventType.hardware_network, GET_METHOD, List[NetworkAdapterModel]),
-    (RestEventType.hardware_disks, GET_METHOD, List[PhysicalDiskModel]),
-    (RestEventType.installed_programs, GET_METHOD, List[InstalledProgram]),
+    (RestEventType.details, GET_METHOD, details.ComputerDetails),
+    (RestEventType.hardware, GET_METHOD, hardware.HardwareModel),
+    (RestEventType.hardware_mother, GET_METHOD, hardware.MotherBoardModel),
+    (RestEventType.hardware_cpu, GET_METHOD, List[hardware.ProcessorModel]),
+    (RestEventType.hardware_gpu, GET_METHOD, List[hardware.VideoControllerModel]),
+    (RestEventType.hardware_network, GET_METHOD, List[hardware.NetworkAdapterModel]),
+    (RestEventType.hardware_disks, GET_METHOD, List[hardware.PhysicalDiskModel]),
+    (RestEventType.installed_programs, GET_METHOD, List[software.InstalledProgram]),
 )
 generate_event_routes(router, get_events)
 
 post_events = (
-    (RestEventType.shutdown, POST_METHOD, Shutdown),
-    (RestEventType.execute, POST_METHOD, ExecuteResult),
+    (RestEventType.shutdown, POST_METHOD, shutdown.Shutdown),
+    (RestEventType.execute, POST_METHOD, execute.ExecuteResult),
 )
 generate_event_routes(router, post_events)

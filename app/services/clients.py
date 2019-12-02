@@ -1,7 +1,7 @@
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.schemas.events.rest import EventInRequest, EventInResponse
+from app.models.schemas.events.rest import EventInRequest, EventInResponse
 
 
 class Client:

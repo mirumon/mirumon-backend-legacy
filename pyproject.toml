@@ -29,6 +29,7 @@ databases = {version = "^0.2.6", extras = ["postgresql"]}
 loguru = "^0.3.2"
 
 toml = "^0.10.0"
+python-multipart = "^0.0.5"
 
 
 [tool.poetry.dev-dependencies]
@@ -43,6 +44,7 @@ flake8-fixme = "^1.1"
 pytest = "^5.3"
 pytest-cov = "^2.8"
 pytest-asyncio = "^0.10.0"
+requests = "^2.22"
 
 
 [tool.black]
