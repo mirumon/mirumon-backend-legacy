@@ -7,7 +7,6 @@ import docker as libdocker
 import pytest
 from asgi_lifespan import LifespanManager
 from asyncpg import Connection
-from asyncpg.pool import Pool
 from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from httpx import Client
@@ -69,11 +68,6 @@ def app() -> FastAPI:
     return get_application()
 
 
-@pytest.fixture
-def pool(app: FastAPI) -> Pool:
-    return app.state.pool
-
-
 # here starts db transaction that is required for almost all tests
 @pytest.fixture(autouse=True)
 async def client(app: FastAPI) -> Client:
@@ -84,9 +78,9 @@ async def client(app: FastAPI) -> Client:
             transaction: Transaction = connection.transaction()
             await transaction.start()
             async with Client(
-                app=app,
-                base_url="http://testserver",
-                headers={"Content-Type": "application/json"},
+                    app=app,
+                    base_url="http://testserver",
+                    headers={"Content-Type": "application/json"},
             ) as client:
                 yield client
             await transaction.rollback()
