@@ -53,5 +53,5 @@ async def api_websocket_endpoint(
         except KeyError:
             await websocket.send_json({"error": "PC not found"})
         except WebSocketDisconnect:
-            logger.debug("ws rest client [disconnected]")
+            logger.debug("ws api client [disconnected]")
             break
