@@ -1,6 +1,6 @@
 import re
 
-from app.versions import get_app_version
+from app.common.versions import get_app_version
 
 
 def test_app_version_regex() -> None:

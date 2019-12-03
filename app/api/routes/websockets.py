@@ -15,7 +15,7 @@ from app.services.events import EventsManager, get_events_manager
 router = APIRouter()
 
 
-@router.websocket("/clients/ws")
+@router.websocket("/service", name="ws:service")
 async def clients_websocket_endpoint(
     websocket: websockets.WebSocket,
     clients_manager: ClientsManager = Depends(get_clients_manager),
@@ -38,7 +38,7 @@ async def clients_websocket_endpoint(
             break
 
 
-@router.websocket("/api/ws")
+@router.websocket("/clients", name="ws:clients")
 async def api_websocket_endpoint(
     websocket: websockets.WebSocket,
     clients_manager: ClientsManager = Depends(get_clients_manager),

@@ -5,8 +5,13 @@ from typing import Dict, cast
 from loguru import logger
 from starlette import websockets
 
-from app.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from app.schemas.events.rest import Event, EventInResponse, EventType, PayloadInResponse
+from app.common.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
+from app.models.schemas.events.rest import (
+    Event,
+    EventInResponse,
+    EventType,
+    PayloadInResponse,
+)
 from app.services.computers import Client
 
 
