@@ -26,4 +26,4 @@ def test_client_websocket_connect_success(
         )
         data = websocket.receive_json()
         assert data.get("status") == "success"
-        assert isinstance(data.get("device_id"), UUID)
+        assert UUID(data.get("device_id"))
