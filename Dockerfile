@@ -16,4 +16,4 @@ RUN mkdir app && touch ./app/__init__.py && \
 
 COPY . .
 
-CMD uvicorn --host 0.0.0.0 app.main:app
+CMD alembic upgrade head && uvicorn --host 0.0.0.0 app.main:app
