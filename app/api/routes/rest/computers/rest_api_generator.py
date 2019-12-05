@@ -10,20 +10,10 @@ from starlette.websockets import WebSocketDisconnect
 from app.api.dependencies.rest_api import get_client
 from app.models.schemas.computers import details, execute, hardware, shutdown, software
 from app.models.schemas.events.rest import EventInRequest, EventType
-from app.services import clients, event_handlers
-from app.services.clients_manager import ClientsManager, get_clients_manager
+from app.services import clients
 from app.services.events_manager import EventsManager, get_events_manager
 
 router = APIRouter()
-
-
-@router.get("", response_model=List[details.ComputerInList], tags=["Devices"])
-async def computers_list(
-    clients_manager: ClientsManager = Depends(get_clients_manager),
-    events_manager: EventsManager = Depends(get_events_manager),
-) -> List[details.ComputerInList]:
-    return await event_handlers.clients_list(clients_manager, events_manager)
-
 
 APIModelT = TypeVar("APIModelT", bound=BaseModel,)
 EventModels = Tuple[Tuple[EventType, str, Type[APIModelT]], ...]
@@ -73,7 +63,6 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
             methods=[api_method],
             response_model=response_model,
             summary=str(api_event_type),
-            tags=["Devices"],
         )
 
 
