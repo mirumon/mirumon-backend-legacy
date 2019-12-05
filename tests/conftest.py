@@ -17,6 +17,7 @@ from tests.testing_helpers import FakePool, ping_postgres, pull_image
 POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
 environ["SECRET_KEY"] = "secret"
+environ["SHARED_TOKEN"] = "secret"
 
 USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", False)
 
