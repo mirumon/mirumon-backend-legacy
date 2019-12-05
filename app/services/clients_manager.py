@@ -1,6 +1,7 @@
 from typing import Dict, List
 
-from app.services.clients import Client, DeviceID
+from app.models.schemas.events.rest import DeviceID
+from app.services.clients import Client
 
 
 class ClientsManager:

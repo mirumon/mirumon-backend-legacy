@@ -1,8 +1,8 @@
 from fastapi import Depends, HTTPException
 from starlette import status
 
+from app.models.schemas.events.rest import DeviceID
 from app.services import clients
-from app.services.clients import DeviceID
 from app.services.clients_manager import ClientsManager, get_clients_manager
 
 

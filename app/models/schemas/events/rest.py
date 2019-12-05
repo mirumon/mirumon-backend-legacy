@@ -16,7 +16,6 @@ from app.models.schemas.computers.hardware import (
 )
 from app.models.schemas.computers.shutdown import Shutdown
 from app.models.schemas.computers.software import InstalledProgram
-from app.services.clients import DeviceID
 
 
 class EventType(str, Enum):  # noqa: WPS600
@@ -41,13 +40,15 @@ class EventType(str, Enum):  # noqa: WPS600
         return self.value
 
 
+DeviceID = UUID
+
+
 class Device(BaseModel):
     device_id: DeviceID
 
 
 EventParams = Union[Device, ExecuteCommand]
 SyncID = UUID
-
 Result = Union[
     List[ComputerInList],
     ComputerDetails,

@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from uuid import UUID
 
-from app.services.clients import DeviceID
+from pydantic import BaseModel
 
 
 class ExecuteCommand(BaseModel):
-    device_id: DeviceID
+    device_id: UUID
     command: str
 
 

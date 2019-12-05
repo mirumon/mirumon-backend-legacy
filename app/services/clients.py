@@ -1,11 +1,7 @@
-from uuid import UUID
-
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.models.schemas.events.rest import EventInRequest, EventInResponse
-
-DeviceID = UUID
+from app.models.schemas.events.rest import DeviceID, EventInRequest, EventInResponse
 
 
 class Client:

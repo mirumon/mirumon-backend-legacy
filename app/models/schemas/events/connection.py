@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from typing_extensions import Literal
 
-from app.services.clients_manager import DeviceID
+from app.models.schemas.events.rest import DeviceID
 
 
 class ConnectionEventType(str, Enum):  # noqa: WPS600
