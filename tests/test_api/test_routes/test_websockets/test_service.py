@@ -12,7 +12,7 @@ def test_client_websocket_connect_failed(
     ) as websocket:
         websocket.send_json({"mac-address": "123456789"})
         data = websocket.receive_json()
-        assert data == {"status": "failed"}
+        assert data.get("status") == "failed"
 
 
 def test_client_websocket_connect_success(
