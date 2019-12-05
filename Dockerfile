@@ -1,19 +1,21 @@
-FROM python:3.7.4
+FROM python:3.8.3
 
 ENV PYTHONUNBUFFERED 1
 EXPOSE 8000
 
 WORKDIR /app
 
+# for installing application from poetry
+RUN mkdir app && touch ./app/__init__.py && \
+    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_VERSION=1.0.10 python
+ENV PATH="${PATH}:/root/.poetry/bin"
+
 COPY poetry.lock .
 COPY pyproject.toml .
 
-# for installing application from poetry
-RUN mkdir app && touch ./app/__init__.py && \
-    pip install poetry && \
-    poetry config settings.virtualenvs.create false && \
+RUN poetry config virtualenvs.create false && \
     poetry install --no-dev
 
 COPY . .
 
-CMD uvicorn --host 0.0.0.0 app.main:app
+CMD alembic upgrade head && uvicorn --host 0.0.0.0 app.main:app
