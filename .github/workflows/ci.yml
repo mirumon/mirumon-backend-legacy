@@ -69,6 +69,7 @@ jobs:
       - name: Run tests with pytest
         env:
           SECRET_KEY: secret_key
+          SHARED_TOKEN: secret_key
           DB_CONNECTION: postgres://postgres:postgres@localhost/postgres
         run: |
             alembic upgrade head
