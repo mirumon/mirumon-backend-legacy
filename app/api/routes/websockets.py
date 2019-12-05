@@ -4,13 +4,14 @@ from pydantic import ValidationError
 from starlette import websockets
 from starlette.websockets import WebSocketDisconnect
 
-from app.services.computers import ClientsManager, get_clients_manager
+from app.models.schemas.events.rest import EventInRequestWS
+from app.services.clients_manager import ClientsManager, get_clients_manager
 from app.services.event_handlers import (
+    api_client_event_process,
     client_registration,
     process_incoming_event,
-    process_incoming_ws_event,
 )
-from app.services.events import EventsManager, get_events_manager
+from app.services.events_manager import EventsManager, get_events_manager
 
 router = APIRouter()
 
@@ -46,12 +47,18 @@ async def api_websocket_endpoint(
 ) -> None:
     await websocket.accept()
     while True:
+        payload = await websocket.receive_json()
         try:
-            await process_incoming_ws_event(websocket, clients_manager, events_manager)
+            event = EventInRequestWS(**payload)
         except ValidationError as validation_error:
             await websocket.send_text(validation_error.json())
+            continue
+        try:
+            await api_client_event_process(
+                event, websocket, clients_manager, events_manager
+            )
         except KeyError:
             await websocket.send_json({"error": "PC not found"})
         except WebSocketDisconnect:
-            logger.debug("ws api client [disconnected]")
+            logger.info("ws api client [disconnected]")
             break

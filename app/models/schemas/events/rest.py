@@ -1,14 +1,27 @@
 from enum import Enum
-from typing import Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.models.schemas.computers import details, hardware, shutdown, software
-from app.models.schemas.events.ws import WSEventType
+from app.models.schemas.computers.details import ComputerDetails, ComputerInList
+from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
+from app.models.schemas.computers.hardware import (
+    HardwareModel,
+    MotherBoardModel,
+    NetworkAdapterModel,
+    PhysicalDiskModel,
+    ProcessorModel,
+    VideoControllerModel,
+)
+from app.models.schemas.computers.shutdown import Shutdown
+from app.models.schemas.computers.software import InstalledProgram
+from app.services.clients import DeviceID
 
 
-class RestEventType(str, Enum):  # noqa: WPS600
+class EventType(str, Enum):  # noqa: WPS600
+    computers_list: str = "computers-list"
+
     details: str = "details"
 
     hardware: str = "hardware"
@@ -28,33 +41,53 @@ class RestEventType(str, Enum):  # noqa: WPS600
         return self.value
 
 
-PayloadInResponse = Union[
-    List[details.ComputerInList],
-    details.ComputerDetails,
-    hardware.HardwareModel,
-    hardware.MotherBoardModel,
-    List[hardware.NetworkAdapterModel],
-    List[hardware.PhysicalDiskModel],
-    List[hardware.ProcessorModel],
-    List[hardware.VideoControllerModel],
-    List[software.InstalledProgram],
-    shutdown.Shutdown,
+class Device(BaseModel):
+    device_id: DeviceID
+
+
+EventParams = Union[Device, ExecuteCommand]
+SyncID = UUID
+
+Result = Union[
+    List[ComputerInList],
+    ComputerDetails,
+    HardwareModel,
+    MotherBoardModel,
+    List[NetworkAdapterModel],
+    List[PhysicalDiskModel],
+    List[ProcessorModel],
+    List[VideoControllerModel],
+    List[InstalledProgram],
+    Shutdown,
+    ExecuteResult,
 ]
-
-EventType = Union[RestEventType, WSEventType]
-
-
-class Event(BaseModel):
-    type: EventType
-    id: UUID
 
 
 class EventInRequest(BaseModel):
-    event: Event
-    payload: Optional[Union[Dict, List]] = None
+    method: EventType
+    event_params: Optional[EventParams] = None
+    sync_id: SyncID
+
+
+class ErrorInResponse(BaseModel):
+    code: int
+    message: str
+    description: Any
 
 
 class EventInResponse(BaseModel):
-    event: Event
-    # fixme. must be optional. ClientsManager init it later
-    payload: Optional[PayloadInResponse]
+    # todo: add validate for payload only or error only
+    event_result: Optional[Result]
+    error: Optional[ErrorInResponse]
+    sync_id: SyncID
+
+
+class EventInRequestWS(BaseModel):
+    method: EventType
+    event_params: Optional[EventParams] = None
+
+
+class EventInResponseWS(BaseModel):
+    # todo: add validate for payload only or error only
+    event_result: Optional[Result]
+    error: Optional[ErrorInResponse]

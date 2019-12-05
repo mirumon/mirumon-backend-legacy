@@ -1,12 +1,16 @@
+from uuid import UUID
+
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
 from app.models.schemas.events.rest import EventInRequest, EventInResponse
 
+DeviceID = UUID
+
 
 class Client:
-    def __init__(self, mac_address: str, websocket: WebSocket) -> None:
-        self.mac_address = mac_address
+    def __init__(self, device_id: DeviceID, websocket: WebSocket) -> None:
+        self.device_id = device_id
         self.websocket = websocket
 
     async def send_event(self, event: EventInRequest) -> None:

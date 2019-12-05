@@ -1,6 +1,10 @@
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel
+from typing_extensions import Literal
+
+from app.services.clients_manager import DeviceID
 
 
 class ConnectionEventType(str, Enum):  # noqa: WPS600
@@ -12,15 +16,28 @@ class ConnectionEventType(str, Enum):  # noqa: WPS600
 
 
 class StatusType(str, Enum):  # noqa: WPS600
-    registration_success: str = "registration-success"
-    registration_failed: str = "registration-failed"
-    auth_success: str = "auth-success"
-    auth_failed: str = "auth-failed"
+    success: str = "success"
+    failed: str = "failed"
+
+    def __str__(self) -> str:
+        return self.value
 
 
-class Status(BaseModel):
+class RegistrationInRequest(BaseModel):
+    connection_type: Literal[ConnectionEventType.registration]
+    shared_token: str
+
+
+class RegistrationInResponse(BaseModel):
     status: StatusType
+    device_id: Optional[DeviceID]
 
-    # mypy complains about invalid overriding signature
-    def __str__(self) -> str:  # type: ignore
-        return self.status
+
+class AuthInRequest(BaseModel):
+    connection_type: Literal[ConnectionEventType.auth]
+    shared_token: str
+    device_id: DeviceID
+
+
+class AuthInResponse(BaseModel):
+    status: StatusType

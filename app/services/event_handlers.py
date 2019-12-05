@@ -1,36 +1,55 @@
+import uuid
 from typing import List, cast
 
 from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.models.schemas.computers.details import ComputerDetails, ComputerInList
-from app.models.schemas.events.connection import Status, StatusType
-from app.models.schemas.events.rest import EventInRequest
-from app.models.schemas.events.ws import (
-    WSEventInRequest,
-    WSEventInResponse,
-    WSEventType,
+from app.common import config
+from app.models.schemas.computers.details import ComputerInList
+from app.models.schemas.events.connection import (
+    RegistrationInRequest,
+    RegistrationInResponse,
+    StatusType,
+)
+from app.models.schemas.events.rest import (
+    EventInRequest,
+    EventInRequestWS,
+    EventInResponseWS,
+    EventType,
 )
 from app.services.clients import Client
-from app.services.computers import ClientsManager
-from app.services.events import EventsManager
+from app.services.clients_manager import ClientsManager
+from app.services.events_manager import EventsManager
+
+
+async def _close_connection_with_error(websocket: WebSocket) -> None:
+    await websocket.send_text(RegistrationInResponse(status=StatusType.failed).json())
+    await websocket.close()
+    raise WebSocketDisconnect
 
 
 async def client_registration(websocket: WebSocket) -> Client:
     payload = await websocket.receive_json()
     try:
-        computer = ComputerDetails(**payload)
+        registration_data = RegistrationInRequest(**payload)
     except ValidationError as wrong_schema_error:
-        logger.info(f"registration failed: {wrong_schema_error.json()}")
-        await websocket.send_text(Status(status=StatusType.registration_failed).json())
-        await websocket.close()
-        raise WebSocketDisconnect from wrong_schema_error
+        logger.info(f"validation error: {wrong_schema_error.json()}")
+        await _close_connection_with_error(websocket)
 
-    status = Status(status=StatusType.registration_success)
-    await websocket.send_text(status.json())
-    logger.info(status)
-    return Client(mac_address=computer.mac_address, websocket=websocket)
+    if registration_data.shared_token != config.SHARED_TOKEN:
+        logger.info(
+            f"registration failed! shared token: {registration_data.shared_token}"
+        )
+        await _close_connection_with_error(websocket)
+
+    device_id = uuid.uuid4()
+    registration_success = RegistrationInResponse(
+        status=StatusType.success, device_id=device_id
+    )
+    logger.info(f"registration success! generated device_id: {device_id}")
+    await websocket.send_text(registration_success.json())
+    return Client(device_id=device_id, websocket=websocket)
 
 
 async def clients_list(
@@ -38,11 +57,13 @@ async def clients_list(
 ) -> List[ComputerInList]:
     computers = []
     for client in clients_manager.clients:
-        event = events_manager.generate_event(WSEventType.computers_list)
-        await client.send_event(EventInRequest(event=event))
+        sync_id = events_manager.register_event()
+        await client.send_event(
+            EventInRequest(method=EventType.computers_list, sync_id=sync_id)
+        )
         try:
             computer = await events_manager.wait_event_from_client(
-                event_id=event.id, client=client
+                sync_id=sync_id, client=client
             )
         except (WebSocketDisconnect, ValidationError):
             continue
@@ -51,45 +72,40 @@ async def clients_list(
 
 
 async def api_client_event_process(
-    event_request: WSEventInRequest,
+    event_request: EventInRequestWS,
     websocket: WebSocket,
     clients_manager: ClientsManager,
     events_manager: EventsManager,
 ) -> None:
-    if event_request.event_type == WSEventType.computers_list:
-        event_payload: List[ComputerInList] = await clients_list(
-            clients_manager, events_manager
+    if event_request.method == EventType.computers_list:
+        event_payload = await clients_list(clients_manager, events_manager)
+    elif event_request.event_params is not None:
+        device_id = event_request.event_params.device_id
+
+        client = clients_manager.get_client(device_id)
+        sync_id = events_manager.register_event()
+
+        await client.send_event(
+            EventInRequest(
+                method=event_request.method,
+                event_params=event_request.event_params,
+                sync_id=sync_id,
+            )
         )
-    elif event_request.payload:
-        mac_address = event_request.payload.computer_id
-
-        client = clients_manager.get_client(mac_address)
-        event = events_manager.generate_event(event_request.event_type)
-
-        await client.send_event(EventInRequest(event=event))
         event_payload = await events_manager.wait_event_from_client(  # type: ignore
-            event_id=event.id, client=client
+            sync_id=sync_id, client=client
         )
     else:
         raise ValidationError(
-            f"computer_id is required for event {event_request.event_type}",
-            WSEventInRequest,
+            f"device_id is required param for event {event_request.method}",
+            EventInRequest,
         )
-    event_response = WSEventInResponse(
-        event_type=event_request.event_type, payload=event_payload
-    )
+    event_response = EventInResponseWS(event_result=event_payload)
     await websocket.send_text(event_response.json())
 
 
 async def process_incoming_event(client: Client, manager: EventsManager) -> None:
     event_response = await client.read_event()
-    manager.set_event_response(event_id=event_response.event.id, event=event_response)
-
-
-async def process_incoming_ws_event(
-    websocket: WebSocket, clients_manager: ClientsManager, events_manager: EventsManager
-) -> None:
-    payload = await websocket.receive_json()
-    logger.debug(payload)
-    event = WSEventInRequest(**payload)
-    await api_client_event_process(event, websocket, clients_manager, events_manager)
+    manager.set_event_response(
+        sync_id=event_response.sync_id, event_response=event_response
+    )

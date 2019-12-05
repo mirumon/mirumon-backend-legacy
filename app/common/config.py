@@ -20,6 +20,7 @@ config = Config(".env")
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 DATABASE_URL: DatabaseURL = config("DB_CONNECTION", cast=DatabaseURL)
 SECRET_KEY: Secret = config("SECRET_KEY", cast=Secret)
+SHARED_TOKEN = config("SHARED_TOKEN", cast=str)
 
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 
