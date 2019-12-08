@@ -24,7 +24,9 @@ from app.services.events_manager import EventsManager
 
 
 async def _close_connection_with_error(websocket: WebSocket) -> None:
-    await websocket.send_text(RegistrationInResponse(status=StatusType.failed).json())
+    await websocket.send_text(
+        RegistrationInResponse(status=StatusType.failed).json(exclude_none=True)
+    )
     await websocket.close()
     raise WebSocketDisconnect
 

@@ -4,18 +4,48 @@ from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 
-def test_client_websocket_connect_failed(
-    app: FastAPI, websocket_client: TestClient
-) -> None:
+def test_device_registration_failed(app: FastAPI, websocket_client: TestClient) -> None:
     with websocket_client.websocket_connect(
         app.url_path_for("ws:service")
     ) as websocket:
-        websocket.send_json({"mac-address": "123456789"})
+        websocket.send_json({"connection_type": "registration", "shared_token": None})
         data = websocket.receive_json()
-        assert data.get("status") == "failed"
+        assert data == {"status": "failed"}
+
+    with websocket_client.websocket_connect(
+        app.url_path_for("ws:service")
+    ) as websocket:
+        websocket.send_json({"connection_type": "registration"},)
+        data = websocket.receive_json()
+        assert data == {"status": "failed"}
+
+    with websocket_client.websocket_connect(
+        app.url_path_for("ws:service")
+    ) as websocket:
+        websocket.send_json({"shared_token": "secret"})
+        data = websocket.receive_json()
+        assert data == {"status": "failed"}
+
+    with websocket_client.websocket_connect(
+        app.url_path_for("ws:service")
+    ) as websocket:
+        websocket.send_json(
+            {"connection_type": "registration", "shared_token": "qwerty123"}
+        )
+        data = websocket.receive_json()
+        assert data == {"status": "failed"}
+
+    with websocket_client.websocket_connect(
+        app.url_path_for("ws:service")
+    ) as websocket:
+        websocket.send_json(
+            {"connection_type": "registrateon", "shared_token": "secret"},
+        )
+        data = websocket.receive_json()
+        assert data == {"status": "failed"}
 
 
-def test_client_websocket_connect_success(
+def test_device_registration_success(
     app: FastAPI, websocket_client: TestClient
 ) -> None:
     with websocket_client.websocket_connect(
