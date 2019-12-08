@@ -11,11 +11,13 @@ from app.common.versions import get_app_version
 
 APP_VERSION = get_app_version()
 
-REST_SLEEP_TIME = 0.5
-REST_MAX_RESPONSE_TIME = 20.0
 JWT_TOKEN_TYPE: str = "Bearer"
+REST_SLEEP_TIME = 0.5
+
 
 config = Config(".env")
+
+REST_MAX_RESPONSE_TIME = config("REST_MAX_RESPONSE_TIME", cast=float, default=20.0)
 
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 DATABASE_URL: DatabaseURL = config("DB_CONNECTION", cast=DatabaseURL)

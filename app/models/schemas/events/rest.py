@@ -50,6 +50,20 @@ class Device(BaseModel):
 EventParams = Union[Device, ExecuteCommand]
 SyncID = UUID
 Result = Union[
+    ComputerInList,
+    ComputerDetails,
+    HardwareModel,
+    MotherBoardModel,
+    List[NetworkAdapterModel],
+    List[PhysicalDiskModel],
+    List[ProcessorModel],
+    List[VideoControllerModel],
+    List[InstalledProgram],
+    Shutdown,
+    ExecuteResult,
+]
+
+ResultWS = Union[
     List[ComputerInList],
     ComputerDetails,
     HardwareModel,
@@ -90,5 +104,5 @@ class EventInRequestWS(BaseModel):
 
 class EventInResponseWS(BaseModel):
     # todo: add validate for payload only or error only
-    event_result: Optional[Result]
+    event_result: Optional[ResultWS]
     error: Optional[ErrorInResponse]

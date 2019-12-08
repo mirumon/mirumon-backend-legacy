@@ -107,7 +107,9 @@ async def api_client_event_process(
 
 
 async def process_incoming_event(client: Client, manager: EventsManager) -> None:
+    logger.error("start reading event from client")
     event_response = await client.read_event()
+    logger.error("read response. start set...")
     manager.set_event_response(
         sync_id=event_response.sync_id, event_response=event_response
     )

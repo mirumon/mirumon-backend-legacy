@@ -32,10 +32,14 @@ class EventsManager:
     def set_event_response(
         self, sync_id: SyncID, event_response: EventInResponse
     ) -> None:
+        logger.error("here")
         if sync_id not in self._registered_events:
+            logger.error("key error")
             raise KeyError("unregistered event")
         self._events_responses[sync_id] = event_response
+        logger.error(event_response)
         self._asyncio_events[sync_id].set()
+        logger.error(sync_id)
 
     async def wait_event_from_client(self, sync_id: SyncID, client: Client) -> Result:
         event = asyncio.Event()
@@ -47,10 +51,10 @@ class EventsManager:
                 await asyncio.wait_for(event.wait(), REST_SLEEP_TIME)
             except asyncio.futures.TimeoutError:
                 if not client.is_connected:
-                    logger.debug("client disconnected while waiting event")
+                    logger.error("client disconnected while waiting event")
                     raise websockets.WebSocketDisconnect(code=ABNORMAL_CLOSURE)
                 if not response_time:
-                    logger.debug("client disconnected while waiting event")
+                    logger.error("response timeout while waiting event")
                     raise websockets.WebSocketDisconnect(code=TRY_AGAIN_LATER)
         return cast(Result, self.pop_event(sync_id).event_result)
 

@@ -24,16 +24,22 @@ async def clients_websocket_endpoint(
 ) -> None:
     await websocket.accept()
     try:
+        # todo move to dependency
         client = await client_registration(websocket)
     except websockets.WebSocketDisconnect:
         return
     clients_manager.add_client(client)
     while True:
         try:
-            await process_incoming_event(client, events_manager)
+            logger.error("here")
+            await process_incoming_event(
+                clients_manager.get_client(client.device_id), events_manager
+            )
         except ValidationError as error:
+            logger.error(error.json())
             await websocket.send_text(error.json())
         except websockets.WebSocketDisconnect:
+            logger.error("disconnected")
             await client.close()
             clients_manager.remove_client(client)
             break
