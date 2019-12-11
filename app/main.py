@@ -6,6 +6,8 @@ from app.common.events import (
     create_shutdown_events_handler,
     create_startup_events_handler,
 )
+from app.services.clients_manager import ClientsManager
+from app.services.events_manager import EventsManager
 
 
 def get_application() -> FastAPI:
@@ -17,6 +19,9 @@ def get_application() -> FastAPI:
     application.add_event_handler(
         "shutdown", create_shutdown_events_handler(application)
     )
+
+    application.state.clients_manager = ClientsManager()
+    application.state.events_manager = EventsManager()
 
     return application
 

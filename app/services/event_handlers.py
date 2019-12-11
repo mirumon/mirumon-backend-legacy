@@ -1,4 +1,5 @@
 import uuid
+from json import JSONDecodeError
 from typing import List, cast
 
 from loguru import logger
@@ -32,7 +33,12 @@ async def _close_connection_with_error(websocket: WebSocket) -> None:
 
 
 async def client_registration(websocket: WebSocket) -> Client:
-    payload = await websocket.receive_json()
+    try:
+        payload = await websocket.receive_json()
+    except JSONDecodeError as json_error:
+        logger.info(f"json parsing error: {json_error.args}")
+        await _close_connection_with_error(websocket)
+
     try:
         registration_data = RegistrationInRequest(**payload)
     except ValidationError as wrong_schema_error:

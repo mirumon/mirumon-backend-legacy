@@ -1,7 +1,14 @@
+from typing import Any, Dict, List, Protocol
+
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
 from app.models.schemas.events.rest import DeviceID, EventInRequest, EventInResponse
+
+
+class ErrorProto(Protocol):
+    def errors(self) -> List[Dict[str, Any]]:
+        """Retrieve errors that can be send to client."""
 
 
 class Client:
@@ -14,6 +21,7 @@ class Client:
         await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
+        logger.error("start read_event in real client")
         payload = await self.websocket.receive_json()
         logger.debug(payload)
         return EventInResponse(**payload)
@@ -29,3 +37,6 @@ class Client:
                 self.websocket.scope.get("client"), self.websocket.scope.get("raw_path")
             )
         )
+
+    async def send_error(self, error: ErrorProto) -> None:
+        await self.websocket.send_json(error.errors())

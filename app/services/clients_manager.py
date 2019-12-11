@@ -24,10 +24,3 @@ class ClientsManager:
     @property
     def clients(self) -> List[Client]:
         return list(self._clients.values())
-
-
-_clients_manager = ClientsManager()
-
-
-def get_clients_manager() -> ClientsManager:
-    return _clients_manager

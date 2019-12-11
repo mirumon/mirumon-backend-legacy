@@ -1,5 +1,4 @@
 from os import environ, getenv
-from uuid import UUID
 
 import pytest
 from asgi_lifespan import LifespanManager
@@ -7,11 +6,9 @@ from asyncpg import Connection
 from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from httpx import Client
-from loguru import logger
 from starlette.testclient import TestClient
 
-from app.services.clients_manager import get_clients_manager
-from tests.testing_helpers import FakeClient, FakePool, get_fake_clients_manager
+from tests.testing_helpers import FakePool
 
 POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
@@ -65,6 +62,12 @@ USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", True)
 @pytest.fixture(autouse=True)
 async def client(app: FastAPI) -> Client:
     async with LifespanManager(app):
+        startup = app.router.lifespan.startup_handlers
+        shutdown = app.router.lifespan.shutdown_handlers
+
+        app.router.lifespan.startup_handlers = []
+        app.router.lifespan.shutdown_handlers = []
+
         app.state.pool = await FakePool.create_pool(app.state.pool)
         connection: Connection
         async with app.state.pool.acquire() as connection:
@@ -79,6 +82,9 @@ async def client(app: FastAPI) -> Client:
             await transaction.rollback()
         await app.state.pool.close()
 
+        app.router.lifespan.startup_handlers = startup
+        app.router.lifespan.shutdown_handlers = shutdown
+
 
 @pytest.fixture
 def app() -> FastAPI:
@@ -88,37 +94,6 @@ def app() -> FastAPI:
 
 
 @pytest.fixture
-def fake_app() -> FastAPI:
-    from app.main import get_application  # local import for testing purpose
-
-    app = get_application()
-    app.dependency_overrides[get_clients_manager] = get_fake_clients_manager
-    return app
-
-
-@pytest.fixture
-def websocket_client(app: FastAPI) -> None:
+def test_client(app: FastAPI) -> None:
     with TestClient(app) as client:
         yield client
-
-
-@pytest.fixture
-def rest_client(app: FastAPI) -> None:
-    with TestClient(app) as client:
-        yield client
-
-
-@pytest.fixture
-def fake_device_client(app: FastAPI, websocket_client: TestClient) -> None:
-    websocket = websocket_client.websocket_connect(app.url_path_for("ws:service"))
-    websocket.send_json({"connection_type": "registration", "shared_token": "secret"})
-    data = websocket.receive_json()
-    manager = get_clients_manager()
-    device_id = UUID(data["device_id"])
-    client = manager.get_client(device_id)
-    manager.remove_client(client)
-    logger.error(f"first client ws: {client.websocket}")
-    fake_client = FakeClient(device_id=device_id, websocket=client.websocket)
-    manager.add_client(fake_client)
-    assert fake_client.websocket == manager.clients[0].websocket
-    yield fake_client

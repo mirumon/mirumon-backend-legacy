@@ -49,7 +49,7 @@ class EventsManager:
             response_time -= REST_SLEEP_TIME
             try:
                 await asyncio.wait_for(event.wait(), REST_SLEEP_TIME)
-            except asyncio.futures.TimeoutError:
+            except asyncio.TimeoutError:
                 if not client.is_connected:
                     logger.error("client disconnected while waiting event")
                     raise websockets.WebSocketDisconnect(code=ABNORMAL_CLOSURE)
@@ -62,10 +62,3 @@ class EventsManager:
         self._registered_events.remove(sync_id)
         self._asyncio_events.pop(sync_id)
         return self._events_responses.pop(sync_id)
-
-
-_events_manager = EventsManager()
-
-
-def get_events_manager() -> EventsManager:
-    return _events_manager

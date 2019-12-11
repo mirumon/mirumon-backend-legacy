@@ -17,7 +17,9 @@ REST_SLEEP_TIME = 0.5
 
 config = Config(".env")
 
-REST_MAX_RESPONSE_TIME = config("REST_MAX_RESPONSE_TIME", cast=float, default=20.0)
+REST_MAX_RESPONSE_TIME = config(
+    "REST_MAX_RESPONSE_TIME", cast=float, default=5.0  # noqa: WPS432
+)
 
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 DATABASE_URL: DatabaseURL = config("DB_CONNECTION", cast=DatabaseURL)

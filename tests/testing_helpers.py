@@ -9,6 +9,7 @@ from asyncpg import Connection
 from asyncpg.pool import Pool
 from docker import APIClient
 from loguru import logger
+from starlette.websockets import WebSocketState
 
 from app.models.schemas.events.rest import DeviceID, EventInRequest, EventInResponse
 
@@ -18,9 +19,9 @@ def get_fake_clients_manager() -> None:
 
 
 class FakeClient:
-    def __init__(self, device_id: DeviceID, websocket):
+    def __init__(self, device_id: DeviceID, websocket, pc_ws):
         self.websocket = websocket
-        logger.error(self.websocket)
+        self.pc_ws = pc_ws
         self.fake_payloads = {
             "computers-list": {
                 "event_result": {
@@ -59,7 +60,6 @@ class FakeClient:
         }
         self.device_id = device_id
         self.last_event = None
-        self._is_connected = True
         logger.error(f"device id for fake: {device_id}")
 
     async def send_event(self, event: EventInRequest) -> None:
@@ -67,21 +67,24 @@ class FakeClient:
         logger.error(event.dict())
         logger.error(f"client ws: {self.websocket}")
         await self.websocket.send_text(event.json())
+        await self.pc_ws.receive_json()
+        await self.pc_ws.send_text('{"fake":"json"}')
 
     async def read_event(self) -> EventInResponse:
-        logger.error("hui")
+        logger.error("start read_event in FAKE client")
+        await self.websocket.receive_json()
+        logger.error("ITS FUCKING WORK")
         payload = self.fake_payloads[self.last_event.method]
         r = EventInResponse(**payload, sync_id=self.last_event.sync_id)
-        logger.error(r.dict())
-        await self.websocket.send_text(r.json())
+        logger.error(r)
         return r
 
     @property
     def is_connected(self) -> bool:
-        return self._is_connected
+        return self.websocket.client_state.value == WebSocketState.CONNECTED.value
 
     async def close(self, code: int) -> None:
-        self._is_connected = False
+        await self.websocket.close(code)
 
 
 class FakePoolAcquireContext:
