@@ -11,7 +11,6 @@ class UserInLogin(BaseModel):
 
 
 class UserInCreate(UserInLogin):
-    username: str
     scopes: List[Scopes] = []
 
 

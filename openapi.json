@@ -1,0 +1,1421 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Mirumon service",
+    "version": "0.0.10"
+  },
+  "paths": {
+    "/computers": {
+      "get": {
+        "tags": [
+          "PC List"
+        ],
+        "summary": "Computers List",
+        "operationId": "computers_list_computers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Computers List Computers Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComputerInList"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/details": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event details",
+        "operationId": "generic_api_route_computers__mac_address__details_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComputerDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware",
+        "operationId": "generic_api_route_computers__mac_address__hardware_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HardwareModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware:motherboard": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware:motherboard",
+        "operationId": "generic_api_route_computers__mac_address__hardware:motherboard_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MotherBoardModel"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware:cpu": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware:cpu",
+        "operationId": "generic_api_route_computers__mac_address__hardware:cpu_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generic Api Route Computers  Mac Address  Hardware:Cpu Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcessorModel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware:gpu": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware:gpu",
+        "operationId": "generic_api_route_computers__mac_address__hardware:gpu_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generic Api Route Computers  Mac Address  Hardware:Gpu Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VideoControllerModel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware:network": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware:network",
+        "operationId": "generic_api_route_computers__mac_address__hardware:network_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generic Api Route Computers  Mac Address  Hardware:Network Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NetworkAdapterModel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/hardware:disks": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event hardware:disks",
+        "operationId": "generic_api_route_computers__mac_address__hardware:disks_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generic Api Route Computers  Mac Address  Hardware:Disks Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhysicalDiskModel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/installed-programs": {
+      "get": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event installed-programs",
+        "operationId": "generic_api_route_computers__mac_address__installed-programs_get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Generic Api Route Computers  Mac Address  Installed-Programs Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InstalledProgram"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/shutdown": {
+      "post": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event shutdown",
+        "operationId": "generic_api_route_computers__mac_address__shutdown_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shutdown"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computers/{mac_address}/execute": {
+      "post": {
+        "tags": [
+          "PC Events"
+        ],
+        "summary": "Computer Event execute",
+        "operationId": "generic_api_route_computers__mac_address__execute_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Mac Address",
+              "type": "string"
+            },
+            "name": "mac_address",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecuteResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Auth:Login",
+        "operationId": "auth:login_users_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_auth_login_users_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JWTToken"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Users:List",
+        "operationId": "users:list_users_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 20
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "minimum": 0.0,
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Users:List Users Get",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserInResponse"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin:view"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Auth:Register",
+        "operationId": "auth:register_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin:edit"
+            ]
+          }
+        ]
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Users:Retrieve",
+        "operationId": "users:retrieve_users__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin:view"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Users:Update",
+        "operationId": "users:update_users__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin:edit"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Users:Delete",
+        "operationId": "users:delete_users__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin:edit"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_auth_login_users_login_post": {
+        "title": "Body_auth:login_users_login_post",
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "grant_type": {
+            "title": "Grant Type",
+            "pattern": "password",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string",
+            "default": ""
+          },
+          "client_id": {
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string"
+          }
+        }
+      },
+      "ComputerDetails": {
+        "title": "ComputerDetails",
+        "required": [
+          "mac_address",
+          "name",
+          "domain",
+          "current_user",
+          "os"
+        ],
+        "type": "object",
+        "properties": {
+          "mac_address": {
+            "title": "Mac Address",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "workgroup": {
+            "title": "Workgroup",
+            "type": "string"
+          },
+          "current_user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "os": {
+            "title": "Os",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OperatingSystem"
+            }
+          }
+        }
+      },
+      "ComputerInList": {
+        "title": "ComputerInList",
+        "required": [
+          "mac_address",
+          "name",
+          "username",
+          "domain"
+        ],
+        "type": "object",
+        "properties": {
+          "mac_address": {
+            "title": "Mac Address",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "workgroup": {
+            "title": "Workgroup",
+            "type": "string"
+          }
+        }
+      },
+      "ExecuteResult": {
+        "title": "ExecuteResult",
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "HardwareModel": {
+        "title": "HardwareModel",
+        "required": [
+          "motherboard",
+          "cpu",
+          "gpu",
+          "network",
+          "disks"
+        ],
+        "type": "object",
+        "properties": {
+          "motherboard": {
+            "$ref": "#/components/schemas/MotherBoardModel"
+          },
+          "cpu": {
+            "title": "Cpu",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcessorModel"
+            }
+          },
+          "gpu": {
+            "title": "Gpu",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoControllerModel"
+            }
+          },
+          "network": {
+            "title": "Network",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NetworkAdapterModel"
+            }
+          },
+          "disks": {
+            "title": "Disks",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhysicalDiskModel"
+            }
+          }
+        }
+      },
+      "InstalledProgram": {
+        "title": "InstalledProgram",
+        "required": [
+          "name",
+          "vendor",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "vendor": {
+            "title": "Vendor",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        }
+      },
+      "JWTToken": {
+        "title": "JWTToken",
+        "required": [
+          "access_token",
+          "token_type"
+        ],
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "token_type": {
+            "title": "Token Type",
+            "type": "string"
+          }
+        }
+      },
+      "MotherBoardModel": {
+        "title": "MotherBoardModel",
+        "required": [
+          "name",
+          "caption",
+          "status",
+          "product",
+          "serial_number"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "product": {
+            "title": "Product",
+            "type": "string"
+          },
+          "serial_number": {
+            "title": "Serial Number",
+            "type": "string"
+          }
+        }
+      },
+      "NetworkAdapterModel": {
+        "title": "NetworkAdapterModel",
+        "required": [
+          "description",
+          "mac_address",
+          "ip_addresses"
+        ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "mac_address": {
+            "title": "Mac Address",
+            "type": "string"
+          },
+          "ip_addresses": {
+            "title": "Ip Addresses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "OperatingSystem": {
+        "title": "OperatingSystem",
+        "required": [
+          "caption",
+          "version",
+          "build_number",
+          "os_architecture",
+          "serial_number",
+          "product_type",
+          "number_of_users",
+          "install_date"
+        ],
+        "type": "object",
+        "properties": {
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          },
+          "build_number": {
+            "title": "Build Number",
+            "type": "string"
+          },
+          "os_architecture": {
+            "title": "Os Architecture",
+            "type": "string"
+          },
+          "serial_number": {
+            "title": "Serial Number",
+            "type": "string"
+          },
+          "product_type": {
+            "title": "Product Type",
+            "type": "string"
+          },
+          "number_of_users": {
+            "title": "Number Of Users",
+            "type": "integer"
+          },
+          "install_date": {
+            "title": "Install Date",
+            "type": "string"
+          }
+        }
+      },
+      "PhysicalDiskModel": {
+        "title": "PhysicalDiskModel",
+        "required": [
+          "status",
+          "caption",
+          "size",
+          "description",
+          "partitions"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "serial_number": {
+            "title": "Serial Number",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "number"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "partitions": {
+            "title": "Partitions",
+            "type": "integer"
+          }
+        }
+      },
+      "ProcessorModel": {
+        "title": "ProcessorModel",
+        "required": [
+          "status",
+          "name",
+          "caption",
+          "current_clock_speed",
+          "virtualization_firmware_enabled",
+          "load_percentage",
+          "number_of_cores",
+          "number_of_enabled_core",
+          "number_of_logical_processors"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "current_clock_speed": {
+            "title": "Current Clock Speed",
+            "type": "string"
+          },
+          "current_cthread_countlock_speed": {
+            "title": "Current Cthread Countlock Speed",
+            "type": "integer"
+          },
+          "virtualization_firmware_enabled": {
+            "title": "Virtualization Firmware Enabled",
+            "type": "boolean"
+          },
+          "load_percentage": {
+            "title": "Load Percentage",
+            "type": "integer"
+          },
+          "number_of_cores": {
+            "title": "Number Of Cores",
+            "type": "integer"
+          },
+          "number_of_enabled_core": {
+            "title": "Number Of Enabled Core",
+            "type": "integer"
+          },
+          "number_of_logical_processors": {
+            "title": "Number Of Logical Processors",
+            "type": "integer"
+          }
+        }
+      },
+      "Shutdown": {
+        "title": "Shutdown",
+        "required": [
+          "shutdown"
+        ],
+        "type": "object",
+        "properties": {
+          "shutdown": {
+            "title": "Shutdown",
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "title": "User",
+        "required": [
+          "name",
+          "domain",
+          "fullname"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "fullname": {
+            "title": "Fullname",
+            "type": "string"
+          }
+        }
+      },
+      "UserInCreate": {
+        "title": "UserInCreate",
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "users:execute",
+                    "users:read"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "enum": [
+                    "admin:view",
+                    "admin:edit"
+                  ],
+                  "type": "string"
+                }
+              ]
+            },
+            "default": []
+          }
+        }
+      },
+      "UserInResponse": {
+        "title": "UserInResponse",
+        "required": [
+          "username",
+          "scopes"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "users:execute",
+                    "users:read"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "enum": [
+                    "admin:view",
+                    "admin:edit"
+                  ],
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "UserInUpdate": {
+        "title": "UserInUpdate",
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "scopes": {
+            "title": "Scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      },
+      "VideoControllerModel": {
+        "title": "VideoControllerModel",
+        "required": [
+          "status",
+          "name",
+          "caption",
+          "driver_version",
+          "driver_date",
+          "video_mode_description",
+          "current_vertical_resolution"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "driver_version": {
+            "title": "Driver Version",
+            "type": "string"
+          },
+          "driver_date": {
+            "title": "Driver Date",
+            "type": "string"
+          },
+          "video_mode_description": {
+            "title": "Video Mode Description",
+            "type": "string"
+          },
+          "current_vertical_resolution": {
+            "title": "Current Vertical Resolution",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {
+              "users:read": "Retrieve information about devices",
+              "users:execute": "Run commands on device",
+              "admin:view": "View information about users or groups",
+              "admin:edit": "Change information about users or groups"
+            },
+            "tokenUrl": "/users/login"
+          }
+        }
+      }
+    }
+  }
+}

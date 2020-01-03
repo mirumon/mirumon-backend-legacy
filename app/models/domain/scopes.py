@@ -12,4 +12,4 @@ class AdministrationScopes(str, Enum):  # noqa: WPS600
     edit: str = "admin:edit"
 
 
-Scopes = Union[UserScopes, AdministrationScopes, str]
+Scopes = Union[UserScopes, AdministrationScopes,]
