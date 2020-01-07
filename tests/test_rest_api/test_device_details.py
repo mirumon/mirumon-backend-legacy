@@ -1,4 +1,3 @@
-import uuid
 from typing import Any
 
 from fastapi import FastAPI
@@ -52,30 +51,3 @@ def test_device_details(
     )
     assert response.status_code == 200
     assert response.json() == details_payload
-
-
-def test_device_not_found(
-    app: FastAPI, test_client: TestClient, device_ws: Any, details_payload: dict
-) -> None:
-    api_url = app.url_path_for(
-        name="events:details", device_id="414912ac-6a9d-49bf-bb41-bc4d002e0a09"
-    )
-    response = test_client.get(api_url)
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "device not found"}
-
-
-def test_device_bad_payload(
-    app: FastAPI, test_client: TestClient, device_ws: Any, details_payload: dict
-) -> None:
-    device_ws.send_json({"bad": "payload"})
-    device_ws.receive_json()
-    response_payload = device_ws.receive_json()
-    assert response_payload == [
-        {"loc": ["sync_id"], "msg": "field required", "type": "value_error.missing"}
-    ]
-
-    device_ws.send_json({"sync_id": str(uuid.uuid4())})
-    response_payload = device_ws.receive_json()
-    assert response_payload == [{"error": "unregistered event"}]
