@@ -19,7 +19,6 @@ router = APIRouter()
     name="events:list",
     response_model=List[details.ComputerInList],
     summary="Devices List",
-    tags=["Devices"],
 )
 async def computers_list(
     clients_manager: ClientsManager = Depends(clients_manager_retriever()),

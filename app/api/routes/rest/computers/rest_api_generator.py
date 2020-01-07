@@ -72,7 +72,7 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
             _generate_generic_api_route(api_event_type),
             methods=[api_method],
             response_model=response_model,
-            summary=str(api_event_type),
+            summary=f"Device {api_event_type.capitalize()}",
             name=f"events:{api_event_type}",
         )
 
