@@ -16,6 +16,7 @@ router = APIRouter()
 
 @router.get(
     "",
+    name="events:list",
     response_model=List[details.ComputerInList],
     summary="Devices List",
     tags=["Devices"],

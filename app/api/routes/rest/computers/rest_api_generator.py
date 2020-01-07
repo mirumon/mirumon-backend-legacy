@@ -30,7 +30,6 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
                 client: clients.Client = Depends(get_client),
                 events_manager: EventsManager = Depends(events_manager_retriever()),
             ) -> response_model:  # type: ignore
-                sync_id = events_manager.register_event()
                 try:
                     payload = (
                         await request.json()
@@ -44,7 +43,9 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
                     )
                 try:
                     event_payload = EventInRequest(
-                        method=event_type, event_params=payload, sync_id=sync_id
+                        method=event_type,
+                        event_params=payload,
+                        sync_id=events_manager.register_event(),
                     )
                 except ValidationError as payload_error:
                     raise HTTPException(
@@ -54,7 +55,7 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
                 await client.send_event(event_payload)
                 try:
                     return await events_manager.wait_event_from_client(
-                        sync_id=sync_id, client=client
+                        sync_id=event_payload.sync_id, client=client
                     )
                 except WebSocketDisconnect:
                     raise HTTPException(

@@ -21,7 +21,6 @@ class Client:
         await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
-        logger.error("start read_event in real client")
         payload = await self.websocket.receive_json()
         logger.debug(payload)
         return EventInResponse(**payload)
@@ -39,4 +38,6 @@ class Client:
         )
 
     async def send_error(self, error: ErrorProto) -> None:
-        await self.websocket.send_json(error.errors())
+        errors = error.errors()
+        logger.bind(payload=errors).error("client payload error")
+        await self.websocket.send_json(errors)

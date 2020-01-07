@@ -4,15 +4,18 @@ from pydantic import ValidationError
 from starlette import websockets
 from starlette.websockets import WebSocketDisconnect
 
-from app.api.dependencies.clients import process_registered_client
 from app.api.dependencies.managers import (
     clients_manager_retriever,
     events_manager_retriever,
 )
+from app.api.dependencies.websockets import get_accepted_websocket
 from app.models.schemas.events.rest import EventInRequestWS
-from app.services.clients import Client
 from app.services.clients_manager import ClientsManager
-from app.services.event_handlers import api_client_event_process, process_incoming_event
+from app.services.event_handlers import (
+    api_client_event_process,
+    client_registration,
+    process_incoming_event,
+)
 from app.services.events_manager import EventsManager
 
 router = APIRouter()
@@ -23,16 +26,23 @@ async def clients_websocket_endpoint(
     events_manager: EventsManager = Depends(
         events_manager_retriever(for_websocket=True)
     ),
-    client: Client = Depends(process_registered_client),
+    websocket: websockets.WebSocket = Depends(get_accepted_websocket),
+    manager: ClientsManager = Depends(clients_manager_retriever(for_websocket=True)),
 ) -> None:
+    try:
+        client = await client_registration(websocket)
+    except ValueError:
+        return
+
+    manager.add_client(client)
     while True:
         try:
             await process_incoming_event(client, events_manager)
         except ValidationError as error:
-            logger.bind(payload=error.errors()).error("client payload error")
             await client.send_error(error)
         except websockets.WebSocketDisconnect:
             logger.error("client disconnected")
+            manager.remove_client(client)
             return
 
 
@@ -61,5 +71,9 @@ async def api_websocket_endpoint(
         except KeyError:
             await websocket.send_json({"error": "device not found"})
         except WebSocketDisconnect:
-            logger.info("ws api client [disconnected]")
+            logger.info(
+                "{0} WebSocket Api Client {1} [closed]".format(
+                    websocket.scope.get("client"), websocket.scope.get("raw_path")
+                )
+            )
             break

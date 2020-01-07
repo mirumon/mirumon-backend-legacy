@@ -7,17 +7,17 @@ from app.services.clients_manager import ClientsManager
 from app.services.events_manager import EventsManager
 
 
-def clients_manager_retriever(for_websocket: bool = False) -> Callable:  # type: ignore
+def clients_manager_retriever(for_websocket: bool = False) -> Callable:
     return (
-        _get_clients_manager_for_http
+        _get_clients_manager_for_http  # type: ignore
         if not for_websocket
         else _get_clients_manager_for_websockets
     )
 
 
-def events_manager_retriever(for_websocket: bool = False) -> Callable:  # type: ignore
+def events_manager_retriever(for_websocket: bool = False) -> Callable:
     return (
-        _get_events_manager_for_http
+        _get_events_manager_for_http  # type: ignore
         if not for_websocket
         else _get_events_manager_for_websockets
     )

@@ -19,8 +19,7 @@ from app.models.schemas.events.rest import (
     EventInResponseWS,
     EventType,
 )
-from app.services.clients import Client
-from app.services.clients_manager import ClientsManager
+from app.services.clients_manager import Client, ClientsManager
 from app.services.events_manager import EventsManager
 
 
@@ -29,24 +28,24 @@ async def _close_connection_with_error(websocket: WebSocket) -> None:
         RegistrationInResponse(status=StatusType.failed).json(exclude_none=True)
     )
     await websocket.close()
-    raise WebSocketDisconnect
+    raise ValueError
 
 
 async def client_registration(websocket: WebSocket) -> Client:
     try:
         payload = await websocket.receive_json()
     except JSONDecodeError as json_error:
-        logger.info(f"json parsing error: {json_error.args}")
+        logger.warning(f"json parsing error: {json_error.args}")
         await _close_connection_with_error(websocket)
 
     try:
         registration_data = RegistrationInRequest(**payload)
     except ValidationError as wrong_schema_error:
-        logger.info(f"validation error: {wrong_schema_error.json()}")
+        logger.warning(f"validation error: {wrong_schema_error.json()}")
         await _close_connection_with_error(websocket)
 
     if registration_data.shared_token != config.SHARED_TOKEN:
-        logger.info(
+        logger.warning(
             f"registration failed! shared token: {registration_data.shared_token}"
         )
         await _close_connection_with_error(websocket)
@@ -113,9 +112,7 @@ async def api_client_event_process(
 
 
 async def process_incoming_event(client: Client, manager: EventsManager) -> None:
-    logger.error("start reading event from client")
     event_response = await client.read_event()
-    logger.error("read response. start set...")
     manager.set_event_response(
         sync_id=event_response.sync_id, event_response=event_response
     )
