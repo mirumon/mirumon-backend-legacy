@@ -1,3 +1,4 @@
+import uuid
 from typing import Any
 
 from fastapi import FastAPI
@@ -74,3 +75,7 @@ def test_device_bad_payload(
     assert response_payload == [
         {"loc": ["sync_id"], "msg": "field required", "type": "value_error.missing"}
     ]
+
+    device_ws.send_json({"sync_id": str(uuid.uuid4())})
+    response_payload = device_ws.receive_json()
+    assert response_payload == [{"error": "unregistered event"}]

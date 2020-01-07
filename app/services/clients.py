@@ -3,7 +3,8 @@ from typing import Any, Dict, List, Protocol
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.models.schemas.events.rest import DeviceID, EventInRequest, EventInResponse
+from app.models.schemas.base import DeviceID
+from app.models.schemas.events.rest import EventInRequest, EventInResponse
 
 
 class ErrorProto(Protocol):
@@ -37,7 +38,6 @@ class Client:
             )
         )
 
-    async def send_error(self, error: ErrorProto) -> None:
-        errors = error.errors()
+    async def send_error(self, errors: List[Dict[str, Any]]) -> None:
         logger.bind(payload=errors).error("client payload error")
         await self.websocket.send_json(errors)

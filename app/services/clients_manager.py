@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from loguru import logger
 
-from app.models.schemas.events.rest import DeviceID
+from app.models.schemas.base import DeviceID
 from app.services.clients import Client
 
 

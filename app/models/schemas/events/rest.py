@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import Any, List, Optional, Union
-from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.models.schemas.base import DeviceID, BaseEventResponse, SyncID
 from app.models.schemas.computers.details import ComputerDetails, ComputerInList
 from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
 from app.models.schemas.computers.hardware import (
@@ -40,15 +40,11 @@ class EventType(str, Enum):  # noqa: WPS600
         return self.value
 
 
-DeviceID = UUID
-
-
 class Device(BaseModel):
     device_id: DeviceID
 
 
 EventParams = Union[Device, ExecuteCommand]
-SyncID = UUID
 Result = Union[
     ComputerInList,
     ComputerDetails,
@@ -90,8 +86,7 @@ class ErrorInResponse(BaseModel):
     description: Any
 
 
-class EventInResponse(BaseModel):
-    # todo: add validate for payload only or error only
+class EventInResponse(BaseEventResponse):
     event_result: Optional[Result]
     error: Optional[ErrorInResponse]
     sync_id: SyncID
@@ -102,7 +97,8 @@ class EventInRequestWS(BaseModel):
     event_params: Optional[EventParams] = None
 
 
-class EventInResponseWS(BaseModel):
-    # todo: add validate for payload only or error only
+class EventInResponseWS(BaseEventResponse):
+    method: EventType
     event_result: Optional[ResultWS]
     error: Optional[ErrorInResponse]
+    sync_id: SyncID
