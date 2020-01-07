@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import DeviceID, BaseEventResponse, SyncID
+from app.models.schemas.base import BaseEventResponse, DeviceID, SyncID
 from app.models.schemas.computers.details import ComputerDetails, ComputerInList
 from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
 from app.models.schemas.computers.hardware import (
@@ -101,4 +101,3 @@ class EventInResponseWS(BaseEventResponse):
     method: EventType
     event_result: Optional[ResultWS]
     error: Optional[ErrorInResponse]
-    sync_id: SyncID

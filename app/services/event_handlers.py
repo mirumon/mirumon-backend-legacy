@@ -107,7 +107,9 @@ async def api_client_event_process(
             f"device_id is required param for event {event_request.method}",
             EventInRequest,
         )
-    event_response = EventInResponseWS(event_result=event_payload)
+    event_response = EventInResponseWS(
+        event_result=event_payload, method=event_request.method
+    )
     await websocket.send_text(event_response.json())
 
 

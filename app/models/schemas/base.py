@@ -13,7 +13,7 @@ class BaseEventResponse(BaseModel):
 
     @validator("error")
     def check_event_or_error(
-            cls, _: Any, values: dict, **kwargs: Any  # noqa: N805, WPS110
+        cls, _: Any, values: dict, **kwargs: Any  # noqa: N805, WPS110
     ) -> dict:
         event_result = values.get("event_result")
         error = values.get("error")
