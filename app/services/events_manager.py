@@ -6,7 +6,8 @@ from loguru import logger
 from starlette import websockets
 
 from app.common.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from app.models.schemas.events.rest import EventInResponse, Result, SyncID
+from app.models.schemas.base import SyncID
+from app.models.schemas.events.rest import EventInResponse, Result
 from app.services.clients_manager import Client
 
 # Used to indicate that a connection was closed abnormally
@@ -32,14 +33,12 @@ class EventsManager:
     def set_event_response(
         self, sync_id: SyncID, event_response: EventInResponse
     ) -> None:
-        logger.error("here")
         if sync_id not in self._registered_events:
-            logger.error("key error")
+            logger.error(f"unregistered event with sync_id {sync_id}")
             raise KeyError("unregistered event")
         self._events_responses[sync_id] = event_response
-        logger.error(event_response)
+        logger.debug(event_response)
         self._asyncio_events[sync_id].set()
-        logger.error(sync_id)
 
     async def wait_event_from_client(self, sync_id: SyncID, client: Client) -> Result:
         event = asyncio.Event()
@@ -54,7 +53,7 @@ class EventsManager:
                     logger.error("client disconnected while waiting event")
                     raise websockets.WebSocketDisconnect(code=ABNORMAL_CLOSURE)
                 if not response_time:
-                    logger.error("response timeout while waiting event")
+                    logger.warning("response timeout while waiting event")
                     raise websockets.WebSocketDisconnect(code=TRY_AGAIN_LATER)
         return cast(Result, self.pop_event(sync_id).event_result)
 
