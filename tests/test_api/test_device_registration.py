@@ -43,21 +43,3 @@ def test_device_registration_success(app: FastAPI, test_client: TestClient) -> N
         data = websocket.receive_json()
         assert data.get("status") == "success"
         assert UUID(data.get("device_id"))
-
-
-def test_empty_devices_list_rest_api(test_client: TestClient) -> None:
-    response = test_client.get("/computers")
-    assert response.status_code == 200
-    assert response.json() == []
-
-
-def test_device_details_rest_api(test_client: TestClient, app: FastAPI) -> None:
-    with test_client.websocket_connect(app.url_path_for("ws:service")) as ws:
-        ws.send_json({"connection_type": "registration", "shared_token": "secret"})
-        device_id = ws.receive_json()["device_id"]
-
-        response = test_client.get(
-            app.url_path_for("events:details", device_id=str(device_id))
-        )
-
-        assert response.json() == {}
