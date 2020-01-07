@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          poetry config settings.virtualenvs.create false
+          poetry config virtualenvs.create false
           poetry install
       - name: Lint with black, isort and autoflake
         run: ./scripts/lint-style
@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          poetry config settings.virtualenvs.create false
+          poetry config virtualenvs.create false
           poetry install
       - name: Lint with wps and mypy
         run: ./scripts/lint-code
@@ -64,7 +64,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
-          poetry config settings.virtualenvs.create false
+          poetry config virtualenvs.create false
           poetry install
       - name: Run tests with pytest
         env:

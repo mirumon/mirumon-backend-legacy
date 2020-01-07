@@ -33,7 +33,7 @@ toml = "^0.10.0"
 
 
 [tool.poetry.dev-dependencies]
-black = {version = "^19.10-beta.0", allows-prereleases = true}
+black = {version = "^19.10-beta.0", allow-prereleases = true}
 isort = "^4.3"
 autoflake = "^1.3"
 
