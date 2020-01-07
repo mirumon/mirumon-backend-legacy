@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 from fastapi import APIRouter, Depends
 from loguru import logger
 from pydantic import ValidationError
@@ -38,10 +40,10 @@ async def clients_websocket_endpoint(
     while True:
         try:
             await process_incoming_event(client, events_manager)
+        except (JSONDecodeError, KeyError) as error:
+            await client.send_error([{"error": error.args[0]}])
         except ValidationError as validate_error:
             await client.send_error(validate_error.errors())
-        except KeyError as sync_id_error:
-            await client.send_error([{"error": sync_id_error.args[0]}])
         except websockets.WebSocketDisconnect:
             logger.error("client disconnected")
             manager.remove_client(client)
