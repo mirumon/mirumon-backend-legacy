@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -83,7 +83,6 @@ class EventInRequest(BaseModel):
 class ErrorInResponse(BaseModel):
     code: int
     message: str
-    description: Any
 
 
 class EventInResponse(BaseEventResponse):

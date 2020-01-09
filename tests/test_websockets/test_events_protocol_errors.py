@@ -9,19 +9,29 @@ from starlette.testclient import TestClient
 from tests.testing_helpers.websocket_processing_tools import process_event
 
 
-def test_event_bad_payload(
+def test_event_invalid_payload(
     app: FastAPI, test_client: TestClient, device_ws: Any
 ) -> None:
-    device_ws.send_json({"bad": "payload"})
+    device_ws.send_json({"invalid": "payload"})
     device_ws.receive_json()
-    assert device_ws.receive_json() == [
-        {
-            "loc": ["error"],
-            "msg": "must provide event_result or error",
-            "type": "value_error",
+    assert device_ws.receive_json() == {
+        "error": {
+            "code": 400,
+            "message": [
+                {
+                    "loc": ["error"],
+                    "msg": "must provide event_result or error",
+                    "type": "value_error",
+                },
+                {
+                    "loc": ["sync_id"],
+                    "msg": "field required",
+                    "type": "value_error.missing",
+                },
+            ],
         },
-        {"loc": ["sync_id"], "msg": "field required", "type": "value_error.missing"},
-    ]
+        "event_result": None,
+    }
 
 
 def test_event_decode_json_error(
@@ -97,19 +107,29 @@ def test_validation_error_field_in_event(
 ) -> None:
     device_ws.receive_json()
     device_ws.send_json({"event_result": None, "error": {"detail": "wrong event"}})
-    assert device_ws.receive_json() == [
-        {
-            "loc": ["error", "code"],
-            "msg": "field required",
-            "type": "value_error.missing",
+    assert device_ws.receive_json() == {
+        "error": {
+            "code": 400,
+            "message": [
+                {
+                    "loc": ["error", "code"],
+                    "msg": "field required",
+                    "type": "value_error.missing",
+                },
+                {
+                    "loc": ["error", "message"],
+                    "msg": "field required",
+                    "type": "value_error.missing",
+                },
+                {
+                    "loc": ["sync_id"],
+                    "msg": "field required",
+                    "type": "value_error.missing",
+                },
+            ],
         },
-        {
-            "loc": ["error", "message"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        },
-        {"loc": ["sync_id"], "msg": "field required", "type": "value_error.missing"},
-    ]
+        "event_result": None,
+    }
 
 
 def test_required_event_fields(
@@ -137,13 +157,19 @@ def test_required_event_fields(
     assert response.status_code == 503
     assert response.json() == {"detail": "details event is not supported by device"}
 
-    assert device_ws.receive_json() == [
-        {
-            "loc": ["error"],
-            "msg": "must not provide both event_result and error",
-            "type": "value_error",
-        }
-    ]
+    assert device_ws.receive_json() == {
+        "error": {
+            "code": 400,
+            "message": [
+                {
+                    "loc": ["error"],
+                    "msg": "must not provide both event_result and error",
+                    "type": "value_error",
+                }
+            ],
+        },
+        "event_result": None,
+    }
 
 
 def test_validate_event_without_required_fields(
@@ -168,4 +194,7 @@ def test_unregistered_event(
 ):
     device_ws.receive_json()
     device_ws.send_json({"event_result": details_payload, "sync_id": str(uuid.uuid4())})
-    assert device_ws.receive_json() == [{"error": "unregistered event"}]
+    assert device_ws.receive_json() == {
+        "error": {"code": 400, "message": "'unregistered event'"},
+        "event_result": None,
+    }

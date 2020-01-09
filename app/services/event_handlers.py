@@ -1,18 +1,10 @@
-import uuid
-from json import JSONDecodeError
-from typing import List, cast
+from typing import List, Union, cast
 
-from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.common import config
 from app.models.schemas.computers.details import ComputerInList
-from app.models.schemas.events.connection import (
-    RegistrationInRequest,
-    RegistrationInResponse,
-    StatusType,
-)
 from app.models.schemas.events.rest import (
     EventInRequest,
     EventInRequestWS,
@@ -23,43 +15,25 @@ from app.services.clients_manager import Client, ClientsManager
 from app.services.events_manager import EventsManager
 
 
-async def _close_connection_with_error(websocket: WebSocket) -> None:
-    await websocket.send_text(
-        RegistrationInResponse(status=StatusType.failed).json(exclude_none=True)
-    )
-    await websocket.close()
-    raise ValueError
-
-
-async def client_registration(websocket: WebSocket) -> Client:
+async def register_client(client: Client) -> bool:
     try:
-        payload = await websocket.receive_json()
-    except JSONDecodeError as json_error:
-        logger.warning(f"json parsing error: {json_error.args}")
-        await _close_connection_with_error(websocket)
+        registration_data = await client.read_registration_data()
+    except ValidationError as validation_error:
+        message: Union[list, str] = validation_error.errors()
+    except ValueError as value_error:
+        message = str(value_error)
+    else:
+        message = "invalid shared token"
+        if registration_data.shared_token == config.SHARED_TOKEN:
+            await client.send_registration_success()
+            return True
 
-    try:
-        registration_data = RegistrationInRequest(**payload)
-    except ValidationError as wrong_schema_error:
-        logger.warning(f"validation error: {wrong_schema_error.json()}")
-        await _close_connection_with_error(websocket)
-
-    if registration_data.shared_token != config.SHARED_TOKEN:
-        logger.warning(
-            f"registration failed! shared token: {registration_data.shared_token}"
-        )
-        await _close_connection_with_error(websocket)
-
-    device_id = uuid.uuid4()
-    registration_success = RegistrationInResponse(
-        status=StatusType.success, device_id=device_id
-    )
-    logger.info(f"registration success! generated device_id: {device_id}")
-    await websocket.send_text(registration_success.json())
-    return Client(device_id=device_id, websocket=websocket)
+    await client.send_registration_failed(message=message)
+    await client.close()
+    return False
 
 
-async def clients_list(
+async def get_connected_clients(
     clients_manager: ClientsManager, events_manager: EventsManager
 ) -> List[ComputerInList]:
     computers = []
@@ -85,7 +59,7 @@ async def process_event_from_api_client(
     events_manager: EventsManager,
 ) -> None:
     if event_request.method == EventType.computers_list:
-        event_payload = await clients_list(clients_manager, events_manager)
+        event_payload = await get_connected_clients(clients_manager, events_manager)
     elif event_request.event_params is not None:
         device_id = event_request.event_params.device_id
 

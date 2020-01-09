@@ -10,17 +10,19 @@ from app.api.dependencies.managers import (
     clients_manager_retriever,
     events_manager_retriever,
 )
-from app.api.dependencies.websockets import get_accepted_websocket
+from app.api.dependencies.websockets import get_new_client
 from app.models.schemas.events.rest import EventInRequestWS
-from app.services.clients_manager import ClientsManager
+from app.services.clients_manager import Client, ClientsManager
 from app.services.event_handlers import (
-    client_registration,
     process_event_from_api_client,
     process_event_from_client,
+    register_client,
 )
 from app.services.events_manager import EventsManager
 
 router = APIRouter()
+
+WS_BAD_REQUEST = 400  # fixme change to correct code
 
 
 @router.websocket("/service", name="ws:service")
@@ -28,24 +30,20 @@ async def clients_websocket_endpoint(
     events_manager: EventsManager = Depends(
         events_manager_retriever(for_websocket=True)
     ),
-    websocket: websockets.WebSocket = Depends(get_accepted_websocket),
+    client: Client = Depends(get_new_client),
     manager: ClientsManager = Depends(clients_manager_retriever(for_websocket=True)),
 ) -> None:
-    try:
-        client = await client_registration(websocket)
-    except ValueError:
+    if not await register_client(client):
         return
 
     manager.add_client(client)
     while True:
         try:
             await process_event_from_client(client, events_manager)
-        except (JSONDecodeError, KeyError) as error:
-            await client.send_error([{"error": error.args[0]}])  # fixme
-        except ValidationError as validate_error:
-            await client.send_error(validate_error.errors())  # fixme
+        except (ValidationError, JSONDecodeError, KeyError) as error:
+            await client.send_error(error, WS_BAD_REQUEST)
         except websockets.WebSocketDisconnect:
-            logger.error("client disconnected")
+            logger.error(f"client with id {client.device_id} disconnected")
             manager.remove_client(client)
             return
 

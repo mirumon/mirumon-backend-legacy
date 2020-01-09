@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel
 from typing_extensions import Literal
@@ -31,6 +31,7 @@ class RegistrationInRequest(BaseModel):
 class RegistrationInResponse(BaseModel):
     status: StatusType
     device_id: Optional[DeviceID]
+    message: Optional[Union[dict, list, str]]
 
 
 class AuthInRequest(BaseModel):
