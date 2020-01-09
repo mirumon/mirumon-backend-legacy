@@ -78,7 +78,7 @@ async def clients_list(
     return computers
 
 
-async def api_client_event_process(
+async def process_event_from_api_client(
     event_request: EventInRequestWS,
     websocket: WebSocket,
     clients_manager: ClientsManager,
@@ -113,7 +113,7 @@ async def api_client_event_process(
     await websocket.send_text(event_response.json())
 
 
-async def process_incoming_event(client: Client, manager: EventsManager) -> None:
+async def process_event_from_client(client: Client, manager: EventsManager) -> None:
     event_response = await client.read_event()
     manager.set_event_response(
         sync_id=event_response.sync_id, event_response=event_response

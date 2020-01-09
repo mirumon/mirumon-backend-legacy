@@ -14,9 +14,9 @@ from app.api.dependencies.websockets import get_accepted_websocket
 from app.models.schemas.events.rest import EventInRequestWS
 from app.services.clients_manager import ClientsManager
 from app.services.event_handlers import (
-    api_client_event_process,
+    process_event_from_api_client,
     client_registration,
-    process_incoming_event,
+    process_event_from_client,
 )
 from app.services.events_manager import EventsManager
 
@@ -39,11 +39,11 @@ async def clients_websocket_endpoint(
     manager.add_client(client)
     while True:
         try:
-            await process_incoming_event(client, events_manager)
+            await process_event_from_client(client, events_manager)
         except (JSONDecodeError, KeyError) as error:
-            await client.send_error([{"error": error.args[0]}])
+            await client.send_error([{"error": error.args[0]}])  # fixme
         except ValidationError as validate_error:
-            await client.send_error(validate_error.errors())
+            await client.send_error(validate_error.errors())  # fixme
         except websockets.WebSocketDisconnect:
             logger.error("client disconnected")
             manager.remove_client(client)
@@ -69,7 +69,7 @@ async def api_websocket_endpoint(
             await websocket.send_text(validation_error.json())
             continue
         try:
-            await api_client_event_process(
+            await process_event_from_api_client(
                 event, websocket, clients_manager, events_manager
             )
         except KeyError:
