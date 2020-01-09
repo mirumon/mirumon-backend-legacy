@@ -35,9 +35,7 @@ def test_device_registration_failed(app: FastAPI, test_client: TestClient) -> No
         assert data == {"status": "failed"}
 
     with test_client.websocket_connect(app.url_path_for("ws:service")) as websocket:
-        websocket.send_text(
-            "bad json",
-        )
+        websocket.send_text("bad json",)
         data = websocket.receive_json()
         assert data == {"status": "failed"}
 

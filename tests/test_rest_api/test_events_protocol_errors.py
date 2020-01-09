@@ -1,21 +1,7 @@
-import uuid
 from typing import Any
 
 from fastapi import FastAPI
 from starlette.testclient import TestClient
-
-
-def test_device_bad_payload(
-    app: FastAPI, test_client: TestClient, device_ws: Any
-) -> None:
-    device_ws.send_json({"bad": "payload"})
-    device_ws.receive_json()
-    assert device_ws.receive_json() == [
-        {"loc": ["sync_id"], "msg": "field required", "type": "value_error.missing"}
-    ]
-
-    device_ws.send_json({"sync_id": str(uuid.uuid4())})
-    assert device_ws.receive_json() == [{"error": "unregistered event"}]
 
 
 def test_device_not_found(
