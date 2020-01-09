@@ -14,8 +14,8 @@ from app.api.dependencies.websockets import get_accepted_websocket
 from app.models.schemas.events.rest import EventInRequestWS
 from app.services.clients_manager import ClientsManager
 from app.services.event_handlers import (
-    process_event_from_api_client,
     client_registration,
+    process_event_from_api_client,
     process_event_from_client,
 )
 from app.services.events_manager import EventsManager
