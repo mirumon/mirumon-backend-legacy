@@ -1,5 +1,6 @@
 from typing import List, Union, cast
 
+from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
@@ -46,7 +47,8 @@ async def get_connected_clients(
             computer = await events_manager.wait_event_from_client(
                 sync_id=sync_id, client=client
             )
-        except (WebSocketDisconnect, ValidationError):
+        except (WebSocketDisconnect, ValidationError) as error:
+            logger.debug(f"device client skipped in list [{error}]")
             continue
         computers.append(cast(ComputerInList, computer))
     return computers
@@ -82,8 +84,9 @@ async def process_event_from_api_client(
             EventInRequest,
         )
     event_response = EventInResponseWS(
-        event_result=event_payload, method=event_request.method
+        method=event_request.method, event_result=event_payload
     )
+    logger.debug(event_response)
     await websocket.send_text(event_response.json())
 
 
