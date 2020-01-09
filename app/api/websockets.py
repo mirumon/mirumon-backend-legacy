@@ -11,7 +11,11 @@ from app.api.dependencies.managers import (
     events_manager_retriever,
 )
 from app.api.dependencies.websockets import get_new_client
-from app.models.schemas.events.rest import EventInRequestWS
+from app.models.schemas.events.rest import (
+    ErrorInResponse,
+    EventInRequestWS,
+    EventInResponseWS,
+)
 from app.services.clients_manager import Client, ClientsManager
 from app.services.event_handlers import (
     process_event_from_api_client,
@@ -23,6 +27,7 @@ from app.services.events_manager import EventsManager
 router = APIRouter()
 
 WS_BAD_REQUEST = 400  # fixme change to correct code
+WS_NOT_FOUND = 404
 
 
 @router.websocket("/service", name="ws:service")
@@ -60,22 +65,29 @@ async def api_websocket_endpoint(
 ) -> None:
     await websocket.accept()
     while True:
-        payload = await websocket.receive_json()
         try:
+            payload = await websocket.receive_json()
             event = EventInRequestWS(**payload)
-        except ValidationError as validation_error:
-            await websocket.send_text(validation_error.json())
-            continue
-        try:
             await process_event_from_api_client(
                 event, websocket, clients_manager, events_manager
             )
-        except KeyError:
-            await websocket.send_json({"error": "device not found"})
+        except ValidationError as validation_error:
+            await websocket.send_text(validation_error.json())
+            continue
+        except KeyError:  # todo add value error
+            await websocket.send_json(
+                EventInResponseWS(
+                    method=event.method,
+                    error=ErrorInResponse(
+                        code=WS_NOT_FOUND, message="device not found"
+                    ),
+                )
+            )
         except WebSocketDisconnect:
             logger.info(
-                "{0} WebSocket Api Client {1} [closed]".format(
-                    websocket.scope.get("client"), websocket.scope.get("raw_path")
+                "{0} websocket api client {1} [closed]".format(
+                    websocket.scope.get("client", ""),
+                    websocket.scope.get("raw_path", ""),
                 )
             )
             break
