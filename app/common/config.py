@@ -12,7 +12,6 @@ from app.common.versions import get_app_version
 APP_VERSION = get_app_version()
 
 JWT_TOKEN_TYPE: str = "Bearer"
-REST_SLEEP_TIME = 0.5
 
 
 config = Config(".env")
@@ -20,6 +19,7 @@ config = Config(".env")
 REST_MAX_RESPONSE_TIME = config(
     "REST_MAX_RESPONSE_TIME", cast=float, default=5.0  # noqa: WPS432
 )
+REST_SLEEP_TIME = config("REST_SLEEP_TIME", cast=float, default=0.5)  # noqa: WPS432
 
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 DATABASE_URL: DatabaseURL = config("DB_CONNECTION", cast=DatabaseURL)
