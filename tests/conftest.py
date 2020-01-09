@@ -68,7 +68,7 @@ def device_ws3(test_client: TestClient, app: FastAPI) -> Any:
 def docker() -> Optional[libdocker.APIClient]:
     if USE_LOCAL_DB:  # pragma: no cover
         return None
-    return libdocker.APIClient(version="auto")
+    return libdocker.APIClient(version="auto")  # pragma: no cover
 
 
 @pytest.fixture(scope="session", autouse=True)

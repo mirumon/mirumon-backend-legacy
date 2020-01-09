@@ -12,7 +12,7 @@ class ConnectionEventType(str, Enum):  # noqa: WPS600
     auth: str = "auth"
 
     def __str__(self) -> str:
-        return self.value
+        return self.value  # pragma: no cover
 
 
 class StatusType(str, Enum):  # noqa: WPS600
@@ -20,7 +20,7 @@ class StatusType(str, Enum):  # noqa: WPS600
     failed: str = "failed"
 
     def __str__(self) -> str:
-        return self.value
+        return self.value  # pragma: no cover
 
 
 class RegistrationInRequest(BaseModel):
