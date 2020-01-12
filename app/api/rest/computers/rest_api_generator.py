@@ -68,7 +68,7 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
             return generic_api_route
 
         api_router.add_api_route(
-            "/{0}/{1}".format("{device_id}", api_event_type),
+            "/{0}/{1}".format("{device_uid}", api_event_type),
             _generate_generic_api_route(api_event_type),
             methods=[api_method],
             response_model=response_model,

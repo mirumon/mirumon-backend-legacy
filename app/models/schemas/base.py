@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, validator
 
-DeviceID = UUID
+DeviceUID = UUID
 SyncID = UUID
 
 

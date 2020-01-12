@@ -1,21 +1,21 @@
 from typing import Dict, List
 
-from app.models.schemas.base import DeviceID
+from app.models.schemas.base import DeviceUID
 from app.services.clients import Client
 
 
 class ClientsManager:
     def __init__(self) -> None:
-        self._clients: Dict[DeviceID, Client] = {}
+        self._clients: Dict[DeviceUID, Client] = {}
 
     def add_client(self, client: Client) -> None:
-        self._clients[client.device_id] = client
+        self._clients[client.device_uid] = client
 
     def remove_client(self, client: Client) -> None:
-        self._clients.pop(client.device_id)
+        self._clients.pop(client.device_uid)
 
-    def get_client(self, device_id: DeviceID) -> Client:
-        return self._clients[device_id]
+    def get_client(self, device_uid: DeviceUID) -> Client:
+        return self._clients[device_uid]
 
     @property
     def clients(self) -> List[Client]:

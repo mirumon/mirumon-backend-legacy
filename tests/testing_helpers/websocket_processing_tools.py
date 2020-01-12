@@ -28,7 +28,7 @@ def process_event(
 
 def process_event_by_device(client_websocket: Any, response_payload: dict):
     request_payload = client_websocket.receive_json()
-    sync_id = request_payload.get("sync_id")
+    sync_id = request_payload["sync_id"]
 
     response_payload["sync_id"] = sync_id
     client_websocket.send_json(response_payload)

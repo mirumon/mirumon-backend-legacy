@@ -4,7 +4,7 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.models.schemas.base import BaseEventResponse, DeviceID
+from app.models.schemas.base import BaseEventResponse, DeviceUID
 from app.models.schemas.events.connection import (
     RegistrationInRequest,
     RegistrationInResponse,
@@ -14,8 +14,8 @@ from app.models.schemas.events.rest import EventInRequest, EventInResponse
 
 
 class Client:  # noqa: WPS214
-    def __init__(self, device_id: DeviceID, websocket: WebSocket) -> None:
-        self.device_id = device_id
+    def __init__(self, device_uid: DeviceUID, websocket: WebSocket) -> None:
+        self.device_uid = device_uid
         self.websocket = websocket
 
     @property
@@ -35,13 +35,17 @@ class Client:  # noqa: WPS214
         await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
-        logger.debug("reading event data")
+        logger.debug("start reading event data")
         payload = await self.websocket.receive_json()
+        if payload.get("event_result"):  # fixme
+            payload["event_result"]["uid"] = self.device_uid
+            payload["event_result"]["online"] = True
+
         logger.debug(payload)
         return EventInResponse(**payload)
 
     async def read_registration_data(self) -> RegistrationInRequest:
-        logger.debug("reading registration data")
+        logger.debug("start reading registration data")
         payload = await self.websocket.receive_json()
         return RegistrationInRequest(**payload)
 
@@ -49,7 +53,7 @@ class Client:  # noqa: WPS214
         logger.error("client registration success")
         await self.websocket.send_text(
             RegistrationInResponse(
-                status=StatusType.success, device_id=self.device_id
+                status=StatusType.success, device_uid=self.device_uid
             ).json()
         )
 
@@ -69,6 +73,6 @@ class Client:  # noqa: WPS214
         message = error.errors() if isinstance(error, ValidationError) else str(error)
         error_payload = BaseEventResponse(
             error={"code": code, "message": message}
-        ).json()
+        ).dict()
         logger.bind(payload=error_payload).error("sending error to client:")
-        await self.websocket.send_text(error_payload)
+        await self.websocket.send_json(error_payload)

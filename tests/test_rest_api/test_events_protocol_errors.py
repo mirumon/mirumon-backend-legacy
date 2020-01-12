@@ -1,14 +1,10 @@
-from typing import Any
-
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 
-def test_device_not_found(
-    app: FastAPI, test_client: TestClient, device_ws: Any
-) -> None:
+def test_device_not_found(app: FastAPI, test_client: TestClient) -> None:
     api_url = app.url_path_for(
-        name="events:details", device_id="414912ac-6a9d-49bf-bb41-bc4d002e0a09"
+        name="events:details", device_uid="414912ac-6a9d-49bf-bb41-bc4d002e0a09"
     )
     response = test_client.get(api_url)
 

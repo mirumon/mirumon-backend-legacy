@@ -11,7 +11,7 @@ def test_device_registration_success(app: FastAPI, test_client: TestClient) -> N
         )
         data = websocket.receive_json()
         assert data.get("status") == "success"
-        assert UUID(data.get("device_id"))
+        assert UUID(data.get("device_uid"))
 
 
 def test_device_registration_with_invalid_payload(

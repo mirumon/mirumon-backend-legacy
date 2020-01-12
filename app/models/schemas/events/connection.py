@@ -4,7 +4,7 @@ from typing import Optional, Union
 from pydantic import BaseModel
 from typing_extensions import Literal
 
-from app.models.schemas.events.rest import DeviceID
+from app.models.schemas.events.rest import DeviceUID
 
 
 class ConnectionEventType(str, Enum):  # noqa: WPS600
@@ -30,14 +30,14 @@ class RegistrationInRequest(BaseModel):
 
 class RegistrationInResponse(BaseModel):
     status: StatusType
-    device_id: Optional[DeviceID]
+    device_uid: Optional[DeviceUID]
     message: Optional[Union[dict, list, str]]
 
 
 class AuthInRequest(BaseModel):
     connection_type: Literal[ConnectionEventType.auth]
     shared_token: str
-    device_id: DeviceID
+    device_uid: DeviceUID
 
 
 class AuthInResponse(BaseModel):

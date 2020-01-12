@@ -48,7 +48,7 @@ async def clients_websocket_endpoint(
         except (ValidationError, JSONDecodeError, KeyError) as error:
             await client.send_error(error, WS_BAD_REQUEST)
         except websockets.WebSocketDisconnect:
-            logger.error(f"client with id {client.device_id} disconnected")
+            logger.error(f"client with id {client.device_uid} disconnected")
             manager.remove_client(client)
             return
 

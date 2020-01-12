@@ -1,7 +1,8 @@
 import uuid
 import warnings
+from collections import namedtuple
 from os import environ, getenv
-from typing import Any, Optional
+from typing import Callable, List, Optional
 
 import alembic
 import docker as libdocker
@@ -38,31 +39,36 @@ def test_client(app: FastAPI) -> None:
         yield client
 
 
-@pytest.fixture
-def device_ws(test_client: TestClient, app: FastAPI) -> Any:
-    with test_client.websocket_connect(app.url_path_for("ws:service")) as client_ws:
-        client_ws.send_json(
-            {"connection_type": "registration", "shared_token": environ["SHARED_TOKEN"]}
-        )
-        yield client_ws
+DeviceClient = namedtuple("DeviceClient", ["websocket", "uid"])
 
 
 @pytest.fixture
-def device_ws2(test_client: TestClient, app: FastAPI) -> Any:
-    with test_client.websocket_connect(app.url_path_for("ws:service")) as client_ws:
-        client_ws.send_json(
-            {"connection_type": "registration", "shared_token": environ["SHARED_TOKEN"]}
-        )
-        yield client_ws
+def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
+    ws = test_client.websocket_connect(app.url_path_for("ws:service"))
+    ws.send_json(
+        {"connection_type": "registration", "shared_token": environ["SHARED_TOKEN"],}
+    )
+    uid = ws.receive_json()["device_uid"]
+    yield DeviceClient(ws, uid)
 
 
 @pytest.fixture
-def device_ws3(test_client: TestClient, app: FastAPI) -> Any:
-    with test_client.websocket_connect(app.url_path_for("ws:service")) as client_ws:
-        client_ws.send_json(
-            {"connection_type": "registration", "shared_token": environ["SHARED_TOKEN"]}
-        )
-        yield client_ws
+def client_device_factory(
+    test_client: TestClient, app: FastAPI
+) -> Callable[[int], List[DeviceClient]]:
+    def device_client(clients_count: int) -> List[DeviceClient]:
+        for _ in range(clients_count):
+            ws = test_client.websocket_connect(app.url_path_for("ws:service"))
+            ws.send_json(
+                {
+                    "connection_type": "registration",
+                    "shared_token": environ["SHARED_TOKEN"],
+                }
+            )
+            uid = ws.receive_json()["device_uid"]
+            yield DeviceClient(ws, uid)
+
+    return device_client
 
 
 @pytest.fixture(scope="session")
@@ -136,34 +142,30 @@ async def client(app: FastAPI) -> Client:
 
 
 @pytest.fixture(scope="session")
-def inlist_payload() -> dict:
+def computer_inlist_payload() -> dict:
     return {
-        "mac_address": "00:d8:61:16:a5:66",
         "name": "string",
         "domain": "string",
         "workgroup": "string",
-        "username": "string",
+        "current_user": {"name": "string", "domain": "string", "fullname": "string"},
     }
 
 
 @pytest.fixture(scope="session")
-def details_payload() -> dict:
+def computer_details_payload() -> dict:
     return {
-        "mac_address": "00:d8:61:16:a5:66",
         "name": "string",
         "domain": "string",
         "workgroup": "string",
-        "current_user": {"name": "string", "domain": "string", "fullname": "string",},
+        "current_user": {"name": "string", "domain": "string", "fullname": "string"},
         "os": [
             {
-                "caption": "string",
+                "name": "string",
                 "version": "string",
-                "build_number": "string",
                 "os_architecture": "string",
                 "serial_number": "string",
-                "product_type": "string",
                 "number_of_users": 1,
-                "install_date": "string",
+                "install_date": "2020-01-12T06:29:25.774088",
             }
         ],
     }

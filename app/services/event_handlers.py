@@ -48,10 +48,17 @@ async def get_connected_clients(
                 sync_id=sync_id, client=client
             )
         except (WebSocketDisconnect, ValidationError) as error:
-            logger.debug(f"device client skipped in list [{error}]")
+            logger.debug(f"device client skipped in list event")
             continue
         computers.append(cast(ComputerInList, computer))
     return computers
+
+
+async def process_event_from_client(client: Client, manager: EventsManager) -> None:
+    event_response = await client.read_event()
+    manager.set_event_response(
+        sync_id=event_response.sync_id, event_response=event_response
+    )
 
 
 async def process_event_from_api_client(
@@ -63,9 +70,9 @@ async def process_event_from_api_client(
     if event_request.method == EventType.computers_list:
         event_payload = await get_connected_clients(clients_manager, events_manager)
     elif event_request.event_params is not None:
-        device_id = event_request.event_params.device_id
+        device_uid = event_request.event_params.device_uid
 
-        client = clients_manager.get_client(device_id)
+        client = clients_manager.get_client(device_uid)
         sync_id = events_manager.register_event()
 
         await client.send_event(
@@ -80,7 +87,7 @@ async def process_event_from_api_client(
         )
     else:
         raise ValidationError(
-            f"device_id is required param for event {event_request.method}",
+            f"device_uid is required param for event {event_request.method}",
             EventInRequest,
         )
     event_response = EventInResponseWS(
@@ -88,10 +95,3 @@ async def process_event_from_api_client(
     )
     logger.debug(event_response)
     await websocket.send_text(event_response.json())
-
-
-async def process_event_from_client(client: Client, manager: EventsManager) -> None:
-    event_response = await client.read_event()
-    manager.set_event_response(
-        sync_id=event_response.sync_id, event_response=event_response
-    )

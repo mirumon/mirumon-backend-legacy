@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class ExecuteCommand(BaseModel):
-    device_id: UUID
+    device_uid: UUID
     command: str
 
 

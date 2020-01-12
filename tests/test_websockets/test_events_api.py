@@ -11,34 +11,33 @@ from tests.testing_helpers.websocket_processing_tools import process_event_by_de
 def test_devices_list_with_disconnection(
     app: FastAPI,
     test_client: TestClient,
-    device_ws: Any,
-    device_ws2: Any,
-    inlist_payload: Any,
+    client_device_factory,
+    computer_inlist_payload,
 ) -> None:
     def ws_disconnect(ws: Any) -> None:
         sleep(1)
         ws.close()
 
-    device_ws.receive_json()
-    device_ws2.receive_json()
+    client, client2 = client_device_factory(2)
 
-    api_url = app.url_path_for("events:list")
-
-    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=device_ws),)
+    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=client.websocket),)
 
     process = Thread(
         target=process_event_by_device,
         kwargs=dict(
-            client_websocket=device_ws2,
-            response_payload={"event_result": inlist_payload},
+            client_websocket=client2.websocket,
+            response_payload={"event_result": computer_inlist_payload},
         ),
     )
     bad_process.start()
     process.start()
 
+    api_url = app.url_path_for("events:list")
     response = test_client.get(api_url)
     bad_process.join()
     process.join()
 
     assert response.status_code == 200
-    assert response.json() == [inlist_payload]
+    computer_inlist_payload["online"] = True
+    computer_inlist_payload["uid"] = client2.uid
+    assert response.json() == [computer_inlist_payload]

@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
@@ -16,39 +14,46 @@ def test_empty_devices_list_event(test_client: TestClient, app: FastAPI) -> None
 def test_devices_list_event(
     app: FastAPI,
     test_client: TestClient,
-    device_ws: Any,
-    device_ws2: Any,
-    device_ws3: Any,
-    inlist_payload: dict,
+    client_device_factory,
+    computer_inlist_payload,
 ) -> None:
-    api_url = app.url_path_for(name="events:list")
-    # TODO change mac to id
-    device_ids = [
-        ws.receive_json()["device_id"] for ws in (device_ws, device_ws2, device_ws3)
-    ]
+    ws = []
+    rest_resp = []
+    for client in client_device_factory(3):
+        payload = computer_inlist_payload.copy()
+        payload["uid"] = client.uid
+        payload["online"] = True
+        rest_resp.append(payload)
+        ws.append(client.websocket)
 
-    response_payload = {"event_result": inlist_payload}
+    event_resp_payload = {"event_result": computer_inlist_payload}
     response = process_event(
         api_method=test_client.get,
-        api_kwargs=dict(url=api_url),
-        client_websockets=[device_ws, device_ws2, device_ws3],
-        response_payloads=[response_payload, response_payload, response_payload],
+        api_kwargs=dict(url=app.url_path_for(name="events:list")),
+        client_websockets=ws,
+        response_payloads=[event_resp_payload, event_resp_payload, event_resp_payload],
     )
     assert response.status_code == 200
-    assert response.json() == [inlist_payload, inlist_payload, inlist_payload]
+    assert response.json() == rest_resp
 
 
 def test_device_details_event(
-    app: FastAPI, test_client: TestClient, device_ws: Any, details_payload: dict
+    app: FastAPI,
+    test_client: TestClient,
+    client_device_factory,
+    computer_details_payload,
 ) -> None:
-    device_id = device_ws.receive_json()["device_id"]
+    for device_client in client_device_factory(1):
+        api_url = app.url_path_for(name="events:details", device_uid=device_client.uid)
+        response = process_event(
+            api_method=test_client.get,
+            api_kwargs=dict(url=api_url),
+            client_websockets=[device_client.websocket],
+            response_payloads=[{"event_result": computer_details_payload}],
+        )
 
-    api_url = app.url_path_for(name="events:details", device_id=str(device_id))
-    response = process_event(
-        api_method=test_client.get,
-        api_kwargs=dict(url=api_url),
-        client_websockets=[device_ws],
-        response_payloads=[{"event_result": details_payload}],
-    )
-    assert response.status_code == 200
-    assert response.json() == details_payload
+        computer_details_payload["uid"] = device_client.uid
+        computer_details_payload["online"] = True
+
+        assert response.status_code == 200
+        assert response.json() == computer_details_payload

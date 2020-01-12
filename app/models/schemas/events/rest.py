@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import BaseEventResponse, DeviceID, SyncID
+from app.models.schemas.base import BaseEventResponse, DeviceUID, SyncID
 from app.models.schemas.computers.details import ComputerDetails, ComputerInList
 from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
 from app.models.schemas.computers.hardware import (
@@ -41,13 +41,13 @@ class EventType(str, Enum):  # noqa: WPS600
 
 
 class Device(BaseModel):
-    device_id: DeviceID
+    device_uid: DeviceUID
 
 
 EventParams = Union[Device, ExecuteCommand]
 Result = Union[
-    ComputerInList,
     ComputerDetails,
+    ComputerInList,
     HardwareModel,
     MotherBoardModel,
     List[NetworkAdapterModel],
