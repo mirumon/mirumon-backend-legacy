@@ -9,8 +9,8 @@ from app.models.schemas.events.rest import (
     EventInRequest,
     EventInRequestWS,
     EventInResponseWS,
-    EventType,
 )
+from app.models.schemas.events.types import EventType
 from app.services.clients_manager import Client, ClientsManager
 from app.services.events_manager import EventsManager
 

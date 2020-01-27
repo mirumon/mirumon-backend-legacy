@@ -10,7 +10,8 @@ from starlette.websockets import WebSocketDisconnect
 from app.api.dependencies.managers import EventsManager, events_manager_retriever
 from app.api.dependencies.rest_api import get_client
 from app.models.schemas.computers import details, execute, hardware, shutdown, software
-from app.models.schemas.events.rest import EventInRequest, EventType
+from app.models.schemas.events.rest import EventInRequest
+from app.models.schemas.events.types import EventType
 from app.services import clients
 
 router = APIRouter()

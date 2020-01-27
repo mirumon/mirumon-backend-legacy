@@ -7,7 +7,8 @@ from starlette import websockets
 
 from app.common.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
 from app.models.schemas.base import SyncID
-from app.models.schemas.events.rest import EventInResponse, Result
+from app.models.schemas.events.rest import EventInResponse
+from app.models.schemas.events.types import Result
 from app.services.clients_manager import Client
 
 # Used to indicate that a connection was closed abnormally
