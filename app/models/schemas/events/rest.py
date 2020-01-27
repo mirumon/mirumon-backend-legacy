@@ -74,6 +74,14 @@ ResultWS = Union[
 ]
 
 
+class RegistrationInRequest(BaseModel):
+    shared_token: str
+
+
+class RegistrationInResponse(BaseModel):
+    device_token: str
+
+
 class EventInRequest(BaseModel):
     method: EventType
     event_params: Optional[EventParams] = None

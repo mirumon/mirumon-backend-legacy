@@ -1,10 +1,9 @@
-from typing import List, Union, cast
+from typing import List, cast
 
 from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.common import config
 from app.models.schemas.computers.details import ComputerOverview
 from app.models.schemas.events.rest import (
     EventInRequest,
@@ -14,24 +13,6 @@ from app.models.schemas.events.rest import (
 )
 from app.services.clients_manager import Client, ClientsManager
 from app.services.events_manager import EventsManager
-
-
-async def register_client(client: Client) -> bool:
-    try:
-        registration_data = await client.read_registration_data()
-    except ValidationError as validation_error:
-        message: Union[list, str] = validation_error.errors()
-    except ValueError as value_error:
-        message = str(value_error)
-    else:
-        message = "invalid shared token"
-        if registration_data.shared_token == config.SHARED_TOKEN:
-            await client.send_registration_success()
-            return True
-
-    await client.send_registration_failed(message=message)
-    await client.close()
-    return False
 
 
 async def get_devices_list(

@@ -20,7 +20,6 @@ from app.services.clients_manager import Client, ClientsManager
 from app.services.event_handlers import (
     process_event_from_api_client,
     process_event_from_client,
-    register_client,
 )
 from app.services.events_manager import EventsManager
 
@@ -38,9 +37,7 @@ async def clients_websocket_endpoint(
     client: Client = Depends(get_new_client),
     manager: ClientsManager = Depends(clients_manager_retriever(for_websocket=True)),
 ) -> None:
-    if not await register_client(client):
-        return
-
+    # TODO: check device token
     manager.add_client(client)
     while True:
         try:

@@ -1,15 +1,10 @@
-from typing import Optional, Union
+from typing import Union
 
 from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
 from app.models.schemas.base import BaseEventResponse, DeviceUID
-from app.models.schemas.events.connection import (
-    RegistrationInRequest,
-    RegistrationInResponse,
-    StatusType,
-)
 from app.models.schemas.events.rest import EventInRequest, EventInResponse
 
 
@@ -43,29 +38,6 @@ class Client:  # noqa: WPS214
 
         logger.debug(payload)
         return EventInResponse(**payload)
-
-    async def read_registration_data(self) -> RegistrationInRequest:
-        logger.debug("start reading registration data")
-        payload = await self.websocket.receive_json()
-        return RegistrationInRequest(**payload)
-
-    async def send_registration_success(self) -> None:
-        logger.error("client registration success")
-        await self.websocket.send_text(
-            RegistrationInResponse(
-                status=StatusType.success, device_uid=self.device_uid
-            ).json()
-        )
-
-    async def send_registration_failed(
-        self, message: Optional[Union[dict, list, str]] = None
-    ) -> None:
-        logger.error(f"client registration failed with message {message}")
-        await self.websocket.send_text(
-            RegistrationInResponse(status=StatusType.failed, message=message).json(
-                exclude_none=True
-            )
-        )
 
     async def send_error(
         self, error: Union[ValidationError, Exception], code: int
