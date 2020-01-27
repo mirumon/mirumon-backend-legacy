@@ -26,7 +26,7 @@ class ComputerDetails(BaseModel):
     os: List[OperatingSystem]
 
 
-class ComputerInList(BaseModel):
+class ComputerOverview(BaseModel):
     uid: DeviceUID
     online: bool
     name: str

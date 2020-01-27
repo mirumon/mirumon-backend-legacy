@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.common import config
-from app.models.schemas.computers.details import ComputerInList
+from app.models.schemas.computers.details import ComputerOverview
 from app.models.schemas.events.rest import (
     EventInRequest,
     EventInRequestWS,
@@ -36,7 +36,7 @@ async def register_client(client: Client) -> bool:
 
 async def get_devices_list(
     clients_manager: ClientsManager, events_manager: EventsManager,
-) -> List[ComputerInList]:
+) -> List[ComputerOverview]:
     computers = []
 
     for client in clients_manager.clients:
@@ -51,7 +51,7 @@ async def get_devices_list(
         except (WebSocketDisconnect, ValidationError) as error:
             logger.debug(f"device client skipped in list event. error: {error}")
             continue
-        computers.append(cast(ComputerInList, computer))
+        computers.append(cast(ComputerOverview, computer))
     return computers
 
 

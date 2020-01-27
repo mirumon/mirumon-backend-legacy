@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 
 from app.models.schemas.base import BaseEventResponse, DeviceUID, SyncID
-from app.models.schemas.computers.details import ComputerDetails, ComputerInList
+from app.models.schemas.computers.details import ComputerDetails, ComputerOverview
 from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
 from app.models.schemas.computers.hardware import (
     HardwareModel,
@@ -47,7 +47,7 @@ class Device(BaseModel):
 EventParams = Union[Device, ExecuteCommand]
 Result = Union[
     ComputerDetails,
-    ComputerInList,
+    ComputerOverview,
     HardwareModel,
     MotherBoardModel,
     List[NetworkAdapterModel],
@@ -60,7 +60,7 @@ Result = Union[
 ]
 
 ResultWS = Union[
-    List[ComputerInList],
+    List[ComputerOverview],
     ComputerDetails,
     HardwareModel,
     MotherBoardModel,

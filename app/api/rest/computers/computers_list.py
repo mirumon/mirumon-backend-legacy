@@ -17,11 +17,11 @@ router = APIRouter()
 @router.get(
     "",
     name="events:list",
-    response_model=List[details.ComputerInList],
+    response_model=List[details.ComputerOverview],
     summary="Devices List",
 )
 async def computers_list(
     clients_manager: ClientsManager = Depends(clients_manager_retriever()),
     events_manager: EventsManager = Depends(events_manager_retriever()),
-) -> List[details.ComputerInList]:
+) -> List[details.ComputerOverview]:
     return await event_handlers.get_devices_list(clients_manager, events_manager)
