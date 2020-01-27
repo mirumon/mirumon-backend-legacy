@@ -9,9 +9,16 @@ services:
       - .env
     depends_on:
       - db
+      - redis
   db:
     image: postgres:11.5-alpine
     ports:
       - "5432:5432"
+    env_file:
+      - .env
+  redis:
+    image: redis:5.0-alpine
+    ports:
+      - "6379:6379"
     env_file:
       - .env
