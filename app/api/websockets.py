@@ -47,7 +47,9 @@ async def clients_websocket_endpoint(
         except websockets.WebSocketDisconnect:
             logger.error(f"client with id {client.device_uid} disconnected")
             manager.remove_client(client)
-            return
+            break
+        except Exception as undefined_error:
+            logger.exception(undefined_error)
 
 
 @router.websocket("/clients", name="ws:clients")
