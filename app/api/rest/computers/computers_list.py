@@ -24,4 +24,4 @@ async def computers_list(
     clients_manager: ClientsManager = Depends(clients_manager_retriever()),
     events_manager: EventsManager = Depends(events_manager_retriever()),
 ) -> List[details.ComputerInList]:
-    return await event_handlers.get_connected_clients(clients_manager, events_manager)
+    return await event_handlers.get_devices_list(clients_manager, events_manager)

@@ -34,10 +34,11 @@ async def register_client(client: Client) -> bool:
     return False
 
 
-async def get_connected_clients(
-    clients_manager: ClientsManager, events_manager: EventsManager
+async def get_devices_list(
+    clients_manager: ClientsManager, events_manager: EventsManager,
 ) -> List[ComputerInList]:
     computers = []
+
     for client in clients_manager.clients:
         sync_id = events_manager.register_event()
         await client.send_event(
@@ -48,7 +49,7 @@ async def get_connected_clients(
                 sync_id=sync_id, client=client
             )
         except (WebSocketDisconnect, ValidationError) as error:
-            logger.debug(f"device client skipped in list event")
+            logger.debug(f"device client skipped in list event. error: {error}")
             continue
         computers.append(cast(ComputerInList, computer))
     return computers
@@ -68,7 +69,7 @@ async def process_event_from_api_client(
     events_manager: EventsManager,
 ) -> None:
     if event_request.method == EventType.computers_list:
-        event_payload = await get_connected_clients(clients_manager, events_manager)
+        event_payload = await get_devices_list(clients_manager, events_manager)
     elif event_request.event_params is not None:
         device_uid = event_request.event_params.device_uid
 
