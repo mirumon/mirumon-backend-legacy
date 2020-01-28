@@ -49,29 +49,7 @@ async def process_event_from_api_client(
     clients_manager: ClientsManager,
     events_manager: EventsManager,
 ) -> None:
-    if event_request.method == EventType.computers_list:
-        event_payload = await get_devices_list(clients_manager, events_manager)
-    elif event_request.event_params is not None:
-        device_uid = event_request.event_params.device_uid
-
-        client = clients_manager.get_client(device_uid)
-        sync_id = events_manager.register_event()
-
-        await client.send_event(
-            EventInRequest(
-                method=event_request.method,
-                event_params=event_request.event_params,
-                sync_id=sync_id,
-            )
-        )
-        event_payload = await events_manager.wait_event_from_client(  # type: ignore
-            sync_id=sync_id, client=client
-        )
-    else:
-        raise ValidationError(
-            f"device_uid is required param for event {event_request.method}",
-            EventInRequest,
-        )
+    event_payload = await get_devices_list(clients_manager, events_manager)
     event_response = EventInResponseWS(
         method=event_request.method, event_result=event_payload
     )

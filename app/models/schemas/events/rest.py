@@ -39,7 +39,6 @@ class EventInResponse(BaseEventResponse):
 
 class EventInRequestWS(BaseModel):
     method: EventType
-    event_params: Optional[EventParams] = None
 
 
 class EventInResponseWS(BaseEventResponse):

@@ -9,7 +9,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.api.dependencies.managers import EventsManager, events_manager_retriever
 from app.api.dependencies.rest_api import get_client
-from app.models.schemas.computers import details, execute, hardware, shutdown, software
+from app.models.schemas.computers import hardware
 from app.models.schemas.events.rest import EventInRequest
 from app.models.schemas.events.types import EventType
 from app.services import clients
@@ -79,22 +79,12 @@ def generate_event_routes(api_router: APIRouter, event_models: EventModels) -> N
 
 
 GET_METHOD = "GET"
-POST_METHOD = "POST"
 
 get_events = (
-    (EventType.details, GET_METHOD, details.ComputerDetails),
-    (EventType.hardware, GET_METHOD, hardware.HardwareModel),
     (EventType.hardware_mother, GET_METHOD, hardware.MotherBoardModel),
     (EventType.hardware_cpu, GET_METHOD, List[hardware.ProcessorModel]),
     (EventType.hardware_gpu, GET_METHOD, List[hardware.VideoControllerModel]),
     (EventType.hardware_network, GET_METHOD, List[hardware.NetworkAdapterModel]),
     (EventType.hardware_disks, GET_METHOD, List[hardware.PhysicalDiskModel]),
-    (EventType.installed_programs, GET_METHOD, List[software.InstalledProgram]),
 )
 generate_event_routes(router, get_events)
-
-post_events = (
-    (EventType.shutdown, POST_METHOD, shutdown.Shutdown),
-    (EventType.execute, POST_METHOD, execute.ExecuteResult),
-)
-generate_event_routes(router, post_events)
