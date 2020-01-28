@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import DeviceUID
 from app.models.schemas.computers.user import User
+from app.models.schemas.events.types import DeviceUID
 
 
 class OperatingSystem(BaseModel):

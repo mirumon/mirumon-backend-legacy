@@ -2,8 +2,14 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import BaseEventResponse, SyncID
-from app.models.schemas.events.types import EventParams, EventType, Result, ResultWS
+from app.models.schemas.base import BaseEventResponse
+from app.models.schemas.events.types import (
+    EventParams,
+    EventType,
+    Result,
+    ResultWS,
+    SyncID,
+)
 
 
 class RegistrationInRequest(BaseModel):

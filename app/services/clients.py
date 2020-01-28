@@ -4,8 +4,9 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.models.schemas.base import BaseEventResponse, DeviceUID
+from app.models.schemas.base import BaseEventResponse
 from app.models.schemas.events.rest import EventInRequest, EventInResponse
+from app.models.schemas.events.types import DeviceUID
 
 
 class Client:  # noqa: WPS214

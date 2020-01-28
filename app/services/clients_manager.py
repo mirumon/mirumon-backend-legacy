@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from app.models.schemas.base import DeviceUID
+from app.models.schemas.events.types import DeviceUID
 from app.services.clients import Client
 
 

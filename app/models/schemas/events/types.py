@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, Union
+from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import DeviceUID
 from app.models.schemas.computers.details import ComputerDetails, ComputerOverview
 from app.models.schemas.computers.execute import ExecuteCommand, ExecuteResult
 from app.models.schemas.computers.hardware import (
@@ -16,6 +16,9 @@ from app.models.schemas.computers.hardware import (
 )
 from app.models.schemas.computers.shutdown import Shutdown
 from app.models.schemas.computers.software import InstalledProgram
+
+DeviceUID = UUID
+SyncID = UUID
 
 
 class Device(BaseModel):

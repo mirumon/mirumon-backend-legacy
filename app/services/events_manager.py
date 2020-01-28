@@ -6,9 +6,8 @@ from loguru import logger
 from starlette import websockets
 
 from app.common.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from app.models.schemas.base import SyncID
 from app.models.schemas.events.rest import EventInResponse
-from app.models.schemas.events.types import Result
+from app.models.schemas.events.types import Result, SyncID
 from app.services.clients_manager import Client
 
 # Used to indicate that a connection was closed abnormally
@@ -27,7 +26,7 @@ class EventsManager:
         self._asyncio_events: Dict[SyncID, asyncio.Event] = {}
 
     def register_event(self) -> SyncID:
-        event_sync_id = uuid.uuid4()
+        event_sync_id = cast(SyncID, uuid.uuid4())
         self._registered_events.add(event_sync_id)
         return event_sync_id
 
