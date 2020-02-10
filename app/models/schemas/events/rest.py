@@ -2,14 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.schemas.base import BaseEventResponse
-from app.models.schemas.events.types import (
-    EventParams,
-    EventType,
-    Result,
-    ResultWS,
-    SyncID,
-)
+from app.models.domain.types import EventParams, EventType, Result, SyncID
+from app.models.schemas.events.base import BaseEventResponse
 
 
 class RegistrationInRequest(BaseModel):
@@ -32,16 +26,6 @@ class ErrorInResponse(BaseModel):
 
 
 class EventInResponse(BaseEventResponse):
-    event_result: Optional[Result]
+    result: Optional[Result]  # noqa: WPS110
     error: Optional[ErrorInResponse]
     sync_id: SyncID
-
-
-class EventInRequestWS(BaseModel):
-    method: EventType
-
-
-class EventInResponseWS(BaseEventResponse):
-    method: EventType
-    event_result: Optional[ResultWS]
-    error: Optional[ErrorInResponse]

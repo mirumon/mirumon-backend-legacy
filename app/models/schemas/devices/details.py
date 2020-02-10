@@ -3,8 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.models.schemas.computers.user import User
-from app.models.schemas.events.types import DeviceUID
+from app.models.domain.types import DeviceUID
 
 
 class OperatingSystem(BaseModel):
@@ -14,6 +13,12 @@ class OperatingSystem(BaseModel):
     serial_number: str
     number_of_users: int
     install_date: datetime
+
+
+class User(BaseModel):
+    name: str
+    domain: str
+    fullname: str
 
 
 class ComputerDetails(BaseModel):

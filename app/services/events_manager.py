@@ -6,9 +6,9 @@ from loguru import logger
 from starlette import websockets
 
 from app.common.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
+from app.models.domain.types import Result, SyncID
 from app.models.schemas.events.rest import EventInResponse
-from app.models.schemas.events.types import Result, SyncID
-from app.services.clients_manager import Client
+from app.services.clients_manager import DeviceClient
 
 # Used to indicate that a connection was closed abnormally
 # (that is, with no close frame being sent)
@@ -40,7 +40,9 @@ class EventsManager:
         logger.debug(event_response)
         self._asyncio_events[sync_id].set()
 
-    async def wait_event_from_client(self, sync_id: SyncID, client: Client) -> Result:
+    async def wait_event_from_client(
+        self, sync_id: SyncID, client: DeviceClient
+    ) -> Result:
         event = asyncio.Event()
         self._asyncio_events[sync_id] = event
         response_time = REST_MAX_RESPONSE_TIME
@@ -55,7 +57,7 @@ class EventsManager:
                 if not response_time:
                     logger.warning("response timeout while waiting event")
                     raise websockets.WebSocketDisconnect(code=TRY_AGAIN_LATER)
-        return cast(Result, self.pop_event(sync_id).event_result)
+        return cast(Result, self.pop_event(sync_id).result)
 
     def pop_event(self, sync_id: SyncID) -> EventInResponse:
         self._registered_events.remove(sync_id)

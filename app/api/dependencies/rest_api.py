@@ -6,7 +6,7 @@ from app.api.dependencies.managers import (
     clients_manager_retriever,
     events_manager_retriever,
 )
-from app.models.schemas.events.types import DeviceUID, SyncID
+from app.models.domain.types import DeviceUID, SyncID
 from app.services import clients
 from app.services.events_manager import EventsManager
 
@@ -14,7 +14,7 @@ from app.services.events_manager import EventsManager
 def get_client(
     device_uid: DeviceUID,
     clients_manager: ClientsManager = Depends(clients_manager_retriever()),
-) -> clients.Client:
+) -> clients.DeviceClient:
     try:
         return clients_manager.get_client(device_uid)
     except KeyError as missed_websocket_error:

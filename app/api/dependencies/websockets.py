@@ -2,9 +2,10 @@ import uuid
 
 from starlette import websockets
 
-from app.services.clients import Client
+from app.services.clients import DeviceClient
 
 
-async def get_new_client(websocket: websockets.WebSocket,) -> Client:
+async def get_new_client(websocket: websockets.WebSocket,) -> DeviceClient:
     await websocket.accept()
-    return Client(device_uid=uuid.uuid4(), websocket=websocket)
+    # TODO: check device token
+    return DeviceClient(device_uid=uuid.uuid4(), websocket=websocket)

@@ -4,12 +4,12 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.models.schemas.base import BaseEventResponse
+from app.models.domain.types import DeviceUID
+from app.models.schemas.events.base import BaseEventResponse
 from app.models.schemas.events.rest import EventInRequest, EventInResponse
-from app.models.schemas.events.types import DeviceUID
 
 
-class Client:  # noqa: WPS214
+class DeviceClient:  # noqa: WPS214
     def __init__(self, device_uid: DeviceUID, websocket: WebSocket) -> None:
         self.device_uid = device_uid
         self.websocket = websocket
@@ -33,9 +33,9 @@ class Client:  # noqa: WPS214
     async def read_event(self) -> EventInResponse:
         logger.debug("start reading event data")
         payload = await self.websocket.receive_json()
-        if payload.get("event_result"):  # fixme
-            payload["event_result"]["uid"] = self.device_uid
-            payload["event_result"]["online"] = True
+        if payload.get("result") is not None:  # fixme
+            payload["result"]["uid"] = self.device_uid
+            payload["result"]["online"] = True
 
         logger.debug(payload)
         return EventInResponse(**payload)

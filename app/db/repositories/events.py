@@ -3,7 +3,7 @@ from typing import Any, Union
 
 import aioredis
 
-from app.models.schemas.events.types import DeviceUID
+from app.models.domain.types import DeviceUID
 
 
 class EventsRepo:
