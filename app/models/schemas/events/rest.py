@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.domain.types import EventParams, EventType, Result, SyncID
+from app.models.domain.types import DeviceEventType, EventParams, Result, SyncID
 from app.models.schemas.events.base import BaseEventResponse
 
 
@@ -15,7 +15,7 @@ class RegistrationInResponse(BaseModel):
 
 
 class EventInRequest(BaseModel):
-    method: EventType
+    method: DeviceEventType
     event_params: Optional[EventParams] = None
     sync_id: SyncID
 

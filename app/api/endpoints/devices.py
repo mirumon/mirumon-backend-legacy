@@ -12,8 +12,8 @@ from app.api.dependencies.managers import (
 )
 from app.api.dependencies.rest_api import get_client, get_new_sync_id
 from app.common import strings
-from app.models.domain.types import EventType, SyncID
-from app.models.schemas.devices import details, execute, hardware, shutdown, software
+from app.models.domain.types import DeviceEventType, SyncID
+from app.models.schemas.devices import detail, execute, hardware, shutdown, software
 from app.models.schemas.devices.execute import ExecuteCommand
 from app.models.schemas.events.rest import (
     EventInRequest,
@@ -33,12 +33,21 @@ router = APIRouter()
 # TODO: add other events for hardware
 
 
+def _path(event: str) -> str:
+    return "/{0}/{1}".format("{device_uid}", event)
+
+
+def _name(event: str) -> str:
+    return f"events:{event}"
+
+
 @router.post(
     "/registration",
+    status_code=status.HTTP_202_ACCEPTED,
     response_model=RegistrationInResponse,
-    name="events:registration",
+    name=_name("registration"),
     summary="Registration",
-    description="Register a device to receive a token for usage in ws connection",
+    description=strings.DEVICE_REGISTRATION_DESCRIPTION,
 )
 async def register_device(
     registration_data: RegistrationInRequest,
@@ -52,32 +61,32 @@ async def register_device(
 
 
 @router.get(
-    "",
-    response_model=List[details.ComputerOverview],
-    name="events:list",
-    summary="List",
-    description="List of all available devices",
+    path="",
+    response_model=List[detail.DeviceOverview],
+    name=_name(DeviceEventType.list),
+    summary=DeviceEventType.list.capitalize(),
+    description=strings.DEVICES_LIST_DESCRIPTION,
 )
 async def devices_list(
     clients_manager: ClientsManager = Depends(clients_manager_retriever()),
     events_manager: EventsManager = Depends(events_manager_retriever()),
-) -> List[details.ComputerOverview]:
+) -> List[detail.DeviceOverview]:
     return await get_devices_list(clients_manager, events_manager)
 
 
 @router.get(
-    "/{0}/{1}".format("{device_uid}", EventType.detail),
-    name=f"events:{EventType.detail}",
-    summary=EventType.detail.capitalize(),
-    description="Detail information about device",
-    response_model=details.ComputerDetails,
+    path=_path(DeviceEventType.detail),
+    name=_name(DeviceEventType.detail),
+    summary=DeviceEventType.detail.capitalize(),
+    description=strings.DEVICE_DETAIL_DESCRIPTION,
+    response_model=detail.DeviceDetail,
 )
 async def get_device_detail(
     client: clients.DeviceClient = Depends(get_client),
     events_manager: EventsManager = Depends(events_manager_retriever()),
-) -> details.ComputerDetails:
+) -> detail.DeviceDetail:
     event_payload = EventInRequest(
-        method=EventType.detail, sync_id=events_manager.register_event(),
+        method=DeviceEventType.detail, sync_id=events_manager.register_event(),
     )
     await client.send_event(event_payload)
     try:
@@ -86,9 +95,9 @@ async def get_device_detail(
         )
     except WebSocketDisconnect:
         error_detail = (
-            f"{EventType.detail} event is not supported by device"
+            strings.EVENT_NOT_SUPPORTED
             if client.is_connected
-            else "device disconnected"
+            else strings.DEVICE_DISCONNECTED
         )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
@@ -96,10 +105,10 @@ async def get_device_detail(
 
 
 @router.get(
-    "/{0}/{1}".format("{device_uid}", EventType.hardware),
-    name=f"events:{EventType.hardware}",
-    summary=EventType.hardware.capitalize(),
-    description="Hardware information of device",
+    path=_path(DeviceEventType.hardware),
+    name=_name(DeviceEventType.hardware),
+    summary=DeviceEventType.hardware.capitalize(),
+    description=strings.DEVICE_HARDWARE_DESCRIPTION,
     response_model=hardware.HardwareModel,
 )
 async def get_device_hardware(
@@ -107,7 +116,7 @@ async def get_device_hardware(
     events_manager: EventsManager = Depends(events_manager_retriever()),
     sync_id: SyncID = Depends(get_new_sync_id),
 ) -> hardware.HardwareModel:
-    event_payload = EventInRequest(method=EventType.hardware, sync_id=sync_id)
+    event_payload = EventInRequest(method=DeviceEventType.hardware, sync_id=sync_id)
     await client.send_event(event_payload)
     try:
         return await events_manager.wait_event_from_client(
@@ -115,9 +124,9 @@ async def get_device_hardware(
         )
     except WebSocketDisconnect:
         error_detail = (
-            f"{EventType.detail} event is not supported by device"
+            strings.EVENT_NOT_SUPPORTED
             if client.is_connected
-            else "device disconnected"
+            else strings.DEVICE_DISCONNECTED
         )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
@@ -125,18 +134,18 @@ async def get_device_hardware(
 
 
 @router.get(
-    "/{0}/{1}".format("{device_uid}", EventType.software),
-    name=f"events:{EventType.software}",
-    summary=EventType.software.capitalize(),
-    description="Installed programs on device",
+    path=_path(DeviceEventType.software),
+    name=_name(DeviceEventType.software),
+    summary=DeviceEventType.software.capitalize(),
+    description=strings.DEVICE_SOFTWARE_DESCRIPTION,
     response_model=List[software.InstalledProgram],
 )
 async def get_device_software(
     client: clients.DeviceClient = Depends(get_client),
     events_manager: EventsManager = Depends(events_manager_retriever()),
     sync_id: SyncID = Depends(get_new_sync_id),
-) -> details.ComputerDetails:
-    event_payload = EventInRequest(method=EventType.software, sync_id=sync_id)
+) -> detail.DeviceDetail:
+    event_payload = EventInRequest(method=DeviceEventType.software, sync_id=sync_id)
     await client.send_event(event_payload)
     try:
         return await events_manager.wait_event_from_client(
@@ -144,9 +153,9 @@ async def get_device_software(
         )
     except WebSocketDisconnect:
         error_detail = (
-            f"{EventType.detail} event is not supported by device"
+            strings.EVENT_NOT_SUPPORTED
             if client.is_connected
-            else "device disconnected"
+            else strings.DEVICE_DISCONNECTED
         )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
@@ -154,43 +163,10 @@ async def get_device_software(
 
 
 @router.post(
-    "/{0}/{1}".format("{device_uid}", EventType.shutdown),
-    name=f"events:{EventType.shutdown}",
-    summary=f"{EventType.shutdown.capitalize()}",
-    description=(
-        "Shutdown device. "
-        "Does not disconnect the device from the server "
-        "until the device itself turns off"
-    ),
-    response_model=shutdown.Shutdown,
-)
-async def shutdown_device(
-    client: clients.DeviceClient = Depends(get_client),
-    events_manager: EventsManager = Depends(events_manager_retriever()),
-    sync_id: SyncID = Depends(get_new_sync_id),
-) -> details.ComputerDetails:
-    event_payload = EventInRequest(method=EventType.shutdown, sync_id=sync_id)
-    await client.send_event(event_payload)
-    try:
-        return await events_manager.wait_event_from_client(
-            sync_id=event_payload.sync_id, client=client
-        )
-    except WebSocketDisconnect:
-        error_detail = (
-            f"{EventType.detail} event is not supported by device"
-            if client.is_connected
-            else "device disconnected"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
-        )
-
-
-@router.post(
-    "/{0}/{1}".format("{device_uid}", EventType.execute),
-    name=f"events:{EventType.execute}",
-    summary=f"{EventType.execute.capitalize()}",
-    description="Background runs a command on the device",
+    path=_path(DeviceEventType.execute),
+    name=_name(DeviceEventType.execute),
+    summary=DeviceEventType.execute.capitalize(),
+    description=strings.DEVICE_EXECUTE_DESCRIPTION,
     response_model=execute.ExecuteResult,
 )
 async def execute_command_on_device(
@@ -198,9 +174,9 @@ async def execute_command_on_device(
     client: clients.DeviceClient = Depends(get_client),
     events_manager: EventsManager = Depends(events_manager_retriever()),
     sync_id: SyncID = Depends(get_new_sync_id),
-) -> details.ComputerDetails:
+) -> detail.DeviceDetail:
     event_payload = EventInRequest(
-        method=EventType.shutdown, event_params=command_params, sync_id=sync_id
+        method=DeviceEventType.shutdown, event_params=command_params, sync_id=sync_id
     )
     await client.send_event(event_payload)
     try:
@@ -209,9 +185,38 @@ async def execute_command_on_device(
         )
     except WebSocketDisconnect:
         error_detail = (
-            "event is not supported by device"
+            strings.EVENT_NOT_SUPPORTED
             if client.is_connected
-            else "device disconnected"
+            else strings.DEVICE_DISCONNECTED
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
+        )
+
+
+@router.post(
+    path=_path(DeviceEventType.shutdown),
+    name=_name(DeviceEventType.shutdown),
+    summary=DeviceEventType.shutdown.capitalize(),
+    description=strings.SHUTDOWN_DESCRIPTION,
+    response_model=shutdown.Shutdown,
+)
+async def shutdown_device(
+    client: clients.DeviceClient = Depends(get_client),
+    events_manager: EventsManager = Depends(events_manager_retriever()),
+    sync_id: SyncID = Depends(get_new_sync_id),
+) -> detail.DeviceDetail:
+    event_payload = EventInRequest(method=DeviceEventType.shutdown, sync_id=sync_id)
+    await client.send_event(event_payload)
+    try:
+        return await events_manager.wait_event_from_client(
+            sync_id=event_payload.sync_id, client=client
+        )
+    except WebSocketDisconnect:
+        error_detail = (
+            strings.EVENT_NOT_SUPPORTED
+            if client.is_connected
+            else strings.DEVICE_DISCONNECTED
         )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,

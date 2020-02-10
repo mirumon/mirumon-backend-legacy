@@ -21,7 +21,7 @@ class User(BaseModel):
     fullname: str
 
 
-class ComputerDetails(BaseModel):
+class DeviceDetail(BaseModel):
     uid: DeviceUID
     online: bool
     name: str
@@ -31,7 +31,7 @@ class ComputerDetails(BaseModel):
     os: List[OperatingSystem]
 
 
-class ComputerOverview(BaseModel):
+class DeviceOverview(BaseModel):
     uid: DeviceUID
     online: bool
     name: str

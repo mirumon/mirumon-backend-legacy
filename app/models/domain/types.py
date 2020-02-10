@@ -12,13 +12,13 @@ Result = Any
 ResultWS = Any
 
 
-class EventType(str, Enum):  # noqa: WPS600
-    devices_list: str = "devices-list"
+class DeviceEventType(str, Enum):  # noqa: WPS600
+    list: str = "list"
     detail: str = "detail"
     hardware: str = "hardware"
     software: str = "software"
-    shutdown: str = "shutdown"
     execute: str = "execute"
+    shutdown: str = "shutdown"
 
     def __str__(self) -> str:
         return self.value  # pragma: no cover
