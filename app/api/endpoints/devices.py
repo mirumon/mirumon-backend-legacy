@@ -1,4 +1,3 @@
-import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,7 +20,7 @@ from app.models.schemas.events.rest import (
     RegistrationInResponse,
 )
 from app.services import clients
-from app.services.authentication import check_device_shared_token
+from app.services.authentication import check_device_shared_token, generate_new_device
 from app.services.clients_manager import ClientsManager
 from app.services.devices import get_devices_list
 from app.services.events_manager import EventsManager
@@ -56,8 +55,9 @@ async def register_device(
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_TOKEN
         )
-    # TODO: token generation, saving into db
-    return RegistrationInResponse(device_token=str(uuid.uuid4()))
+
+    device_token = await generate_new_device()
+    return RegistrationInResponse(device_token=device_token)
 
 
 @router.get(

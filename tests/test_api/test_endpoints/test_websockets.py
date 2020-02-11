@@ -8,9 +8,9 @@ from tests.testing_helpers.websocket_processing_tools import process_event
 
 def test_empty_computers_list_event(app: FastAPI, test_client: TestClient) -> None:
     with test_client.websocket_connect(app.url_path_for("ws:clients")) as websocket:
-        websocket.send_json({"method": "computers-list"})
+        websocket.send_json({"method": "list"})
         data = websocket.receive_json()
-        assert data == {"method": "computers-list", "result": [], "error": None}
+        assert data == {"method": "list", "result": [], "error": None}
 
 
 def test_computers_list_event(
@@ -21,7 +21,7 @@ def test_computers_list_event(
 ) -> None:
     client, client2 = client_device_factory(2)
     with test_client.websocket_connect(app.url_path_for("ws:clients")) as websocket:
-        websocket.send_json({"method": "computers-list"})
+        websocket.send_json({"method": "list"})
 
         sync_id = client.websocket.receive_json()["sync_id"]
         client.websocket.send_json(
@@ -40,7 +40,7 @@ def test_computers_list_event(
         payload2["uid"] = client2.uid
 
         assert websocket.receive_json() == {
-            "method": "computers-list",
+            "method": "list",
             "result": [payload, payload2],
             "error": None,
         }
@@ -105,7 +105,7 @@ def test_required_event_fields(
     app: FastAPI, test_client: TestClient, device_client, computer_details_payload
 ) -> None:
     invalid_payload = dict(
-        event_result=computer_details_payload,
+        result=computer_details_payload,
         error={
             "code": 1004,
             "message": "test message",
@@ -123,7 +123,7 @@ def test_required_event_fields(
     )
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "detail event is not supported by device"}
+    assert response.json() == {"detail": "event is not supported by device"}
 
     assert device_client.websocket.receive_json() == {
         "error": {
@@ -140,6 +140,30 @@ def test_required_event_fields(
     }
 
 
+def test_error_response_from_device(
+    app: FastAPI, test_client: TestClient, device_client, computer_details_payload
+) -> None:
+    invalid_payload = dict(
+        error={
+            "code": 1004,
+            "message": "test message",
+            "description": "something wrong",
+        },
+    )
+
+    response = process_event(
+        api_method=test_client.get,
+        api_kwargs=dict(
+            url=app.url_path_for(name="events:detail", device_uid=device_client.uid)
+        ),
+        client_websockets=[device_client.websocket],
+        response_payloads=[invalid_payload],
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": {"code": 1004, "message": "test message"}}
+
+
 def test_unregistered_event(
     app: FastAPI, test_client: TestClient, device_client, computer_details_payload
 ):
@@ -147,6 +171,6 @@ def test_unregistered_event(
         {"result": computer_details_payload, "sync_id": str(uuid.uuid4())}
     )
     assert device_client.websocket.receive_json() == {
-        "error": {"code": 400, "message": "'unregistered event'"},
+        "error": {"code": 404, "message": "'unregistered event'"},
         "result": None,
     }

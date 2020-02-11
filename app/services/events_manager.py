@@ -2,6 +2,7 @@ import asyncio
 import uuid
 from typing import Dict, Set, cast
 
+from fastapi import HTTPException
 from loguru import logger
 from starlette import websockets
 
@@ -57,7 +58,11 @@ class EventsManager:
                 if not response_time:
                     logger.warning("response timeout while waiting event")
                     raise websockets.WebSocketDisconnect(code=TRY_AGAIN_LATER)
-        return cast(Result, self.pop_event(sync_id).result)
+
+        response = self.pop_event(sync_id)
+        if response.error:
+            raise HTTPException(status_code=503, detail=response.error.dict())
+        return cast(Result, response.result)
 
     def pop_event(self, sync_id: SyncID) -> EventInResponse:
         self._registered_events.remove(sync_id)

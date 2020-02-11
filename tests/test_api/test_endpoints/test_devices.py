@@ -154,7 +154,7 @@ def test_event_timeout_response_error(
     api_url = app.url_path_for("events:detail", device_uid=device_client.uid)
     response = test_client.get(api_url)
     assert response.status_code == 503
-    assert response.json() == {"detail": "detail event is not supported by device"}
+    assert response.json() == {"detail": "event is not supported by device"}
 
 
 def test_event_validation_error(
@@ -162,25 +162,15 @@ def test_event_validation_error(
 ) -> None:
     url = app.url_path_for("events:execute", device_uid=device_client.uid)
     response = test_client.post(url, json={"bad": "payload"})
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert response.json() == {
         "detail": [
             {
-                "loc": ["event_params", "device_uid"],
+                "loc": ["body", "command_params", "command"],
                 "msg": "field required",
                 "type": "value_error.missing",
-            },
-            {
-                "loc": ["event_params", "device_uid"],
-                "msg": "field required",
-                "type": "value_error.missing",
-            },
-            {
-                "loc": ["event_params", "command"],
-                "msg": "field required",
-                "type": "value_error.missing",
-            },
-        ],
+            }
+        ]
     }
 
 
@@ -197,4 +187,4 @@ def test_validate_event_without_required_fields(
     )
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "detail event is not supported by device"}
+    assert response.json() == {"detail": "event is not supported by device"}

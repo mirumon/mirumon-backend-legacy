@@ -20,7 +20,7 @@ POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
 environ["SECRET_KEY"] = "secret"
 environ["SHARED_TOKEN"] = "secret"
-environ["REST_MAX_RESPONSE_TIME"] = "5.0"
+environ["REST_MAX_RESPONSE_TIME"] = "2.0"
 environ["REST_SLEEP_TIME"] = "0.5"
 
 USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", True)
@@ -44,9 +44,17 @@ DeviceClient = namedtuple("DeviceClient", ["websocket", "uid"])
 
 @pytest.fixture
 def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
+    response = test_client.post(
+        app.url_path_for("events:registration"),
+        json={"shared_token": environ["SHARED_TOKEN"]},
+    )
+    assert response.status_code == 202
+
+    device_token = response.json()["device_token"]
+
     ws = test_client.websocket_connect(app.url_path_for("ws:service"))
     ws.send_json(
-        {"connection_type": "registration", "shared_token": environ["SHARED_TOKEN"],}
+        {"device_token": device_token,}
     )
     uid = ws.receive_json()["device_uid"]
     yield DeviceClient(ws, uid)
@@ -58,12 +66,17 @@ def client_device_factory(
 ) -> Callable[[int], List[DeviceClient]]:
     def device_client(clients_count: int) -> List[DeviceClient]:
         for _ in range(clients_count):
+            response = test_client.post(
+                app.url_path_for("events:registration"),
+                json={"shared_token": environ["SHARED_TOKEN"]},
+            )
+            assert response.status_code == 202
+
+            device_token = response.json()["device_token"]
+
             ws = test_client.websocket_connect(app.url_path_for("ws:service"))
             ws.send_json(
-                {
-                    "connection_type": "registration",
-                    "shared_token": environ["SHARED_TOKEN"],
-                }
+                {"device_token": device_token,}
             )
             uid = ws.receive_json()["device_uid"]
             yield DeviceClient(ws, uid)
