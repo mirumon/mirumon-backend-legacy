@@ -23,7 +23,7 @@ environ["SHARED_TOKEN"] = "secret"
 environ["REST_MAX_RESPONSE_TIME"] = "2.0"
 environ["REST_SLEEP_TIME"] = "0.5"
 
-USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", True)
+USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", False)
 
 
 @pytest.fixture
