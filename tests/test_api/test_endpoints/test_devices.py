@@ -3,52 +3,61 @@ from time import sleep
 from typing import Any
 from uuid import UUID
 
+import httpx
+import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
 from tests.testing_helpers.websocket_processing_tools import (
     process_event,
-    process_event_by_device,
+    process_event_by_device
 )
 
 
-def test_device_registration_success(app: FastAPI, test_client: TestClient) -> None:
+@pytest.mark.asyncio
+async def test_device_registration_success(app: FastAPI,
+                                           client: httpx.AsyncClient) -> None:
     payload = {"shared_token": "secret"}
-    response = test_client.post(app.url_path_for("events:registration"), json=payload)
+    response = await client.post(app.url_path_for("events:registration"), json=payload)
     assert response.status_code == 202
     data = response.json()
     assert UUID(data["device_token"])
 
 
-def test_device_registration_with_invalid_shared_token(
-    app: FastAPI, test_client: TestClient
+@pytest.mark.asyncio
+async def test_device_registration_with_invalid_shared_token(
+        app: FastAPI, client: httpx.AsyncClient
 ) -> None:
     payload = {"shared_token": "not-secret"}
-    response = test_client.post(app.url_path_for("events:registration"), json=payload)
+    response = await client.post(app.url_path_for("events:registration"), json=payload)
     assert response.status_code == 401
     assert response.json() == {"detail": "invalid shared token"}
 
 
-def test_empty_devices_list_event(test_client: TestClient, app: FastAPI) -> None:
+@pytest.mark.asyncio
+async def test_empty_devices_list_event(client: httpx.AsyncClient,
+                                        app: FastAPI) -> None:
     url = app.url_path_for(name="events:list")
-    response = test_client.get(url)
+    response = await client.get(url)
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_devices_list_with_disconnection(
-    app: FastAPI,
-    test_client: TestClient,
-    client_device_factory,
-    computer_inlist_payload,
+@pytest.mark.slow
+@pytest.mark.asyncio
+async def test_devices_list_with_disconnection(
+        app: FastAPI,
+        client: httpx.AsyncClient,
+        new_clients,
+        computer_inlist_payload,
 ) -> None:
     def ws_disconnect(ws: Any) -> None:
         sleep(1)
         ws.close()
 
-    client, client2 = client_device_factory(2)
+    client1, client2 = await new_clients(2)
 
-    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=client.websocket),)
+    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=client1.websocket), )
 
     process = Thread(
         target=process_event_by_device,
@@ -61,7 +70,7 @@ def test_devices_list_with_disconnection(
     process.start()
 
     api_url = app.url_path_for("events:list")
-    response = test_client.get(api_url)
+    response = await client.get(api_url)
     bad_process.join()
     process.join()
 
@@ -71,42 +80,50 @@ def test_devices_list_with_disconnection(
     assert response.json() == [computer_inlist_payload]
 
 
-def test_devices_list_event(
-    app: FastAPI,
-    test_client: TestClient,
-    client_device_factory,
-    computer_inlist_payload,
+@pytest.mark.asyncio
+async def test_devices_list_event(
+        app: FastAPI,
+        client: httpx.AsyncClient,
+        new_clients,
+        computer_inlist_payload,
 ) -> None:
     ws = []
     rest_resp = []
-    for client in client_device_factory(3):
+    for device_client in await new_clients(3):
         payload = computer_inlist_payload.copy()
-        payload["uid"] = client.uid
+        payload["uid"] = device_client.uid
         payload["online"] = True
         rest_resp.append(payload)
-        ws.append(client.websocket)
+        ws.append(device_client.websocket)
 
     event_resp_payload = {"result": computer_inlist_payload}
-    response = process_event(
-        api_method=test_client.get,
+    r = [event_resp_payload, event_resp_payload, event_resp_payload]
+    print(r)
+    print(rest_resp)
+    response = await process_event(
+        api_method=client.get,
         api_kwargs=dict(url=app.url_path_for(name="events:list")),
         client_websockets=ws,
-        response_payloads=[event_resp_payload, event_resp_payload, event_resp_payload],
+        response_payloads=r,
     )
+    print("new")
+    print(r)
+    print(rest_resp)
     assert response.status_code == 200
     assert response.json() == rest_resp
 
 
-def test_device_detail_event(
-    app: FastAPI,
-    test_client: TestClient,
-    client_device_factory,
-    computer_details_payload,
+@pytest.mark.asyncio
+async def test_device_detail_event(
+        app: FastAPI,
+        client: httpx.AsyncClient,
+        new_clients,
+        computer_details_payload,
 ) -> None:
-    for device_client in client_device_factory(1):
+    for device_client in await new_clients(1):
         api_url = app.url_path_for(name="events:detail", device_uid=device_client.uid)
-        response = process_event(
-            api_method=test_client.get,
+        response = await process_event(
+            api_method=client.get,
             api_kwargs=dict(url=api_url),
             client_websockets=[device_client.websocket],
             response_payloads=[{"result": computer_details_payload}],
@@ -129,8 +146,9 @@ def test_device_not_found(app: FastAPI, test_client: TestClient) -> None:
     assert response.json() == {"detail": "device not found"}
 
 
-def test_device_disconnection_in_detail_event(
-    app: FastAPI, test_client: TestClient, device_client
+@pytest.mark.asyncio
+async def test_device_disconnection_in_detail_event(
+        app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
     def ws_disconnect(ws: Any) -> None:
         sleep(2)
@@ -138,30 +156,32 @@ def test_device_disconnection_in_detail_event(
 
     api_url = app.url_path_for("events:detail", device_uid=device_client.uid)
 
-    process = Thread(target=ws_disconnect, kwargs=dict(ws=device_client.websocket),)
+    process = Thread(target=ws_disconnect, kwargs=dict(ws=device_client.websocket), )
     process.start()
 
-    response = test_client.get(api_url)
+    response = await client.get(api_url)
     process.join()
 
     assert response.status_code == 503
     assert response.json() == {"detail": "device disconnected"}
 
 
-def test_event_timeout_response_error(
-    app: FastAPI, test_client: TestClient, device_client
+@pytest.mark.asyncio
+async def test_event_timeout_response_error(
+        app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
     api_url = app.url_path_for("events:detail", device_uid=device_client.uid)
-    response = test_client.get(api_url)
+    response = await client.get(api_url)
     assert response.status_code == 503
     assert response.json() == {"detail": "event is not supported by device"}
 
 
-def test_event_validation_error(
-    app: FastAPI, test_client: TestClient, device_client
+@pytest.mark.asyncio
+async def test_event_validation_error(
+        app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
     url = app.url_path_for("events:execute", device_uid=device_client.uid)
-    response = test_client.post(url, json={"bad": "payload"})
+    response = await client.post(url, json={"bad": "payload"})
     assert response.status_code == 422
     assert response.json() == {
         "detail": [
@@ -174,11 +194,12 @@ def test_event_validation_error(
     }
 
 
-def test_validate_event_without_required_fields(
-    app: FastAPI, test_client: TestClient, device_client, computer_details_payload
+@pytest.mark.asyncio
+async def test_validate_event_without_required_fields(
+        app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
-    response = process_event(
-        api_method=test_client.get,
+    response = await process_event(
+        api_method=client.get,
         api_kwargs=dict(
             url=app.url_path_for(name="events:detail", device_uid=device_client.uid)
         ),

@@ -1,16 +1,21 @@
 import warnings
-from collections import namedtuple
 from os import environ
 from typing import Callable, List
 
 import alembic
 import alembic.config
 import docker
+import httpx
 import pytest
+from asgi_lifespan import LifespanManager
+from asyncpg import Connection
+from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from tests.testing_helpers.test_pools import ping_postgres, create_postgres_container
+from tests.testing_helpers.test_pools import ping_postgres, create_postgres_container, \
+    FakePool
+from tests.testing_helpers.websocket_processing_tools import DeviceClient
 
 
 @pytest.fixture(scope="session")
@@ -48,7 +53,7 @@ def postgres_server(docker_client: docker.APIClient) -> None:
 
 
 @pytest.fixture(autouse=True)
-def migrations(postgres_server):
+def migrations(postgres_server) -> None:
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     alembic.config.main(argv=["upgrade", "head"])
     yield
@@ -63,17 +68,41 @@ def app(migrations) -> FastAPI:
 
 
 @pytest.fixture
-def test_client(app: FastAPI) -> None:
+def test_client(app: FastAPI) -> TestClient:
     with TestClient(app) as client:
         yield client
 
 
-DeviceClient = namedtuple("DeviceClient", ["websocket", "uid"])
+@pytest.fixture(autouse=True)
+async def client(app: FastAPI) -> httpx.AsyncClient:
+    async with LifespanManager(app):
+        startup = app.router.lifespan.startup_handlers
+        shutdown = app.router.lifespan.shutdown_handlers
+
+        app.router.lifespan.startup_handlers = []
+        app.router.lifespan.shutdown_handlers = []
+
+        app.state.pool = await FakePool.create_pool(app.state.pool)
+        connection: Connection
+        async with app.state.pool.acquire() as connection:
+            transaction: Transaction = connection.transaction()
+            await transaction.start()
+            async with httpx.AsyncClient(
+                    app=app,
+                    base_url="http://testserver",
+            ) as client:
+                yield client
+            await transaction.rollback()
+        await app.state.pool.close()
+
+        app.router.lifespan.startup_handlers = startup
+        app.router.lifespan.shutdown_handlers = shutdown
 
 
 @pytest.fixture
-def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
-    response = test_client.post(
+async def device_client(client: httpx.AsyncClient, test_client: TestClient,
+                        app: FastAPI) -> DeviceClient:
+    response = await client.post(
         app.url_path_for("events:registration"),
         json={"shared_token": environ["SHARED_TOKEN"]},
     )
@@ -90,12 +119,11 @@ def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
 
 
 @pytest.fixture
-def client_device_factory(
-        test_client: TestClient, app: FastAPI
-) -> Callable[[int], List[DeviceClient]]:
-    def device_client(clients_count: int) -> List[DeviceClient]:
+def new_clients(client: httpx.AsyncClient, app: FastAPI, test_client) -> Callable:
+    async def foo(clients_count: int) -> List[DeviceClient]:
+        devices = []
         for _ in range(clients_count):
-            response = test_client.post(
+            response = await client.post(
                 app.url_path_for("events:registration"),
                 json={"shared_token": environ["SHARED_TOKEN"]},
             )
@@ -108,12 +136,13 @@ def client_device_factory(
                 {"device_token": device_token, }
             )
             uid = ws.receive_json()["device_uid"]
-            yield DeviceClient(ws, uid)
+            devices.append(DeviceClient(ws, uid))
+        return devices
 
-    return device_client
+    return foo
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def computer_inlist_payload() -> dict:
     return {
         "name": "string",
@@ -123,7 +152,7 @@ def computer_inlist_payload() -> dict:
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def computer_details_payload() -> dict:
     return {
         "name": "string",

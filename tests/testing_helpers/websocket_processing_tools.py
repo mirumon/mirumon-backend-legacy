@@ -1,12 +1,15 @@
+from collections import namedtuple
 from threading import Thread
 from typing import Any, Callable, List
 
+DeviceClient = namedtuple("DeviceClient", ["websocket", "uid"])
 
-def process_event(
-    api_method: Callable,
-    api_kwargs: dict,
-    client_websockets: List[Any],
-    response_payloads: List[Any],
+
+async def process_event(
+        api_method: Callable,
+        api_kwargs: dict,
+        client_websockets: List[Any],
+        response_payloads: List[Any],
 ):
     processes = []
     for client_websocket, response_payload in zip(client_websockets, response_payloads):
@@ -19,7 +22,7 @@ def process_event(
         process.start()
         processes.append(process)
 
-    response = api_method(**api_kwargs)
+    response = await api_method(**api_kwargs)
 
     for process in processes:
         process.join()

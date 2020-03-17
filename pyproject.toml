@@ -15,8 +15,8 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.8"
 
-uvicorn = "^0.10.8"
-fastapi = "^0.44.0"
+uvicorn = "^0.11"
+fastapi = "^0.47"
 python-multipart = "^0.0.5"
 
 passlib = {version = "^1.7", extras = ["bcrypt"]}
@@ -30,6 +30,7 @@ databases = {version = "^0.2.6", extras = ["postgresql"]}
 loguru = "^0.3.2"
 
 toml = "^0.10.0"
+pytest-env = "^0.6"
 
 
 [tool.poetry.dev-dependencies]
@@ -42,13 +43,12 @@ mypy = "^0.740"
 flake8-fixme = "^1.1"
 
 pytest = "^5.3"
-pytest-env = "^0.6.2"
 pytest-cov = "^2.8"
 pytest-asyncio = "^0.10.0"
 pytest-xdist = "^1.30"
 docker = "^4.0"
 requests = "^2.22"
-httpx = "^0.8.0"
+httpx = "^0.11"
 asgi-lifespan = "^0.6.0"
 
 
