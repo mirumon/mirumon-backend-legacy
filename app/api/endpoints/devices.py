@@ -13,6 +13,7 @@ from app.api.dependencies.rest_api import get_client, get_new_sync_id
 from app.common import strings
 from app.models.domain.types import DeviceEventType, SyncID
 from app.models.schemas.devices import detail, execute, hardware, shutdown, software
+from app.models.schemas.devices.detail import DeviceDetail
 from app.models.schemas.devices.execute import ExecuteCommand
 from app.models.schemas.events.rest import (
     EventInRequest,
@@ -90,9 +91,10 @@ async def get_device_detail(
     )
     await client.send_event(event_payload)
     try:
-        return await events_manager.wait_event_from_client(
+        payload = await events_manager.wait_event_from_client(
             sync_id=event_payload.sync_id, client=client
         )
+        return DeviceDetail(uid=client.device_uid, online=True, **payload)
     except WebSocketDisconnect:
         error_detail = (
             strings.EVENT_NOT_SUPPORTED

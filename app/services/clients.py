@@ -33,10 +33,6 @@ class DeviceClient:  # noqa: WPS214
     async def read_event(self) -> EventInResponse:
         logger.debug("start reading event data")
         payload = await self.websocket.receive_json()
-        if payload.get("result") is not None:  # fixme
-            payload["result"]["uid"] = self.device_uid
-            payload["result"]["online"] = True
-
         logger.debug(payload)
         return EventInResponse(**payload)
 

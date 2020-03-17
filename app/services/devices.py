@@ -14,7 +14,7 @@ from app.services.events_manager import EventsManager
 async def get_devices_list(
     clients_manager: ClientsManager, events_manager: EventsManager,
 ) -> List[DeviceOverview]:
-    computers = []
+    devices = []
 
     for client in clients_manager.clients:
         sync_id = events_manager.register_event()
@@ -22,11 +22,12 @@ async def get_devices_list(
             EventInRequest(method=DeviceEventType.list, sync_id=sync_id)
         )
         try:
-            computer = await events_manager.wait_event_from_client(
+            device = await events_manager.wait_event_from_client(
                 sync_id=sync_id, client=client
             )
         except (WebSocketDisconnect, ValidationError) as error:
             logger.debug(f"device client skipped in list event. error: {error}")
             continue
-        computers.append(cast(DeviceOverview, computer))
-    return computers
+        else:
+            devices.append(DeviceOverview(uid=client.device_uid, online=True, **device))
+    return devices
