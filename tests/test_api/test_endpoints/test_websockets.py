@@ -17,10 +17,7 @@ def test_empty_computers_list_event(app: FastAPI, test_client: TestClient) -> No
 
 @pytest.mark.asyncio
 async def test_computers_list_event(
-    app: FastAPI,
-    test_client: TestClient,
-    new_clients,
-    computer_inlist_payload,
+    app: FastAPI, test_client: TestClient, new_clients, computer_inlist_payload,
 ) -> None:
     client, client2 = await new_clients(2)
     with test_client.websocket_connect(app.url_path_for("ws:clients")) as websocket:
@@ -49,9 +46,7 @@ async def test_computers_list_event(
         }
 
 
-def test_event_invalid_payload(
-    device_client
-) -> None:
+def test_event_invalid_payload(device_client) -> None:
     device_client.websocket.send_json({"invalid": "payload"})
     assert device_client.websocket.receive_json() == {
         "error": {
@@ -73,9 +68,7 @@ def test_event_invalid_payload(
     }
 
 
-def test_validation_error_field_in_event(
-   device_client, computer_details_payload
-) -> None:
+def test_validation_error_field_in_event(device_client) -> None:
     device_client.websocket.send_json(
         {"result": None, "error": {"detail": "wrong event"}}
     )
@@ -102,6 +95,7 @@ def test_validation_error_field_in_event(
         },
         "result": None,
     }
+
 
 @pytest.mark.asyncio
 async def test_required_event_fields(
@@ -142,6 +136,7 @@ async def test_required_event_fields(
         "result": None,
     }
 
+
 @pytest.mark.asyncio
 async def test_error_response_from_device(
     app: FastAPI, client: httpx.AsyncClient, device_client
@@ -168,7 +163,7 @@ async def test_error_response_from_device(
 
 
 def test_unregistered_event(
-    device_client, computer_details_payload
+    app: FastAPI, test_client: TestClient, device_client, computer_details_payload
 ):
     device_client.websocket.send_json(
         {"result": computer_details_payload, "sync_id": str(uuid.uuid4())}

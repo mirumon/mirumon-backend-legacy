@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List
 
 from loguru import logger
 from pydantic import ValidationError

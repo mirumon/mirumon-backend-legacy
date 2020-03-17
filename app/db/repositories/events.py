@@ -2,7 +2,6 @@ import json
 from typing import Any, Union
 
 import aioredis
-
 from app.models.domain.types import DeviceUID
 
 

@@ -6,10 +6,10 @@ DeviceClient = namedtuple("DeviceClient", ["websocket", "uid"])
 
 
 async def process_event(
-        api_method: Callable,
-        api_kwargs: dict,
-        client_websockets: List[Any],
-        response_payloads: List[Any],
+    api_method: Callable,
+    api_kwargs: dict,
+    client_websockets: List[Any],
+    response_payloads: List[Any],
 ):
     processes = []
     for client_websocket, response_payload in zip(client_websockets, response_payloads):

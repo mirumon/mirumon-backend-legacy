@@ -1,12 +1,14 @@
 import time
 import uuid
 from functools import wraps
-from typing import Any, Callable, Type
+from inspect import Traceback
+from typing import Any, Callable, Optional, Type
 
 import docker.errors
 import psycopg2
+from asyncpg import Connection
+from asyncpg.pool import Pool
 from docker import APIClient
-
 
 POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
@@ -55,16 +57,6 @@ def ping_postgres(dsn: str):
     cur.execute("CREATE EXTENSION hstore; DROP EXTENSION hstore;")
     cur.close()
     conn.close()
-
-
-from inspect import Traceback
-from typing import Any, Callable, Optional, Type
-
-import docker.errors
-import psycopg2
-from asyncpg import Connection
-from asyncpg.pool import Pool
-from docker import APIClient
 
 
 class FakePoolAcquireContext:

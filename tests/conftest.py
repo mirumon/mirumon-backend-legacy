@@ -13,8 +13,11 @@ from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from tests.testing_helpers.test_pools import ping_postgres, create_postgres_container, \
-    FakePool
+from tests.testing_helpers.test_pools import (
+    FakePool,
+    create_postgres_container,
+    ping_postgres,
+)
 from tests.testing_helpers.websocket_processing_tools import DeviceClient
 
 
@@ -88,8 +91,7 @@ async def client(app: FastAPI) -> httpx.AsyncClient:
             transaction: Transaction = connection.transaction()
             await transaction.start()
             async with httpx.AsyncClient(
-                    app=app,
-                    base_url="http://testserver",
+                app=app, base_url="http://testserver",
             ) as client:
                 yield client
             await transaction.rollback()
@@ -100,8 +102,9 @@ async def client(app: FastAPI) -> httpx.AsyncClient:
 
 
 @pytest.fixture
-async def device_client(client: httpx.AsyncClient, test_client: TestClient,
-                        app: FastAPI) -> DeviceClient:
+async def device_client(
+    client: httpx.AsyncClient, test_client: TestClient, app: FastAPI
+) -> DeviceClient:
     response = await client.post(
         app.url_path_for("events:registration"),
         json={"shared_token": environ["SHARED_TOKEN"]},
@@ -112,7 +115,7 @@ async def device_client(client: httpx.AsyncClient, test_client: TestClient,
 
     ws = test_client.websocket_connect(app.url_path_for("ws:service"))
     ws.send_json(
-        {"device_token": device_token, }
+        {"device_token": device_token,}
     )
     uid = ws.receive_json()["device_uid"]
     yield DeviceClient(ws, uid)
@@ -133,7 +136,7 @@ def new_clients(client: httpx.AsyncClient, app: FastAPI, test_client) -> Callabl
 
             ws = test_client.websocket_connect(app.url_path_for("ws:service"))
             ws.send_json(
-                {"device_token": device_token, }
+                {"device_token": device_token,}
             )
             uid = ws.receive_json()["device_uid"]
             devices.append(DeviceClient(ws, uid))
