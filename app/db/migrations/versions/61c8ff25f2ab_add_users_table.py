@@ -116,3 +116,8 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("users")
     op.execute("DROP FUNCTION update_updated_at_column")
+    op.execute(
+        """
+    DROP EXTENSION "uuid-ossp"
+    """
+    )
