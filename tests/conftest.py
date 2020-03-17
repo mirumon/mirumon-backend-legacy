@@ -1,33 +1,62 @@
-import uuid
 import warnings
 from collections import namedtuple
-from os import environ, getenv
-from typing import Callable, List, Optional
+from os import environ
+from typing import Callable, List
 
 import alembic
-import docker as libdocker
+import alembic.config
+import docker
 import pytest
-from asgi_lifespan import LifespanManager
-from asyncpg import Connection
-from asyncpg.transaction import Transaction
 from fastapi import FastAPI
-from httpx import Client
 from starlette.testclient import TestClient
 
-from tests.testing_helpers.test_pools import FakePool, ping_postgres, pull_image
+from tests.testing_helpers.test_pools import ping_postgres, create_postgres_container
 
-POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
-environ["SECRET_KEY"] = "secret"
-environ["SHARED_TOKEN"] = "secret"
-environ["REST_MAX_RESPONSE_TIME"] = "2.0"
-environ["REST_SLEEP_TIME"] = "0.5"
+@pytest.fixture(scope="session")
+def docker_client() -> docker.APIClient:
+    with docker.APIClient(version="auto") as client:
+        yield client
 
-USE_LOCAL_DB = getenv("USE_LOCAL_DB_FOR_TEST", False)
+
+@pytest.fixture(scope="session", autouse=True)
+def postgres_server(docker_client: docker.APIClient) -> None:
+    test_db_dsn = environ.get("TEST_DB_CONNECTION")
+    use_local_db = environ.get("DB")
+    if test_db_dsn:  # pragma: no cover
+        environ["DB_CONNECTION"] = test_db_dsn
+        ping_postgres(test_db_dsn)
+        yield
+    elif use_local_db:  # pragma: no cover
+        default_dsn = environ["DEFAULT_TEST_DB_CONNECTION"]
+        environ["DB_CONNECTION"] = default_dsn
+        ping_postgres(default_dsn)
+        yield
+    else:
+        container = create_postgres_container(docker_client)
+        try:
+            docker_client.start(container=container["Id"])
+            inspection = docker_client.inspect_container(container["Id"])
+            host = inspection["NetworkSettings"]["IPAddress"]
+            docker_dsn = f"postgres://postgres:postgres@{host}/postgres"
+            environ["DB_CONNECTION"] = docker_dsn
+            ping_postgres(docker_dsn)
+            yield
+        finally:
+            docker_client.kill(container["Id"])
+            docker_client.remove_container(container["Id"])
+
+
+@pytest.fixture(autouse=True)
+def migrations(postgres_server):
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    alembic.config.main(argv=["upgrade", "head"])
+    yield
+    alembic.config.main(argv=["downgrade", "base"])
 
 
 @pytest.fixture
-def app() -> FastAPI:
+def app(migrations) -> FastAPI:
     from app.main import get_application  # local import for testing purpose
 
     return get_application()
@@ -54,7 +83,7 @@ def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
 
     ws = test_client.websocket_connect(app.url_path_for("ws:service"))
     ws.send_json(
-        {"device_token": device_token,}
+        {"device_token": device_token, }
     )
     uid = ws.receive_json()["device_uid"]
     yield DeviceClient(ws, uid)
@@ -62,7 +91,7 @@ def device_client(test_client: TestClient, app: FastAPI) -> DeviceClient:
 
 @pytest.fixture
 def client_device_factory(
-    test_client: TestClient, app: FastAPI
+        test_client: TestClient, app: FastAPI
 ) -> Callable[[int], List[DeviceClient]]:
     def device_client(clients_count: int) -> List[DeviceClient]:
         for _ in range(clients_count):
@@ -76,82 +105,12 @@ def client_device_factory(
 
             ws = test_client.websocket_connect(app.url_path_for("ws:service"))
             ws.send_json(
-                {"device_token": device_token,}
+                {"device_token": device_token, }
             )
             uid = ws.receive_json()["device_uid"]
             yield DeviceClient(ws, uid)
 
     return device_client
-
-
-@pytest.fixture(scope="session")
-def docker() -> Optional[libdocker.APIClient]:
-    if USE_LOCAL_DB:  # pragma: no cover
-        return None
-    return libdocker.APIClient(version="auto")  # pragma: no cover
-
-
-@pytest.fixture(scope="session", autouse=True)
-def postgres_server(docker: libdocker.APIClient) -> None:
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-    if not USE_LOCAL_DB:  # pragma: no cover
-        pull_image(docker, POSTGRES_DOCKER_IMAGE)
-
-        container = docker.create_container(
-            image=POSTGRES_DOCKER_IMAGE,
-            name="test-postgres-{}".format(uuid.uuid4()),
-            detach=True,
-        )
-        docker.start(container=container["Id"])
-        inspection = docker.inspect_container(container["Id"])
-        host = inspection["NetworkSettings"]["IPAddress"]
-
-        dsn = f"postgres://postgres:postgres@{host}/postgres"
-
-        try:
-            ping_postgres(dsn)
-            environ["DB_CONNECTION"] = dsn
-
-            alembic.config.main(argv=["upgrade", "head"])
-
-            yield container
-
-            alembic.config.main(argv=["downgrade", "base"])
-        finally:
-            docker.kill(container["Id"])
-            docker.remove_container(container["Id"])
-    else:  # pragma: no cover
-        yield
-        return
-
-
-# here starts db transaction that is required for almost all tests
-@pytest.fixture(autouse=True)
-async def client(app: FastAPI) -> Client:
-    async with LifespanManager(app):
-        startup = app.router.lifespan.startup_handlers
-        shutdown = app.router.lifespan.shutdown_handlers
-
-        app.router.lifespan.startup_handlers = []
-        app.router.lifespan.shutdown_handlers = []
-
-        app.state.pool = await FakePool.create_pool(app.state.pool)
-        connection: Connection
-        async with app.state.pool.acquire() as connection:
-            transaction: Transaction = connection.transaction()
-            await transaction.start()
-            async with Client(
-                app=app,
-                base_url="http://testserver",
-                headers={"Content-Type": "application/json"},
-            ) as client:
-                yield client
-            await transaction.rollback()
-        await app.state.pool.close()
-
-        app.router.lifespan.startup_handlers = startup
-        app.router.lifespan.shutdown_handlers = shutdown
 
 
 @pytest.fixture(scope="session")
