@@ -1,32 +1,24 @@
 from datetime import datetime, timedelta
 from typing import Dict
 
+import bcrypt
 import jwt
+from passlib.context import CryptContext
 from pydantic import ValidationError
 
-from app.domain.user.jwt import JWTMeta, User
 from app.domain.user.user import User
 
 JWT_SUBJECT = "access"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE = timedelta(weeks=1)
 
 
-def _create_jwt_token(
-    *, jwt_content: Dict[str, str], secret_key: str, expires_delta: timedelta
+def create_jwt_token(
+    *, jwt_content: Dict[str], secret_key: str, expires_delta: timedelta
 ) -> str:
     to_encode = jwt_content.copy()
     expire = datetime.utcnow() + expires_delta
-    to_encode.update(JWTMeta(exp=expire, sub=JWT_SUBJECT).dict())
+    to_encode.update({"exp": expire, "sub": JWT_SUBJECT})
     return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM).decode()
-
-
-def create_access_token_for_user(user: User, secret_key: str) -> str:
-    return _create_jwt_token(
-        jwt_content=User(username=user.username, scopes=user.scopes).dict(),
-        secret_key=secret_key,
-        expires_delta=ACCESS_TOKEN_EXPIRE,
-    )
 
 
 def get_user_from_token(token: str, secret_key: str) -> User:
@@ -39,3 +31,18 @@ def get_user_from_token(token: str, secret_key: str) -> User:
         return User(**user_from_jwt)
     except ValidationError as validation_error:
         raise ValueError("malformed payload in token") from validation_error
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def generate_salt() -> str:
+    return bcrypt.gensalt().decode()
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)

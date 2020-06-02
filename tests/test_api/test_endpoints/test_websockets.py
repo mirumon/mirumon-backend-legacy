@@ -35,9 +35,9 @@ async def test_computers_list_event(
 
         payload = computer_inlist_payload
         payload["online"] = True
-        payload["uid"] = client.uid
+        payload["uid"] = client.id
         payload2 = computer_inlist_payload.copy()
-        payload2["uid"] = client2.uid
+        payload2["uid"] = client2.id
 
         assert websocket.receive_json() == {
             "method": "list",
@@ -113,7 +113,7 @@ async def test_required_event_fields(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.uid)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[invalid_payload],
@@ -152,7 +152,7 @@ async def test_error_response_from_device(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.uid)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[invalid_payload],

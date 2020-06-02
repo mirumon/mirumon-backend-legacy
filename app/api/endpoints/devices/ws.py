@@ -8,7 +8,8 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.domain.event.rest import ErrorInResponse
 from app.domain.event.ws import EventInRequestWS, EventInResponseWS
-from app.services.devices_service import DeviceClient, DevicesService
+from app.services.devices.client import DeviceClient
+from app.services.devices.devices_service import DevicesService
 
 router = APIRouter()
 

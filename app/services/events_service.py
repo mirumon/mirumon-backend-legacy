@@ -12,7 +12,7 @@ from app.domain.event.rest import EventInResponse
 # (that is, with no close frame being sent)
 # when a status code is expected.
 from app.domain.types import Result, SyncID
-from app.services.devices_service import DeviceClient
+from app.services.devices.client import DeviceClient
 
 ABNORMAL_CLOSURE = 1006
 # The server is terminating the connection due to a temporary condition,
@@ -69,3 +69,27 @@ class EventsService:
         self._registered_events.remove(sync_id)
         self._asyncio_events.pop(sync_id)
         return self._events_responses.pop(sync_id)
+
+    # old devices list
+    async def send_bulk_event(
+        self, clients_manager: ClientsManager, events_manager: EventsManager,
+    ) -> List[DeviceOverview]:
+        devices = []
+
+        for client in list(self._clients.values()):
+            sync_id = events_manager.register_event()
+            await client.send_event(
+                EventInRequest(method=DeviceEventType.list, sync_id=sync_id)
+            )
+            try:
+                device = await events_manager.wait_event_from_client(
+                    sync_id=sync_id, client=client
+                )
+            except (WebSocketDisconnect, ValidationError) as error:
+                logger.debug(f"device client skipped in list event. error: {error}")
+                continue
+            else:
+                devices.append(
+                    DeviceOverview(uid=client.device_uid, online=True, **device)
+                )
+        return devices

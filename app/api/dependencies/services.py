@@ -3,13 +3,14 @@ from typing import AsyncGenerator, Callable, Type
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import Depends
+from fastapi.security import SecurityScopes
 from starlette.requests import Request
 
 from app.api.dependencies.settings import get_app_settings
 from app.components.config import APPSettings
 from app.database.repositories.base_repo import BaseRepository
 from app.database.repositories.users_repo import UsersRepository
-from app.services.devices_service import DevicesService
+from app.services.devices.devices_service import DevicesService
 from app.services.events_service import EventsService
 from app.services.users.users_service import UsersService
 
@@ -33,10 +34,13 @@ def _get_repository(repository_type: Type[BaseRepository]) -> Callable:
 
 
 def get_users_service(
+    security_scopes: SecurityScopes,
     users_repository: UsersRepository = Depends(_get_repository(UsersRepository)),
     settings: APPSettings = Depends(get_app_settings),
 ) -> UsersService:
-    return UsersService(users_repo=users_repository, settings=settings)
+    return UsersService(
+        users_repo=users_repository, settings=settings, security_scopes=security_scopes
+    )
 
 
 def get_devices_service(

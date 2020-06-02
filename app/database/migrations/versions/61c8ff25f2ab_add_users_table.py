@@ -93,7 +93,7 @@ def upgrade() -> None:
     create_users_table()
 
     admin_user = UserInDB(username=FIRST_SUPERUSER, scopes=INITIAL_SUPERUSER_SCOPES)
-    admin_user.change_password(str(FIRST_SUPERUSER_PASSWORD))
+    admin_user.change_user_password(str(FIRST_SUPERUSER_PASSWORD))
 
     conn = op.get_bind()
     conn.execute(

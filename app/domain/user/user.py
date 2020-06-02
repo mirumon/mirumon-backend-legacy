@@ -1,27 +1,18 @@
-from typing import List
+from typing import List, NewType
+from uuid import UUID
 
-from pydantic import BaseModel
-
-from app.domain.mixins import DateTimeModelMixin, IDModelMixin
+from app.components.core import APIModel
 from app.domain.user.scopes import Scopes
-from app.services.users import security
 
-# RawPassword = NewType("RawPassword", str)
+UserUID = NewType("UserUID", UUID)
 
 
-class User(BaseModel):
+class User(APIModel):
+    id: UserUID
     username: str
     scopes: List[Scopes]
 
 
-class UserInDB(IDModelMixin, DateTimeModelMixin, User):
+class UserInDB(User):
     salt: str = ""
     hashed_password: str = ""
-
-    # TODO
-    def check_password(self, password: str) -> bool:
-        return security.verify_password(self.salt + password, self.hashed_password)
-
-    def change_password(self, password: str) -> None:
-        self.salt = security.generate_salt()
-        self.hashed_password = security.get_password_hash(self.salt + password)

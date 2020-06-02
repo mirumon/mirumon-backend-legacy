@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 from fastapi import Depends, HTTPException, Security
-from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from fastapi.security import OAuth2PasswordBearer
 from starlette import status
 
 from app.api.dependencies.services import get_users_service
@@ -23,7 +23,6 @@ oauth2_schema = OAuth2PasswordBearer(
 
 
 async def _get_current_user(
-    security_scopes: SecurityScopes,
     token: str = Depends(oauth2_schema),
     users_service: UsersService = Depends(get_users_service),
 ) -> User:

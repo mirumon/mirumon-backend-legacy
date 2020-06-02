@@ -75,7 +75,7 @@ async def test_devices_list_with_disconnection(
 
     assert response.status_code == 200
     computer_inlist_payload["online"] = True
-    computer_inlist_payload["uid"] = client2.uid
+    computer_inlist_payload["uid"] = client2.id
     assert response.json() == [computer_inlist_payload]
 
 
@@ -88,7 +88,7 @@ async def test_devices_list_event(
     rest_resp = []
     for device_client in await new_clients(3):
         payload = computer_inlist_payload.copy()
-        payload["uid"] = device_client.uid
+        payload["uid"] = device_client.id
         payload["online"] = True
         rest_resp.append(payload)
         ws.append(device_client.websocket)
@@ -109,7 +109,7 @@ async def test_device_detail_event(
     app: FastAPI, client: httpx.AsyncClient, new_clients, computer_details_payload,
 ) -> None:
     for device_client in await new_clients(1):
-        api_url = app.url_path_for(name="events:detail", device_uid=device_client.uid)
+        api_url = app.url_path_for(name="events:detail", device_uid=device_client.id)
         response = await process_event(
             api_method=client.get,
             api_kwargs=dict(url=api_url),
@@ -117,7 +117,7 @@ async def test_device_detail_event(
             response_payloads=[{"result": computer_details_payload}],
         )
 
-        computer_details_payload["uid"] = device_client.uid
+        computer_details_payload["uid"] = device_client.id
         computer_details_payload["online"] = True
 
         assert response.status_code == 200
@@ -142,7 +142,7 @@ async def test_device_disconnection_in_detail_event(
         sleep(2)
         ws.close()
 
-    api_url = app.url_path_for("events:detail", device_uid=device_client.uid)
+    api_url = app.url_path_for("events:detail", device_uid=device_client.id)
 
     process = Thread(target=ws_disconnect, kwargs=dict(ws=device_client.websocket),)
     process.start()
@@ -158,7 +158,7 @@ async def test_device_disconnection_in_detail_event(
 async def test_event_timeout_response_error(
     app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
-    api_url = app.url_path_for("events:detail", device_uid=device_client.uid)
+    api_url = app.url_path_for("events:detail", device_uid=device_client.id)
     response = await client.get(api_url)
     assert response.status_code == 503
     assert response.json() == {"detail": "event is not supported by device"}
@@ -168,7 +168,7 @@ async def test_event_timeout_response_error(
 async def test_event_validation_error(
     app: FastAPI, client: httpx.AsyncClient, device_client
 ) -> None:
-    url = app.url_path_for("events:execute", device_uid=device_client.uid)
+    url = app.url_path_for("events:execute", device_uid=device_client.id)
     response = await client.post(url, json={"bad": "payload"})
     assert response.status_code == 422
     assert response.json() == {
@@ -189,7 +189,7 @@ async def test_validate_event_without_required_fields(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.uid)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[{"result": None, "error": None}],
