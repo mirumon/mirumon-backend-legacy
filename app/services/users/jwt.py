@@ -4,15 +4,15 @@ from typing import Dict
 import jwt
 from pydantic import ValidationError
 
-from app.domain.user.jwt import JWTMeta, JWTUser
-from old_app.models.domain.users import User
+from app.domain.user.jwt import JWTMeta, User
+from app.domain.user.user import User
 
 JWT_SUBJECT = "access"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # one week
+ACCESS_TOKEN_EXPIRE = timedelta(weeks=1)
 
 
-def create_jwt_token(
+def _create_jwt_token(
     *, jwt_content: Dict[str, str], secret_key: str, expires_delta: timedelta
 ) -> str:
     to_encode = jwt_content.copy()
@@ -22,17 +22,20 @@ def create_jwt_token(
 
 
 def create_access_token_for_user(user: User, secret_key: str) -> str:
-    return create_jwt_token(
-        jwt_content=JWTUser(username=user.username, scopes=user.scopes).dict(),
+    return _create_jwt_token(
+        jwt_content=User(username=user.username, scopes=user.scopes).dict(),
         secret_key=secret_key,
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        expires_delta=ACCESS_TOKEN_EXPIRE,
     )
 
 
-def get_user_from_token(token: str, secret_key: str) -> JWTUser:
+def get_user_from_token(token: str, secret_key: str) -> User:
     try:
-        return JWTUser(**jwt.decode(token, secret_key, algorithms=[ALGORITHM]))
+        user_from_jwt = jwt.decode(token, secret_key, algorithms=[ALGORITHM])
     except jwt.PyJWTError as decode_error:
         raise ValueError("unable to decode JWT token") from decode_error
+
+    try:
+        return User(**user_from_jwt)
     except ValidationError as validation_error:
         raise ValueError("malformed payload in token") from validation_error

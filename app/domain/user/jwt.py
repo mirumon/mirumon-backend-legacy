@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from old_app.models.domain.scopes import Scopes
+from app.domain.scopes import Scopes
 
 
 class JWTMeta(BaseModel):
@@ -11,11 +11,11 @@ class JWTMeta(BaseModel):
     sub: str
 
 
-class JWTUser(BaseModel):
+class User(BaseModel):
     username: str
     scopes: List[Scopes]
 
 
-class JWTToken(BaseModel):
+class UserToken(BaseModel):
     access_token: str
     token_type: str

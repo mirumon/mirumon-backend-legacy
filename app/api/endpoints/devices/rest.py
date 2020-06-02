@@ -8,7 +8,7 @@ from starlette.websockets import WebSocketDisconnect
 from app.domain.device import detail, execute, hardware, shutdown, software
 from app.domain.device.detail import DeviceDetail
 from app.domain.device.execute import ExecuteCommand
-from app.domain.events.rest import (
+from app.domain.event.rest import (
     EventInRequest,
     RegistrationInRequest,
     RegistrationInResponse,

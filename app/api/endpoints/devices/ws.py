@@ -6,8 +6,8 @@ from pydantic import ValidationError
 from starlette import websockets
 from starlette.websockets import WebSocketDisconnect
 
-from app.domain.events.rest import ErrorInResponse
-from app.domain.events.ws import EventInRequestWS, EventInResponseWS
+from app.domain.event.rest import ErrorInResponse
+from app.domain.event.ws import EventInRequestWS, EventInResponseWS
 from old_app.api.dependencies.managers import (
     clients_manager_retriever,
     events_manager_retriever,

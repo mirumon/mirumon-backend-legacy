@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.domain.events.base import BaseEventResponse
+from app.domain.event.base import BaseEventResponse
 from old_app.models.domain.types import DeviceEventType, EventParams, Result, SyncID
 
 

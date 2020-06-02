@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from loguru import logger
 from starlette import websockets
 
-from app.domain.events.rest import EventInResponse
+from app.domain.event.rest import EventInResponse
 from app.settings.environments.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
 from old_app.models.domain.types import Result, SyncID
 from old_app.services.clients_manager import DeviceClient

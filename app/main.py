@@ -1,11 +1,7 @@
 from fastapi import FastAPI
 
-from old_app.api import routes
+from app.api import routes
 from app.settings.environments.config import APP_VERSION, DEBUG
-from old_app.common.events import (
-    create_shutdown_events_handler,
-    create_startup_events_handler,
-)
 
 
 def get_application() -> FastAPI:

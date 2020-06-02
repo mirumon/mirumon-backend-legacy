@@ -4,8 +4,8 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.domain.events.base import BaseEventResponse
-from app.domain.events.rest import EventInRequest, EventInResponse
+from app.domain.event.base import BaseEventResponse
+from app.domain.event.rest import EventInRequest, EventInResponse
 from old_app.models.domain.types import DeviceUID
 
 
