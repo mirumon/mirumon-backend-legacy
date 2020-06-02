@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-set -x
-
-mypy app
-flake8 app --exclude=app/db/migrations

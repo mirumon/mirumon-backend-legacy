@@ -1,17 +1,15 @@
 from fastapi import FastAPI
 
-from app.api import routes
-from app.common.config import APP_VERSION, DEBUG
-from app.common.events import (
+from old_app.api import routes
+from app.settings.environments.config import APP_VERSION, DEBUG
+from old_app.common.events import (
     create_shutdown_events_handler,
     create_startup_events_handler,
 )
-from app.services.clients_manager import ClientsManager
-from app.services.events_manager import EventsManager
 
 
 def get_application() -> FastAPI:
-    application = FastAPI(title="Mirumon service", version=APP_VERSION, debug=DEBUG)
+    application = FastAPI(title="Mirumon Service", version=APP_VERSION, debug=DEBUG)
 
     application.include_router(router=routes.router)
 
@@ -19,9 +17,6 @@ def get_application() -> FastAPI:
     application.add_event_handler(
         "shutdown", create_shutdown_events_handler(application)
     )
-
-    application.state.clients_manager = ClientsManager()
-    application.state.events_manager = EventsManager()
 
     return application
 

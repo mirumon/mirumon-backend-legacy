@@ -2,15 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
-from app.api.dependencies.authentication import check_user_scopes_requirements
-from app.api.dependencies.database import get_repository
-from app.common import config, strings
 from app.db.errors import EntityDoesNotExist
-from app.db.repositories.users import UsersRepository
-from app.models.domain.scopes import AdministrationScopes
-from app.models.schemas.jwt import JWTToken
-from app.models.schemas.users import UserInCreate
-from app.services import authentication, jwt
+from app.domain.user.jwt import JWTToken
+from app.services.users.users_service import UsersService
+from old_app.api.dependencies.authentication import check_user_scopes_requirements
+from old_app.common import strings
+from app.settings.environments import config
+from old_app.models.domain.scopes import AdministrationScopes
+from old_app.models.schemas.users import UserInCreate
+from old_app.services import jwt
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.post("/login", response_model=JWTToken, name="auth:login")
 async def login(
     user_login: OAuth2PasswordRequestForm = Depends(),
-    users_repo: UsersRepository = Depends(get_repository(UsersRepository)),
+    users_service: UsersService = Depends(get_service(UsersService)),
 ) -> JWTToken:
     wrong_login_error = HTTPException(
         status_code=HTTP_400_BAD_REQUEST, detail=strings.INCORRECT_LOGIN_INPUT
@@ -44,11 +44,11 @@ async def login(
 )
 async def register(
     user_create: UserInCreate,
-    users_repo: UsersRepository = Depends(get_repository(UsersRepository)),
+    users_service: UsersService = Depends(get_service(UsersService)),
 ) -> None:
-    if await authentication.check_username_is_taken(users_repo, user_create.username):
+    try:
+        await users_service.register_new_user(user_create.username)
+    except RuntimeError:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail=strings.USERNAME_TAKEN
         )
-
-    await users_repo.create_user(**user_create.dict())

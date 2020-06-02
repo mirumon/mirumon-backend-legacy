@@ -65,7 +65,7 @@ def migrations(postgres_server) -> None:
 
 @pytest.fixture
 def app(migrations) -> FastAPI:
-    from app.main import get_application  # local import for testing purpose
+    from old_app.main import get_application  # local import for testing purpose
 
     return get_application()
 
