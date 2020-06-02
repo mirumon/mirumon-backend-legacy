@@ -5,12 +5,13 @@ from starlette import status
 from starlette.websockets import WebSocketDisconnect
 
 import app.services.devices.client
-from app.api.dependencies.services import get_users_service
+from app.api.dependencies.services import get_users_service, get_events_service
 from app.domain.device import detail, hardware, software
 from app.domain.device.detail import DeviceDetail
-from app.domain.event.rest import EventInRequest
-from app.domain.event.types import DeviceEventType
+from app.domain.event.types import EventTypes
+
 from app.resources import strings
+from app.services.events_service import EventsService
 from app.services.users.users_service import UsersService
 
 router = APIRouter()
@@ -23,35 +24,29 @@ def _name(event: str) -> str:
 def _path(event: str) -> str:
     return "/{0}/{1}".format("{device_uid}", event)
 
-
 @router.get(
     path="",
     response_model=List[detail.DeviceOverview],
-    name=_name(DeviceEventType.list),
-    summary=DeviceEventType.list.capitalize(),
+    name=_name(EventTypes.list),
     description=strings.DEVICES_LIST_DESCRIPTION,
 )
 async def devices_list(
-    users_service: UsersService = Depends(get_users_service),
 ) -> List[detail.DeviceOverview]:
-    return await users_service
+    pass
 
 
 @router.get(
     path="",
-    name=_name(DeviceEventType.detail),
-    summary=DeviceEventType.detail.capitalize(),
+    name=_name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
     response_model=detail.DeviceDetail,
 )
 async def get_device_detail(
-    client: app.services.devices.client.DeviceClient = Depends(get_client),
-    events_manager: EventsManager = Depends(events_manager_retriever()),
+    events_service: EventsService = Depends(get_events_service),
+        client: app.DeviceClient = Depends(get_avialable)
 ) -> detail.DeviceDetail:
-    event_payload = EventInRequest(
-        method=DeviceEventType.detail, sync_id=events_manager.register_event(),
-    )
-    await client.send_event(event_payload)
+   await events_service.send_event(method=EventTypes.detail, client=client)
+
     try:
         payload = await events_manager.wait_event_from_client(
             sync_id=event_payload.sync_id, client=client
@@ -69,9 +64,8 @@ async def get_device_detail(
 
 
 @router.get(
-    path=_path(DeviceEventType.hardware),
-    name=_name(DeviceEventType.hardware),
-    summary=DeviceEventType.hardware.capitalize(),
+    path=_path(EventTypes.hardware),
+    name=_name(EventTypes.hardware),
     description=strings.DEVICE_HARDWARE_DESCRIPTION,
     response_model=hardware.HardwareModel,
 )
@@ -80,7 +74,7 @@ async def get_device_hardware(
     events_manager: EventsManager = Depends(events_manager_retriever()),
     sync_id: SyncID = Depends(get_new_sync_id),
 ) -> hardware.HardwareModel:
-    event_payload = EventInRequest(method=DeviceEventType.hardware, sync_id=sync_id)
+    event_payload = EventInRequest(method=EventTypes.hardware, sync_id=sync_id)
     await client.send_event(event_payload)
     try:
         return await events_manager.wait_event_from_client(
@@ -98,9 +92,8 @@ async def get_device_hardware(
 
 
 @router.get(
-    path=_path(DeviceEventType.software),
-    name=_name(DeviceEventType.software),
-    summary=DeviceEventType.software.capitalize(),
+    path=_path(EventTypes.software),
+    name=_name(EventTypes.software),
     description=strings.DEVICE_SOFTWARE_DESCRIPTION,
     response_model=List[software.InstalledProgram],
 )
@@ -109,7 +102,7 @@ async def get_device_software(
     events_manager: EventsManager = Depends(events_manager_retriever()),
     sync_id: SyncID = Depends(get_new_sync_id),
 ) -> detail.DeviceDetail:
-    event_payload = EventInRequest(method=DeviceEventType.software, sync_id=sync_id)
+    event_payload = EventInRequest(method=EventTypes.software, sync_id=sync_id)
     await client.send_event(event_payload)
     try:
         return await events_manager.wait_event_from_client(

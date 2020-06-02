@@ -29,7 +29,9 @@ class UsersService:
         self.access_token_expire = timedelta(weeks=1)
 
     async def register_new_user(self, user) -> None:
-        if await self.users_repo.check_user_exists(user):
+        try:
+            await self.users_repo.get_user_by_username(username=user.username)
+        except EntityDoesNotExist:
             raise RuntimeError("username is already exists")
         await self.users_repo.create_user(**user.dict())
 
@@ -49,7 +51,7 @@ class UsersService:
 
     async def find_user_by_token(self, token: str, secret_key: str):
         try:
-            stored_user = app.components.jwt.get_user_from_token(token, secret_key)
+            stored_user = jwt.get_user_from_token(token, secret_key)
         except ValueError:
             raise RuntimeError("token decode error")
 

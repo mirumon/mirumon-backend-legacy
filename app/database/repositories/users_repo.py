@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.use_cases import RawPassword, UserInLogin
+from app.domain.user.use_cases import RawPassword, UserInLogin, UserInUpdate
 from app.domain.user.user import User, UserInDB
 
 GET_USER_BY_USERNAME_QUERY = """
@@ -43,15 +43,9 @@ class UsersRepository(BaseRepository):
             "user with username {0} does not exist".format(username)
         )
 
-    async def check_user_credentials(self, user: UserInLogin):
+    async def check_user_credentials(self, user: UserInLogin) -> bool:
         user_db = await self.get_user_by_username(username=user.username)
-        return jwt.verify_password(
-            user_db.salt + user.password, user_db.hashed_password
-        )
-
-    @staticmethod
-    def check_password(*, user: UserInDB, password: RawPassword) -> bool:
-        return jwt.verify_password(user.salt + password, user.hashed_password)
+        return jwt.verify_password(user_db.salt + user.password, user_db.hashed_password)
 
     @staticmethod
     def change_user_password(user: UserInDB, password: str) -> None:
@@ -78,17 +72,14 @@ class UsersRepository(BaseRepository):
     async def update_user(
         self,
         *,
-        user: User,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        scopes: Optional[List[str]] = None,
+        user_in_db: UserInDB,
+        user: UserInUpdate,
     ) -> UserInDB:
-        user_in_db = await self.get_user_by_username(username=user.username)
 
-        user_in_db.username = username or user_in_db.username
-        user_in_db.scopes = scopes or user_in_db.scopes
-        if password:
-            self.change_user_password(user_in_db, password)
+        user_in_db.username = user.username or user_in_db.username
+        user_in_db.scopes = user.scopes or user_in_db.scopes
+        if user.password:
+            self.change_user_password(user=user_in_db, password=user.password)
 
         async with self.connection.transaction():
             user_in_db.updated_at = await self._log_and_fetch_row(
