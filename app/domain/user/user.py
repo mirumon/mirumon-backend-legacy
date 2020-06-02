@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 from app.domain.mixins import DateTimeModelMixin, IDModelMixin
-from app.domain.scopes import Scopes
+from app.domain.user.scopes import Scopes
 from app.services.users import security
 
 # RawPassword = NewType("RawPassword", str)

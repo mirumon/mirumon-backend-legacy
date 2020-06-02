@@ -2,16 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.websockets import WebSocketDisconnect
 
 from app.api.dependencies.services import get_users_service
 from app.domain.device import detail, execute, hardware, shutdown, software
 from app.domain.device.detail import DeviceDetail
 from app.domain.device.execute import ExecuteCommand
-from app.domain.event.rest import (
-    EventInRequest,
-)
+from app.domain.event.rest import EventInRequest
 from app.domain.event.types import DeviceEventType
 from app.resources import strings
 from app.services.users.users_service import UsersService
@@ -35,7 +32,7 @@ def _path(event: str) -> str:
     description=strings.DEVICES_LIST_DESCRIPTION,
 )
 async def devices_list(
-    users_service: UsersService = Depends(get_users_service)
+    users_service: UsersService = Depends(get_users_service),
 ) -> List[detail.DeviceOverview]:
     return await users_service
 

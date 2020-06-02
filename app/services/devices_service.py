@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import Dict, Union
 
 from loguru import logger
 from pydantic import ValidationError
@@ -34,7 +34,7 @@ class DeviceClient:  # noqa: WPS214
     async def read_event(self) -> EventInResponse:
         logger.debug("start reading event data")
         payload = await self.websocket.receive_json()
-        logger.debug(payload)
+        logger.debug("event payload {0}", payload)
         return EventInResponse(**payload)
 
     async def send_error(

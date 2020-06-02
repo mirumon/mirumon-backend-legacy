@@ -8,11 +8,10 @@ from starlette import websockets
 
 from app.components.config import APPSettings
 from app.domain.event.rest import EventInResponse
-
 # Used to indicate that a connection was closed abnormally
 # (that is, with no close frame being sent)
 # when a status code is expected.
-from app.domain.types import SyncID, Result
+from app.domain.types import Result, SyncID
 from app.services.devices_service import DeviceClient
 
 ABNORMAL_CLOSURE = 1006

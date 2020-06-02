@@ -1,11 +1,33 @@
-from typing import Any, Optional
+from typing import Any, NewType, Optional, Union
+from uuid import UUID
 
-from pydantic import BaseModel, validator
+from pydantic import validator
+
+from app.components.core import APIModel
+from app.domain.event.types import EventTypes
+
+SyncID = NewType("SyncID", UUID)
+EventParams = Union[None]
+EventResult = Union[None]
 
 
-class BaseEventResponse(BaseModel):
-    result: Optional[Any]  # noqa: WPS110
-    error: Optional[Any]
+class Event(APIModel):
+    sync_d: SyncID
+    method: EventTypes
+
+
+class EventInRequest(Event):
+    event_params: Optional[EventParams] = None
+
+
+class EventError(APIModel):
+    code: int
+    message: str
+
+
+class EventInResponse(Event):
+    result: Optional[EventResult]
+    error: Optional[EventError]
 
     @validator("error", always=True)
     def check_event_or_error(

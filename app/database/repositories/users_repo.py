@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.user import UserInDB, User
+from app.domain.user.user import User, UserInDB
 from app.services.users import security
 
 GET_USER_BY_USERNAME_QUERY = """
@@ -44,7 +44,9 @@ class UsersRepository(BaseRepository):
 
     async def check_user_credentials(self, user: User, password):
         user_db = self.get_user_by_username(username=user.username)
-        return security.verify_password(user_db.salt + password, user_db.hashed_password)
+        return security.verify_password(
+            user_db.salt + password, user_db.hashed_password
+        )
 
     async def create_user(
         self, *, username: str, scopes: List[str], password: str

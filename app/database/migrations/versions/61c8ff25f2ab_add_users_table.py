@@ -17,7 +17,6 @@ from app.settings.environments.config import (
     FIRST_SUPERUSER_PASSWORD,
     INITIAL_SUPERUSER_SCOPES,
 )
-from old_app.models.domain.users import UserInDB
 
 revision = "61c8ff25f2ab"
 down_revision = None

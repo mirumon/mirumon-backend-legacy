@@ -3,9 +3,9 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from app.api.dependencies.services import get_users_service
 from app.api.dependencies.user_auth import check_user_scopes
-from app.domain.scopes import AdministrationScopes
 from app.domain.user.jwt import UserToken
-from app.domain.user.use_cases import UserInLogin, UserInCreate
+from app.domain.user.scopes import AdministrationScopes
+from app.domain.user.use_cases import UserInCreate, UserInLogin
 from app.resources import strings
 from app.services.users.users_service import UsersService
 

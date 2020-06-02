@@ -1,9 +1,9 @@
+from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.jwt import UserToken
 from app.domain.user.user import User
 from app.services.users import jwt
-from app.components.config import APPSettings
 
 
 class UsersService:

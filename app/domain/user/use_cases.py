@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.domain.scopes import Scopes
+from app.domain.user.scopes import Scopes
 from app.domain.user.user import User
 
 

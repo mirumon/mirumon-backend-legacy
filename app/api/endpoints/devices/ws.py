@@ -26,7 +26,7 @@ def accept_client(args):
 async def device_ws_endpoint(
     client: DeviceClient = Depends(accept_client),
     events_service: EventsService = Depends(get_events_service),
-    devices_service: DevicesService = Depends(get_devices_service)
+    devices_service: DevicesService = Depends(get_devices_service),
 ) -> None:
     while True:
         try:

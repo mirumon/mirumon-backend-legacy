@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from starlette import status
 
 from app.api.dependencies.services import get_users_service
-from app.domain.scopes import AdministrationScopes, UserScopes
+from app.domain.user.scopes import AdministrationScopes, UserScopes
 from app.domain.user.user import User
 from app.resources import strings
 from app.services.users.users_service import UsersService

@@ -2,7 +2,7 @@
 https://github.com/dmontagu/fastapi-utils/blob/master/fastapi_utils/api_settings.py
 """
 
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
 from databases import DatabaseURL
 from pydantic import BaseSettings
@@ -49,10 +49,10 @@ class APPSettings(BaseSettings):
     first_superuser: str
     first_superuser_password: Secret
     initial_superuser_scopes: Tuple[str] = (
-            "users:execute",
-            "users:read",
-            "admin:view",
-            "admin:edit",
+        "users:execute",
+        "users:read",
+        "admin:view",
+        "admin:edit",
     )
 
     @property
@@ -73,7 +73,8 @@ class APPSettings(BaseSettings):
         }
         if self.disable_docs:
             fastapi_kwargs.update(
-                {"docs_url": None, "openapi_url": None, "redoc_url": None})
+                {"docs_url": None, "openapi_url": None, "redoc_url": None}
+            )
         return fastapi_kwargs
 
     class Config:

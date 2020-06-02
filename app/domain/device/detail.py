@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from old_app.models.domain.types import DeviceUID
+from app.domain.device.base import Device
 
 
 class OperatingSystem(BaseModel):
@@ -15,26 +15,24 @@ class OperatingSystem(BaseModel):
     install_date: datetime
 
 
-class User(BaseModel):
+class DeviceUser(BaseModel):
     name: str
     domain: str
     fullname: str
 
 
-class DeviceDetail(BaseModel):
-    uid: DeviceUID
+class DeviceDetail(Device):
     online: bool
     name: str
     domain: Optional[str] = None
     workgroup: Optional[str] = None
-    current_user: Optional[User] = None
+    current_user: Optional[DeviceUser] = None
     os: List[OperatingSystem]
 
 
-class DeviceOverview(BaseModel):
-    uid: DeviceUID
+class DeviceOverview(Device):
     online: bool
     name: str
     domain: Optional[str] = None
     workgroup: Optional[str] = None
-    current_user: Optional[User] = None
+    current_user: Optional[DeviceUser] = None

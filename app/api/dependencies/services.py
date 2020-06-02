@@ -6,12 +6,12 @@ from fastapi import Depends
 from starlette.requests import Request
 
 from app.api.dependencies.settings import get_app_settings
+from app.components.config import APPSettings
 from app.database.repositories.base_repo import BaseRepository
 from app.database.repositories.users_repo import UsersRepository
 from app.services.devices_service import DevicesService
 from app.services.events_service import EventsService
 from app.services.users.users_service import UsersService
-from app.components.config import APPSettings
 
 
 def _get_db_pool(request: Request) -> Pool:
@@ -34,18 +34,18 @@ def _get_repository(repository_type: Type[BaseRepository]) -> Callable:
 
 def get_users_service(
     users_repository: UsersRepository = Depends(_get_repository(UsersRepository)),
-        settings: APPSettings = Depends(get_app_settings)
+    settings: APPSettings = Depends(get_app_settings),
 ) -> UsersService:
     return UsersService(users_repo=users_repository, settings=settings)
 
 
 def get_devices_service(
-        settings: APPSettings = Depends(get_app_settings)
+    settings: APPSettings = Depends(get_app_settings),
 ) -> DevicesService:
     return DevicesService(settings=settings)
 
 
 def get_events_service(
-        settings: APPSettings = Depends(get_app_settings)
+    settings: APPSettings = Depends(get_app_settings),
 ) -> EventsService:
     return EventsService(settings=settings)
