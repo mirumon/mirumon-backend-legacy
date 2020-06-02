@@ -6,22 +6,24 @@ from fastapi import HTTPException
 from loguru import logger
 from starlette import websockets
 
+from app.components.config import APPSettings
 from app.domain.event.rest import EventInResponse
-from app.settings.environments.config import REST_MAX_RESPONSE_TIME, REST_SLEEP_TIME
-from old_app.models.domain.types import Result, SyncID
-from old_app.services.clients_manager import DeviceClient
 
 # Used to indicate that a connection was closed abnormally
 # (that is, with no close frame being sent)
 # when a status code is expected.
+from app.domain.types import SyncID, Result
+from app.services.devices_service import DeviceClient
+
 ABNORMAL_CLOSURE = 1006
 # The server is terminating the connection due to a temporary condition,
 # e.g. it is overloaded and is casting off some of its clients.
 TRY_AGAIN_LATER = 1013
 
 
-class EventsManager:
-    def __init__(self) -> None:
+class EventsService:
+    def __init__(self, settings: APPSettings) -> None:
+        self.settings = settings
         self._registered_events: Set[SyncID] = set()
         self._events_responses: Dict[SyncID, EventInResponse] = {}
         self._asyncio_events: Dict[SyncID, asyncio.Event] = {}
@@ -46,11 +48,11 @@ class EventsManager:
     ) -> Result:
         event = asyncio.Event()
         self._asyncio_events[sync_id] = event
-        response_time = REST_MAX_RESPONSE_TIME
+        response_time = 5
         while not event.is_set():
-            response_time -= REST_SLEEP_TIME
+            response_time -= 0.1
             try:
-                await asyncio.wait_for(event.wait(), REST_SLEEP_TIME)
+                await asyncio.wait_for(event.wait(), 0.1)
             except asyncio.TimeoutError:
                 if not client.is_connected:
                     logger.error("client disconnected while waiting event")

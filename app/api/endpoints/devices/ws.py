@@ -8,14 +8,7 @@ from starlette.websockets import WebSocketDisconnect
 
 from app.domain.event.rest import ErrorInResponse
 from app.domain.event.ws import EventInRequestWS, EventInResponseWS
-from old_app.api.dependencies.managers import (
-    clients_manager_retriever,
-    events_manager_retriever,
-)
-from old_app.api.dependencies.websockets import get_device_client
-from old_app.services.clients_manager import ClientsManager, DeviceClient
-from old_app.services.devices import get_devices_list
-from old_app.services.events_manager import EventsManager
+from app.services.devices_service import DeviceClient, DevicesService
 
 router = APIRouter()
 
@@ -25,32 +18,32 @@ WS_NOT_FOUND = 404
 SERVER_ERROR = 500
 
 
-@router.websocket("/service", name="ws:service")
-async def clients_websocket_endpoint(
-    events_manager: EventsManager = Depends(
-        events_manager_retriever(for_websocket=True)
-    ),
-    client: DeviceClient = Depends(get_device_client),
-    manager: ClientsManager = Depends(clients_manager_retriever(for_websocket=True)),
+def accept_client(args):
+    pass
+
+
+@router.websocket("/service", name="devices:service")
+async def device_ws_endpoint(
+    client: DeviceClient = Depends(accept_client),
+    events_service: EventsService = Depends(get_events_service),
+    devices_service: DevicesService = Depends(get_devices_service)
 ) -> None:
-    manager.add_client(client)
     while True:
         try:
             event_response = await client.read_event()
-            events_manager.set_event_response(
-                sync_id=event_response.sync_id, event_response=event_response
-            )
+            events_service.send_response(event_response)
+
         except (ValidationError, JSONDecodeError) as error:
             await client.send_error(error, WS_BAD_REQUEST)
         except KeyError as unregistered_event:
             await client.send_error(unregistered_event, WS_UNREGISTERED_EVENT)
         except websockets.WebSocketDisconnect:
-            logger.error(f"client with id {client.device_uid} disconnected")
-            manager.remove_client(client)
-            break
+            logger.error("client with uid {0} disconnected", client.device_uid)
+            devices_service.disconnect_client(client)
+            return
         except Exception as undefined_error:
+            logger.exception("server internal error")
             await client.send_error(undefined_error, SERVER_ERROR)
-            raise undefined_error
 
 
 @router.websocket("/clients", name="ws:clients")

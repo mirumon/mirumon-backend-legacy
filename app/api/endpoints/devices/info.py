@@ -5,63 +5,26 @@ from starlette import status
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.websockets import WebSocketDisconnect
 
+from app.api.dependencies.services import get_users_service
 from app.domain.device import detail, execute, hardware, shutdown, software
 from app.domain.device.detail import DeviceDetail
 from app.domain.device.execute import ExecuteCommand
 from app.domain.event.rest import (
     EventInRequest,
-    RegistrationInRequest,
-    RegistrationInResponse,
 )
-from old_app.api.dependencies.managers import (
-    clients_manager_retriever,
-    events_manager_retriever,
-)
-from old_app.api.dependencies.rest_api import get_client, get_new_sync_id
-from old_app.common import strings
-from old_app.models.domain.types import DeviceEventType, SyncID
-from old_app.services import clients
-from old_app.services.authentication import (
-    check_device_shared_token,
-    generate_new_device,
-)
-from old_app.services.clients_manager import ClientsManager
-from old_app.services.devices import get_devices_list
-from old_app.services.events_manager import EventsManager
+from app.domain.event.types import DeviceEventType
+from app.resources import strings
+from app.services.users.users_service import UsersService
 
 router = APIRouter()
 
 
-# TODO: refactor duplicate code
-# TODO: add other events for hardware
+def _name(event: str) -> str:
+    return "devices:{0}".format(event)
 
 
 def _path(event: str) -> str:
     return "/{0}/{1}".format("{device_uid}", event)
-
-
-def _name(event: str) -> str:
-    return f"events:{event}"
-
-
-@router.post(
-    "/registration",
-    status_code=status.HTTP_202_ACCEPTED,
-    response_model=RegistrationInResponse,
-    name=_name("registration"),
-    summary="Registration",
-    description=strings.DEVICE_REGISTRATION_DESCRIPTION,
-)
-async def register_device(
-    registration_data: RegistrationInRequest,
-) -> RegistrationInResponse:
-    if not await check_device_shared_token(registration_data.shared_token):
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_TOKEN
-        )
-
-    device_token = await generate_new_device()
-    return RegistrationInResponse(device_token=device_token)
 
 
 @router.get(
@@ -72,14 +35,13 @@ async def register_device(
     description=strings.DEVICES_LIST_DESCRIPTION,
 )
 async def devices_list(
-    clients_manager: ClientsManager = Depends(clients_manager_retriever()),
-    events_manager: EventsManager = Depends(events_manager_retriever()),
+    users_service: UsersService = Depends(get_users_service)
 ) -> List[detail.DeviceOverview]:
-    return await get_devices_list(clients_manager, events_manager)
+    return await users_service
 
 
 @router.get(
-    path=_path(DeviceEventType.detail),
+    path="",
     name=_name(DeviceEventType.detail),
     summary=DeviceEventType.detail.capitalize(),
     description=strings.DEVICE_DETAIL_DESCRIPTION,

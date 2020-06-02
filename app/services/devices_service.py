@@ -1,9 +1,10 @@
-from typing import Union
+from typing import Union, Dict
 
 from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
+from app.components.config import APPSettings
 from app.domain.event.base import BaseEventResponse
 from app.domain.event.rest import EventInRequest, EventInResponse
 from old_app.models.domain.types import DeviceUID
@@ -48,7 +49,8 @@ class DeviceClient:  # noqa: WPS214
 
 
 class DevicesService:
-    def __init__(self) -> None:
+    def __init__(self, settings: APPSettings) -> None:
+        self.settings = settings
         self._clients: Dict[DeviceUID, DeviceClient] = {}
 
     def add_client(self, client: DeviceClient) -> None:
