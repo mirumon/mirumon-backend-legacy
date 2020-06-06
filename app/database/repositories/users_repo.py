@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List
 
 from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.user import User, UserInDB, RawPassword, UserInLogin, UserInUpdate
+from app.domain.user.user import UserInDB, UserInLogin, UserInUpdate
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
@@ -44,7 +44,9 @@ class UsersRepository(BaseRepository):
 
     async def check_user_credentials(self, user: UserInLogin) -> bool:
         user_db = await self.get_user_by_username(username=user.username)
-        return jwt.verify_password(user_db.salt + user.password, user_db.hashed_password)
+        return jwt.verify_password(
+            user_db.salt + user.password, user_db.hashed_password
+        )
 
     @staticmethod
     def change_user_password(user: UserInDB, password: str) -> None:
@@ -69,10 +71,7 @@ class UsersRepository(BaseRepository):
         return user.copy(update=dict(user_row))
 
     async def update_user(
-        self,
-        *,
-        user_in_db: UserInDB,
-        user: UserInUpdate,
+        self, *, user_in_db: UserInDB, user: UserInUpdate,
     ) -> UserInDB:
 
         user_in_db.username = user.username or user_in_db.username

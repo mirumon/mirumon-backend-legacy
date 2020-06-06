@@ -4,9 +4,8 @@ from fastapi import APIRouter, Depends
 from loguru import logger
 from pydantic import ValidationError
 from starlette import websockets
-from starlette.websockets import WebSocketDisconnect
 
-from app.api.dependencies.services import get_events_service, get_devices_service
+from app.api.dependencies.services import get_devices_service, get_events_service
 from app.services.devices.client import DeviceClient
 from app.services.devices.devices_service import DevicesService
 from app.services.events_service import EventsService
@@ -59,32 +58,32 @@ async def api_websocket_endpoint(
 ) -> None:
     await websocket.accept()
     # while True:
-        # try:
-        #     payload = await websocket.receive_json()
-        #     event = EventInRequestWS(**payload)
-        #     event_payload = await get_devices_list(clients_manager, events_manager)
-        #     event_response = EventInResponseWS(
-        #         method=event.method, result=event_payload
-        #     )
-        #     logger.debug(f"ws client response {event_response}")
-        #     await websocket.send_text(event_response.json())
-        # except ValidationError as validation_error:
-        #     await websocket.send_text(validation_error.json())
-        #     continue
-        # except KeyError:  # todo add value error
-        #     await websocket.send_json(
-        #         EventInResponseWS(
-        #             method=event.method,
-        #             error=ErrorInResponse(
-        #                 code=WS_NOT_FOUND, message="device not found"
-        #             ),
-        #         )
-        #     )
-        # except WebSocketDisconnect:
-        #     logger.info(
-        #         "{0} websocket api client {1} [closed]".format(
-        #             websocket.scope.get("client", ""),
-        #             websocket.scope.get("raw_path", ""),
-        #         )
-        #     )
-        #     break
+    # try:
+    #     payload = await websocket.receive_json()
+    #     event = EventInRequestWS(**payload)
+    #     event_payload = await get_devices_list(clients_manager, events_manager)
+    #     event_response = EventInResponseWS(
+    #         method=event.method, result=event_payload
+    #     )
+    #     logger.debug(f"ws client response {event_response}")
+    #     await websocket.send_text(event_response.json())
+    # except ValidationError as validation_error:
+    #     await websocket.send_text(validation_error.json())
+    #     continue
+    # except KeyError:  # todo add value error
+    #     await websocket.send_json(
+    #         EventInResponseWS(
+    #             method=event.method,
+    #             error=ErrorInResponse(
+    #                 code=WS_NOT_FOUND, message="device not found"
+    #             ),
+    #         )
+    #     )
+    # except WebSocketDisconnect:
+    #     logger.info(
+    #         "{0} websocket api client {1} [closed]".format(
+    #             websocket.scope.get("client", ""),
+    #             websocket.scope.get("raw_path", ""),
+    #         )
+    #     )
+    #     break

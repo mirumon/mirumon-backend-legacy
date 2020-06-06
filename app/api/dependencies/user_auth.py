@@ -1,14 +1,17 @@
 from typing import Callable, List
 
 from fastapi import Depends, HTTPException, Security
-from fastapi.security import OAuth2PasswordBearer, SecurityScopes, \
-    OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    SecurityScopes,
+)
 from starlette import status
 
 from app.api.dependencies.services import get_users_service
 from app.components.config import APPSettings, get_app_settings
 from app.domain.user.scopes import AdministrationScopes, UserScopes
-from app.domain.user.user import User, UserInLogin, RawPassword
+from app.domain.user.user import RawPassword, User, UserInLogin
 from app.resources import strings
 from app.services.users.users_service import UsersService
 

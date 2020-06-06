@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from fastapi.security import SecurityScopes
 
-import app.components.jwt
 from app.components import jwt
 from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
@@ -16,9 +15,7 @@ class UsersService:
     jwt_token_type: str
 
     def __init__(
-        self,
-        users_repo: UsersRepository,
-        settings: APPSettings,
+        self, users_repo: UsersRepository, settings: APPSettings,
     ):
         self.users_repo = users_repo
         self.settings = settings

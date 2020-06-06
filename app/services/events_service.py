@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import Dict, Set, cast, List
+from typing import Dict, List, Set, cast
 
 from fastapi import HTTPException
 from loguru import logger
@@ -42,9 +42,7 @@ class EventsService:
         logger.debug(event_response)
         self._asyncio_events[sync_id].set()
 
-    async def wait_event_from_client(
-        self, sync_id: SyncID, client: DeviceClient
-    ):
+    async def wait_event_from_client(self, sync_id: SyncID, client: DeviceClient):
         event = asyncio.Event()
         self._asyncio_events[sync_id] = event
         response_time = 5
@@ -71,10 +69,8 @@ class EventsService:
         return self._events_responses.pop(sync_id)
 
     # old devices list
-    async def send_bulk_event(
-        self
-    ) -> List[DeviceOverview]:
-        devices = []
+    async def send_bulk_event(self) -> List[DeviceOverview]:
+        pass
 
         # for client in list(self._clients.values()):
         #     sync_id = events_manager.register_event()

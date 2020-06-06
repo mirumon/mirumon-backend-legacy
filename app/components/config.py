@@ -4,9 +4,7 @@ https://github.com/dmontagu/fastapi-utils/blob/master/fastapi_utils/api_settings
 from functools import lru_cache
 from typing import Any, Dict, Tuple
 
-from databases import DatabaseURL
 from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
-from starlette.datastructures import Secret
 
 from app.components.version import get_app_version
 
@@ -79,7 +77,7 @@ class APPSettings(BaseSettings):
         return fastapi_kwargs
 
     class Config:
-        env_file = '.env'
+        env_file = ".env"
         validate_assignment = True
 
 
