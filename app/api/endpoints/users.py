@@ -2,10 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from app.api.dependencies.services import get_users_service
-from app.api.dependencies.user_auth import check_user_scopes
-from app.domain.user.jwt import UserToken
+from app.api.dependencies.user_auth import check_user_scopes, get_user_in_login
 from app.domain.user.scopes import AdministrationScopes
-from app.domain.user.use_cases import UserInCreate, UserInLogin
+from app.domain.user.user import UserInLogin, UserToken, UserInCreate
 from app.resources import strings
 from app.services.users.users_service import UsersService
 
@@ -29,16 +28,15 @@ async def register(
         )
 
 
+# TODO: remove scope, client_id, client_secret, gran_type
 @router.post("/login", response_model=UserToken, name="auth:login")
 async def login(
-    user: UserInLogin = Depends(),
+    user: UserInLogin = Depends(get_user_in_login),
     users_service: UsersService = Depends(get_users_service),
 ) -> UserToken:
     try:
-        user = await users_service.login_user(user)
+        return await users_service.login_user(user)
     except RuntimeError:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail=strings.INCORRECT_LOGIN_INPUT
         )
-
-    return users_service.create_access_token_for_user(user)

@@ -7,8 +7,8 @@ from app.components.core import APIModel
 from app.domain.event.types import EventTypes
 
 SyncID = NewType("SyncID", UUID)
-EventParams = Union[None]
-EventResult = Union[None]
+EventParams = Union[Any]
+EventResult = Union[Any]
 
 
 class Event(APIModel):

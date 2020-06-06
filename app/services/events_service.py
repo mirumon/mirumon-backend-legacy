@@ -1,17 +1,17 @@
 import asyncio
 import uuid
-from typing import Dict, Set, cast
+from typing import Dict, Set, cast, List
 
 from fastapi import HTTPException
 from loguru import logger
 from starlette import websockets
 
 from app.components.config import APPSettings
-from app.domain.event.rest import EventInResponse
 # Used to indicate that a connection was closed abnormally
 # (that is, with no close frame being sent)
 # when a status code is expected.
-from app.domain.types import Result, SyncID
+from app.domain.device.detail import DeviceOverview
+from app.domain.event.base import EventInResponse, SyncID
 from app.services.devices.client import DeviceClient
 
 ABNORMAL_CLOSURE = 1006
@@ -44,7 +44,7 @@ class EventsService:
 
     async def wait_event_from_client(
         self, sync_id: SyncID, client: DeviceClient
-    ) -> Result:
+    ):
         event = asyncio.Event()
         self._asyncio_events[sync_id] = event
         response_time = 5
@@ -63,7 +63,7 @@ class EventsService:
         response = self.pop_event(sync_id)
         if response.error:
             raise HTTPException(status_code=503, detail=response.error.dict())
-        return cast(Result, response.result)
+        return response.result
 
     def pop_event(self, sync_id: SyncID) -> EventInResponse:
         self._registered_events.remove(sync_id)
@@ -72,24 +72,24 @@ class EventsService:
 
     # old devices list
     async def send_bulk_event(
-        self, clients_manager: ClientsManager, events_manager: EventsManager,
+        self
     ) -> List[DeviceOverview]:
         devices = []
 
-        for client in list(self._clients.values()):
-            sync_id = events_manager.register_event()
-            await client.send_event(
-                EventInRequest(method=DeviceEventType.list, sync_id=sync_id)
-            )
-            try:
-                device = await events_manager.wait_event_from_client(
-                    sync_id=sync_id, client=client
-                )
-            except (WebSocketDisconnect, ValidationError) as error:
-                logger.debug(f"device client skipped in list event. error: {error}")
-                continue
-            else:
-                devices.append(
-                    DeviceOverview(uid=client.device_uid, online=True, **device)
-                )
-        return devices
+        # for client in list(self._clients.values()):
+        #     sync_id = events_manager.register_event()
+        #     await client.send_event(
+        #         EventInRequest(method=DeviceEventType.list, sync_id=sync_id)
+        #     )
+        #     try:
+        #         device = await events_manager.wait_event_from_client(
+        #             sync_id=sync_id, client=client
+        #         )
+        #     except (WebSocketDisconnect, ValidationError) as error:
+        #         logger.debug(f"device client skipped in list event. error: {error}")
+        #         continue
+        #     else:
+        #         devices.append(
+        #             DeviceOverview(uid=client.device_uid, online=True, **device)
+        #         )
+        # return devices

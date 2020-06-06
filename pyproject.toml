@@ -31,6 +31,7 @@ loguru = "^0.3.2"
 
 toml = "^0.10.0"
 pytest-env = "^0.6"
+pydantic = {extras = ["dotenv"], version = "^1.5.1"}
 
 
 [tool.poetry.dev-dependencies]

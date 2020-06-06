@@ -42,25 +42,26 @@ async def devices_list(
     response_model=detail.DeviceDetail,
 )
 async def get_device_detail(
-    events_service: EventsService = Depends(get_events_service),
-        client: app.DeviceClient = Depends(get_avialable)
+    # events_service: EventsService = Depends(get_events_service),
+        # client: app.DeviceClient = Depends(get_avialable)
 ) -> detail.DeviceDetail:
-   await events_service.send_event(method=EventTypes.detail, client=client)
-
-    try:
-        payload = await events_manager.wait_event_from_client(
-            sync_id=event_payload.sync_id, client=client
-        )
-        return DeviceDetail(uid=client.device_uid, online=True, **payload)
-    except WebSocketDisconnect:
-        error_detail = (
-            strings.EVENT_NOT_SUPPORTED
-            if client.is_connected
-            else strings.DEVICE_DISCONNECTED
-        )
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
-        )
+    pass
+#    await events_service.send_event(method=EventTypes.detail, client=client)
+#
+#     try:
+#         payload = await events_manager.wait_event_from_client(
+#             sync_id=event_payload.sync_id, client=client
+#         )
+#         return DeviceDetail(uid=client.device_uid, online=True, **payload)
+#     except WebSocketDisconnect:
+#         error_detail = (
+#             strings.EVENT_NOT_SUPPORTED
+#             if client.is_connected
+#             else strings.DEVICE_DISCONNECTED
+#         )
+#         raise HTTPException(
+#             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
+#         )
 
 
 @router.get(
@@ -70,25 +71,26 @@ async def get_device_detail(
     response_model=hardware.HardwareModel,
 )
 async def get_device_hardware(
-    client: app.services.devices.client.DeviceClient = Depends(get_client),
-    events_manager: EventsManager = Depends(events_manager_retriever()),
-    sync_id: SyncID = Depends(get_new_sync_id),
+    # client: app.services.devices.client.DeviceClient = Depends(get_client),
+    # events_manager: EventsManager = Depends(events_manager_retriever()),
+    # sync_id: SyncID = Depends(get_new_sync_id),
 ) -> hardware.HardwareModel:
-    event_payload = EventInRequest(method=EventTypes.hardware, sync_id=sync_id)
-    await client.send_event(event_payload)
-    try:
-        return await events_manager.wait_event_from_client(
-            sync_id=event_payload.sync_id, client=client
-        )
-    except WebSocketDisconnect:
-        error_detail = (
-            strings.EVENT_NOT_SUPPORTED
-            if client.is_connected
-            else strings.DEVICE_DISCONNECTED
-        )
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
-        )
+    pass
+    # event_payload = EventInRequest(method=EventTypes.hardware, sync_id=sync_id)
+    # await client.send_event(event_payload)
+    # try:
+    #     return await events_manager.wait_event_from_client(
+    #         sync_id=event_payload.sync_id, client=client
+    #     )
+    # except WebSocketDisconnect:
+    #     error_detail = (
+    #         strings.EVENT_NOT_SUPPORTED
+    #         if client.is_connected
+    #         else strings.DEVICE_DISCONNECTED
+    #     )
+    #     raise HTTPException(
+    #         status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
+    #     )
 
 
 @router.get(
@@ -98,22 +100,23 @@ async def get_device_hardware(
     response_model=List[software.InstalledProgram],
 )
 async def get_device_software(
-    client: app.services.devices.client.DeviceClient = Depends(get_client),
-    events_manager: EventsManager = Depends(events_manager_retriever()),
-    sync_id: SyncID = Depends(get_new_sync_id),
+    # client: app.services.devices.client.DeviceClient = Depends(get_client),
+    # events_manager: EventsManager = Depends(events_manager_retriever()),
+    # sync_id: SyncID = Depends(get_new_sync_id),
 ) -> detail.DeviceDetail:
-    event_payload = EventInRequest(method=EventTypes.software, sync_id=sync_id)
-    await client.send_event(event_payload)
-    try:
-        return await events_manager.wait_event_from_client(
-            sync_id=event_payload.sync_id, client=client
-        )
-    except WebSocketDisconnect:
-        error_detail = (
-            strings.EVENT_NOT_SUPPORTED
-            if client.is_connected
-            else strings.DEVICE_DISCONNECTED
-        )
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
-        )
+    pass
+    # event_payload = EventInRequest(method=EventTypes.software, sync_id=sync_id)
+    # await client.send_event(event_payload)
+    # try:
+    #     return await events_manager.wait_event_from_client(
+    #         sync_id=event_payload.sync_id, client=client
+    #     )
+    # except WebSocketDisconnect:
+    #     error_detail = (
+    #         strings.EVENT_NOT_SUPPORTED
+    #         if client.is_connected
+    #         else strings.DEVICE_DISCONNECTED
+    #     )
+    #     raise HTTPException(
+    #         status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
+    #     )

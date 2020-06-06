@@ -6,8 +6,7 @@ from fastapi import Depends
 from fastapi.security import SecurityScopes
 from starlette.requests import Request
 
-from app.api.dependencies.settings import get_app_settings
-from app.components.config import APPSettings
+from app.components.config import APPSettings, get_app_settings
 from app.database.repositories.base_repo import BaseRepository
 from app.database.repositories.users_repo import UsersRepository
 from app.services.devices.devices_service import DevicesService

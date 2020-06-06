@@ -1,11 +1,11 @@
 """
 https://github.com/dmontagu/fastapi-utils/blob/master/fastapi_utils/api_settings.py
 """
-
+from functools import lru_cache
 from typing import Any, Dict, Tuple
 
 from databases import DatabaseURL
-from pydantic import BaseSettings
+from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
 from starlette.datastructures import Secret
 
 from app.components.version import get_app_version
@@ -32,23 +32,24 @@ class APPSettings(BaseSettings):
     version: str = get_app_version()
 
     # Custom settings
-    disable_docs: bool = True
+    disable_docs: bool = False
 
     # Timeout settings
     rest_max_response_time: float = 5.0
 
     # Auth settings
-    secret_key: Secret
-    shared_key: Secret
+    secret_key: SecretStr
+    shared_key: SecretStr
     jwt_token_type: str = "Bearer"
 
-    # Database settings
-    database_url: DatabaseURL
+    # Infra settings
+    database_url: PostgresDsn
+    redis_url: RedisDsn
 
     # First user credentials
     first_superuser: str
-    first_superuser_password: Secret
-    initial_superuser_scopes: Tuple[str] = (
+    first_superuser_password: str
+    initial_superuser_scopes: Tuple[str, ...] = (
         "users:execute",
         "users:read",
         "admin:view",
@@ -78,5 +79,16 @@ class APPSettings(BaseSettings):
         return fastapi_kwargs
 
     class Config:
-        env_prefix = "api_"
+        env_file = '.env'
         validate_assignment = True
+
+
+@lru_cache()
+def get_app_settings() -> APPSettings:
+    """
+    This function returns a cached instance of the APISettings object.
+    Caching is used to prevent re-reading the environment every time the API settings are used in an endpoint.
+    If you want to change an environment variable and reset the cache (e.g., during testing), this can be done
+    using the `lru_cache` instance method `get_api_settings.cache_clear()`.
+    """
+    return APPSettings()

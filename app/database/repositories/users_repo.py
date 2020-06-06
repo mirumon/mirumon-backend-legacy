@@ -3,8 +3,7 @@ from typing import List, Optional
 from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.use_cases import RawPassword, UserInLogin, UserInUpdate
-from app.domain.user.user import User, UserInDB
+from app.domain.user.user import User, UserInDB, RawPassword, UserInLogin, UserInUpdate
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,

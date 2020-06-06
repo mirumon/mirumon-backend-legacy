@@ -7,8 +7,7 @@ from app.components import jwt
 from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
-from app.domain.user.use_cases import UserInLogin, UserToken
-from app.domain.user.user import User
+from app.domain.user.user import User, UserInLogin, UserToken
 
 
 class UsersService:
@@ -20,11 +19,9 @@ class UsersService:
         self,
         users_repo: UsersRepository,
         settings: APPSettings,
-        security_scopes: SecurityScopes,
     ):
         self.users_repo = users_repo
         self.settings = settings
-        self.security_scopes = security_scopes
         self.jwt_token_type = settings.jwt_token_type
         self.access_token_expire = timedelta(weeks=1)
 
@@ -35,19 +32,18 @@ class UsersService:
             raise RuntimeError("username is already exists")
         await self.users_repo.create_user(**user.dict())
 
-    async def login_user(self, user: UserInLogin) -> None:
+    async def login_user(self, user: UserInLogin) -> UserToken:
         try:
             await self.users_repo.check_user_credentials(user)
         except ValueError:
             raise RuntimeError("incorrect password")
-
-    def create_access_token_for_user(self, user: User) -> UserToken:
-        token = jwt.create_jwt_token(
-            jwt_content=user.dict(),
-            secret_key=str(self.settings.secret_key),
-            expires_delta=self.access_token_expire,
-        )
-        return UserToken(access_token=token, token_type=self.jwt_token_type)
+        else:
+            token = jwt.create_jwt_token(
+                jwt_content=user.dict(),
+                secret_key=str(self.settings.secret_key),
+                expires_delta=self.access_token_expire,
+            )
+            return UserToken(access_token=token, token_type=self.jwt_token_type)
 
     async def find_user_by_token(self, token: str, secret_key: str):
         try:
@@ -62,5 +58,5 @@ class UsersService:
         except EntityDoesNotExist:
             raise RuntimeError("user does not exist")
 
-    async def check_user_scopes(self, user: User):
-        return not all(scope in user.scopes for scope in self.security_scopes.scopes)
+    async def check_user_scopes(self, user: User, security_scopes: SecurityScopes):
+        return not all(scope in user.scopes for scope in security_scopes.scopes)

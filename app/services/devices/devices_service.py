@@ -1,5 +1,10 @@
+import uuid
+
 from app.components.config import APPSettings
-from app.domain.device.auth import DeviceAuthInRequest
+from app.domain.device.auth import DeviceAuthInRequest, DeviceAuthInResponse
+
+# TODO: save into database
+_tokens = {}
 
 
 class DevicesService:
@@ -10,18 +15,13 @@ class DevicesService:
         return credentials.shared_token == self.settings.shared_key
 
     def register_new_device(self):
-        return DeviceAuthInResponse(device_uid=device_uid, device_token=device_token)
-
-    # TODO: save into database
-    _tokens = {}
-
-    async def generate_new_device() -> str:
-        device_uid = uuid.uuid4()
+        # TODO: repo save or error
         token = str(uuid.uuid4())
+        device_uid = uuid.uuid4()
         _tokens[device_uid] = token
-        return token
+        return DeviceAuthInResponse(device_uid=device_uid, device_token=token)
 
-    async def get_device_uid_by_token(token: str) -> uuid.UUID:
+    async def get_device_uid_by_token(self, token: str) -> uuid.UUID:
         for d_uid, d_token in _tokens.items():
             if d_token == token:
                 return d_uid
