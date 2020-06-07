@@ -6,7 +6,7 @@ from app.components import jwt
 from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
-from app.domain.user.user import User, UserInLogin, UserToken
+from app.domain.user.user import Token, User, UserInLogin
 
 
 class UsersService:
@@ -29,7 +29,7 @@ class UsersService:
             raise RuntimeError("username is already exists")
         await self.users_repo.create_user(**user.dict())
 
-    async def login_user(self, user: UserInLogin) -> UserToken:
+    async def login_user(self, user: UserInLogin) -> Token:
         try:
             await self.users_repo.check_user_credentials(user)
         except ValueError:
@@ -40,7 +40,7 @@ class UsersService:
                 secret_key=str(self.settings.secret_key),
                 expires_delta=self.access_token_expire,
             )
-            return UserToken(access_token=token, token_type=self.jwt_token_type)
+            return Token(access_token=token, token_type=self.jwt_token_type)
 
     async def find_user_by_token(self, token: str, secret_key: str):
         try:

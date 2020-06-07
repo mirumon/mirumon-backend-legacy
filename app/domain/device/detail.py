@@ -26,7 +26,7 @@ class DeviceDetail(Device):
     name: str
     domain: Optional[str] = None
     workgroup: Optional[str] = None
-    current_user: Optional[DeviceUser] = None
+    last_user: Optional[DeviceUser] = None
     os: List[OperatingSystem]
 
 
@@ -35,4 +35,4 @@ class DeviceOverview(Device):
     name: str
     domain: Optional[str] = None
     workgroup: Optional[str] = None
-    current_user: Optional[DeviceUser] = None
+    last_user: Optional[DeviceUser] = None

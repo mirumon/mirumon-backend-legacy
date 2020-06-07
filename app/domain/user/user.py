@@ -1,16 +1,21 @@
 from typing import List, NewType, Optional
 from uuid import UUID
 
+from pydantic import SecretStr
+
 from app.components.core import APIModel
 from app.domain.user.scopes import Scopes
 
-UserUID = NewType("UserUID", UUID)
-RawPassword = NewType("RawPassword", str)
+UserID = NewType("UserID", UUID)
+RawPassword = NewType("RawPassword", SecretStr)
+HashedPassword = NewType("HashedPassword", SecretStr)
+Username = NewType("Username", str)
+AccessToken = NewType("AccessToken", SecretStr)
 
 
 class User(APIModel):
-    id: UserUID
-    username: str
+    id: UserID
+    username: Username
     scopes: List[Scopes]
 
 
@@ -20,22 +25,22 @@ class UserInCreate(APIModel):
     scopes: List[Scopes] = []
 
 
-class UserInDB(User):
-    salt: str = ""
-    hashed_password: str = ""
+class UserInUpdate(APIModel):
+    username: Optional[Username] = None
+    password: Optional[RawPassword] = None
+    scopes: List[str] = []
 
 
 class UserInLogin(APIModel):
-    username: str
+    username: Username
     password: RawPassword
 
 
-class UserToken(APIModel):
-    access_token: str
+class Token(APIModel):
+    access_token: AccessToken
     token_type: str
 
 
-class UserInUpdate(User):
-    username: Optional[str] = None
-    password: Optional[RawPassword] = None
-    scopes: List[str] = []
+class UserInDB(User):
+    salt: str
+    hashed_password: HashedPassword

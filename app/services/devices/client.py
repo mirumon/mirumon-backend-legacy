@@ -4,12 +4,12 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.domain.device.base import DeviceUID
+from app.domain.device.base import DeviceID
 from app.domain.event.base import EventError, EventInRequest, EventInResponse
 
 
 class DeviceClient:
-    def __init__(self, device_uid: DeviceUID, websocket: WebSocket) -> None:
+    def __init__(self, device_uid: DeviceID, websocket: WebSocket) -> None:
         self.device_uid = device_uid
         self.websocket = websocket
 

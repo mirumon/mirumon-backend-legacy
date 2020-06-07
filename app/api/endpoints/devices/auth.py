@@ -15,7 +15,7 @@ router = APIRouter()
     status_code=status.HTTP_202_ACCEPTED,
     response_model=DeviceAuthInResponse,
     name="devices:registration",
-    summary="Device Registration",
+    summary="Register device",
     description=strings.DEVICE_REGISTRATION_DESCRIPTION,
 )
 async def register_device(

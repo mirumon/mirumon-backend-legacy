@@ -1,12 +1,12 @@
 from typing import Dict
 
-from app.domain.device.base import DeviceUID
+from app.domain.device.base import DeviceID
 from app.services.devices.client import DeviceClient
 
 
 class DeviceClientsGateWay:
     def __init__(self) -> None:
-        self._clients: Dict[DeviceUID, DeviceClient] = {}
+        self._clients: Dict[DeviceID, DeviceClient] = {}
 
     def add_client(self, client: DeviceClient) -> None:
         self._clients[client.device_uid] = client
@@ -14,5 +14,5 @@ class DeviceClientsGateWay:
     def remove_client(self, client: DeviceClient) -> None:
         self._clients.pop(client.device_uid)
 
-    def get_client(self, device_uid: DeviceUID) -> DeviceClient:
+    def get_client(self, device_uid: DeviceID) -> DeviceClient:
         return self._clients[device_uid]

@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 from app.domain.device.base import Device
 
-GroupUID = NewType("GroupUID", UUID)
+GroupID = NewType("GroupID", UUID)
 
 
 class DeviceGroup(BaseModel):
-    group_uid: GroupUID
+    group_uid: GroupID
     groups: List[Device]

@@ -3,8 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-DeviceUID = NewType("DeviceUID", UUID)
+DeviceID = NewType("DeviceID", UUID)
 
 
 class Device(BaseModel):
-    device_uid: DeviceUID
+    device_id: DeviceID
