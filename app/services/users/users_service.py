@@ -9,7 +9,7 @@ from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import Token, User, UserInLogin, UserInCreate, UserInDB
+from app.domain.user.user import Token, User, UserInCreate, UserInDB, UserInLogin
 
 
 class UsersService:

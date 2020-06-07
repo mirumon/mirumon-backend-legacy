@@ -6,7 +6,6 @@ from fastapi.security import (
     OAuth2PasswordRequestForm,
     SecurityScopes,
 )
-from pydantic import SecretStr
 from starlette import status
 
 from app.api.dependencies.services import get_users_service

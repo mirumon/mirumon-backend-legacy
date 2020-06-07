@@ -1,8 +1,6 @@
 from typing import List, NewType, Optional
 from uuid import UUID
 
-from pydantic import SecretStr
-
 from app.components.core import APIModel
 from app.domain.user.scopes import Scopes
 

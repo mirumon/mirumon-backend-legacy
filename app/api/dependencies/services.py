@@ -3,7 +3,6 @@ from typing import AsyncGenerator, Callable, Type
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import Depends
-from fastapi.security import SecurityScopes
 from starlette.requests import Request
 
 from app.components.config import APPSettings, get_app_settings
@@ -36,9 +35,7 @@ def get_users_service(
     users_repository: UsersRepository = Depends(_get_repository(UsersRepository)),
     settings: APPSettings = Depends(get_app_settings),
 ) -> UsersService:
-    return UsersService(
-        users_repo=users_repository, settings=settings
-    )
+    return UsersService(users_repo=users_repository, settings=settings)
 
 
 def get_devices_service(

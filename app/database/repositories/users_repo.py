@@ -1,13 +1,18 @@
 from typing import List
 
-from pydantic import SecretStr
-
 from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.scopes import UserScopes, Scopes
-from app.domain.user.user import UserInDB, UserInLogin, UserInUpdate, Username, \
-    RawPassword, HashedPassword, User
+from app.domain.user.scopes import Scopes
+from app.domain.user.user import (
+    HashedPassword,
+    RawPassword,
+    User,
+    UserInDB,
+    UserInLogin,
+    UserInUpdate,
+    Username,
+)
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
@@ -51,16 +56,9 @@ class UsersRepository(BaseRepository):
             user_db = await self.get_user_by_username(username=user.username)
         except EntityDoesNotExist:
             return False
-        print(user_db)
-        print(str(user_db.hashed_password))
-        p =jwt.get_password_hash(user_db.salt + str(user.password))
-        print(p)
-        print(p == str(user_db.hashed_password))
-        t = jwt.verify_password(
+        return jwt.verify_password(
             user_db.salt + str(user.password), user_db.hashed_password
         )
-        print(t)
-        return t
 
     @staticmethod
     def change_user_password(user: UserInDB, password: RawPassword) -> None:
@@ -82,7 +80,6 @@ class UsersRepository(BaseRepository):
                 str(new_user.hashed_password),
                 new_user.scopes,
             )
-            print(1, dict(user_row))
             return User(**dict(user_row))
 
     async def update_user(

@@ -28,6 +28,10 @@ async def create_superuser(app: FastAPI, settings: APPSettings) -> None:
     async with app.state.pool.acquire() as conn:
         repo = UsersRepository(conn)
         try:
-            await repo.create_user(username=settings.first_superuser, scopes=settings.initial_superuser_scopes, password=settings.first_superuser_password)
+            await repo.create_user(
+                username=settings.first_superuser,
+                scopes=settings.initial_superuser_scopes,
+                password=settings.first_superuser_password,
+            )
         except:
             pass
