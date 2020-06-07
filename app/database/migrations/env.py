@@ -15,7 +15,7 @@ fileConfig(config.config_file_name)
 
 target_metadata = None
 
-config.set_main_option("sqlalchemy.url", str(get_app_settings().database_url))
+config.set_main_option("sqlalchemy.url", str(get_app_settings().database_dsn))
 
 
 def run_migrations_online() -> None:

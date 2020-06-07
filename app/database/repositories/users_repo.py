@@ -1,9 +1,13 @@
 from typing import List
 
+from pydantic import SecretStr
+
 from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
-from app.domain.user.user import UserInDB, UserInLogin, UserInUpdate
+from app.domain.user.scopes import UserScopes, Scopes
+from app.domain.user.user import UserInDB, UserInLogin, UserInUpdate, Username, \
+    RawPassword, HashedPassword, User
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
@@ -19,7 +23,7 @@ WHERE username = $1
 CREATE_USER_QUERY = """
 INSERT INTO users (username, salt, hashed_password, scopes)
 VALUES ($1, $2, $3, $4)
-RETURNING id, created_at, updated_at
+RETURNING id, username, scopes
 """
 UPDATE_USER_QUERY = """
 UPDATE users
@@ -28,7 +32,7 @@ SET username        = $1,
     hashed_password = $3,
     scopes          = $4
 WHERE username = $7
-RETURNING updated_at
+RETURNING username, scopes
 """
 
 
@@ -44,31 +48,39 @@ class UsersRepository(BaseRepository):
 
     async def check_user_credentials(self, user: UserInLogin) -> bool:
         user_db = await self.get_user_by_username(username=user.username)
-        return jwt.verify_password(
-            user_db.salt + user.password, user_db.hashed_password
+        print(user_db)
+        print(str(user_db.hashed_password))
+        p =jwt.get_password_hash(user_db.salt + str(user.password))
+        print(p)
+        print(p == str(user_db.hashed_password))
+        t = jwt.verify_password(
+            user_db.salt + str(user.password), user_db.hashed_password
         )
+        print(t)
+        return t
 
     @staticmethod
-    def change_user_password(user: UserInDB, password: str) -> None:
+    def change_user_password(user: UserInDB, password: RawPassword) -> None:
         user.salt = jwt.generate_salt()
-        user.hashed_password = jwt.get_password_hash(user.salt + password)
+        hashed_password = jwt.get_password_hash(user.salt + str(password))
+        user.hashed_password = HashedPassword(hashed_password)
 
     async def create_user(
-        self, *, username: str, scopes: List[str], password: str
-    ) -> UserInDB:
-        user = UserInDB(username=username, scopes=scopes)
-        self.change_user_password(user, password)
+        self, *, username: Username, scopes: List[Scopes], password: RawPassword
+    ) -> User:
+        new_user = UserInDB(username=username, scopes=scopes)
+        self.change_user_password(new_user, password)
 
         async with self.connection.transaction():
             user_row = await self._log_and_fetch_row(
                 CREATE_USER_QUERY,
-                user.username,
-                user.salt,
-                user.hashed_password,
-                user.scopes,
+                new_user.username,
+                new_user.salt,
+                str(new_user.hashed_password),
+                new_user.scopes,
             )
-
-        return user.copy(update=dict(user_row))
+            print(1, dict(user_row))
+            return User(**dict(user_row))
 
     async def update_user(
         self, *, user_in_db: UserInDB, user: UserInUpdate,

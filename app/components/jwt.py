@@ -6,10 +6,11 @@ import jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
-from app.domain.user.user import User
+from app.domain.user.user import UserInToken
 
 JWT_SUBJECT = "access"
 ALGORITHM = "HS256"
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_jwt_token(
@@ -21,19 +22,17 @@ def create_jwt_token(
     return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM).decode()
 
 
-def get_user_from_token(token: str, secret_key: str) -> User:
+def get_user_from_token(token: str, secret_key: str) -> UserInToken:
     try:
         user_from_jwt = jwt.decode(token, secret_key, algorithms=[ALGORITHM])
     except jwt.PyJWTError as decode_error:
         raise ValueError("unable to decode JWT token") from decode_error
 
     try:
-        return User(**user_from_jwt)
+        print(user_from_jwt)
+        return UserInToken(**user_from_jwt)
     except ValidationError as validation_error:
         raise ValueError("malformed payload in token") from validation_error
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def generate_salt() -> str:

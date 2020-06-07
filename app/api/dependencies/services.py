@@ -33,12 +33,11 @@ def _get_repository(repository_type: Type[BaseRepository]) -> Callable:
 
 
 def get_users_service(
-    security_scopes: SecurityScopes,
     users_repository: UsersRepository = Depends(_get_repository(UsersRepository)),
     settings: APPSettings = Depends(get_app_settings),
 ) -> UsersService:
     return UsersService(
-        users_repo=users_repository, settings=settings, security_scopes=security_scopes
+        users_repo=users_repository, settings=settings
     )
 
 

@@ -7,10 +7,10 @@ from app.components.core import APIModel
 from app.domain.user.scopes import Scopes
 
 UserID = NewType("UserID", UUID)
-RawPassword = NewType("RawPassword", SecretStr)
-HashedPassword = NewType("HashedPassword", SecretStr)
+RawPassword = NewType("RawPassword", str)
+HashedPassword = NewType("HashedPassword", str)
 Username = NewType("Username", str)
-AccessToken = NewType("AccessToken", SecretStr)
+AccessToken = NewType("AccessToken", str)
 
 
 class User(APIModel):
@@ -41,6 +41,12 @@ class Token(APIModel):
     token_type: str
 
 
+class UserInToken(UserInCreate):
+    exp: int
+    sub: str
+
+
 class UserInDB(User):
-    salt: str
-    hashed_password: HashedPassword
+    id: Optional[UserID]
+    salt: str = ""
+    hashed_password: HashedPassword = ""
