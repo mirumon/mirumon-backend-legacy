@@ -47,7 +47,10 @@ class UsersRepository(BaseRepository):
         )
 
     async def check_user_credentials(self, user: UserInLogin) -> bool:
-        user_db = await self.get_user_by_username(username=user.username)
+        try:
+            user_db = await self.get_user_by_username(username=user.username)
+        except EntityDoesNotExist:
+            return False
         print(user_db)
         print(str(user_db.hashed_password))
         p =jwt.get_password_hash(user_db.salt + str(user.password))
