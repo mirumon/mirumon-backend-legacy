@@ -6,12 +6,13 @@ from fastapi.security import (
     OAuth2PasswordRequestForm,
     SecurityScopes,
 )
+from pydantic import SecretStr
 from starlette import status
 
 from app.api.dependencies.services import get_users_service
 from app.components.config import APPSettings, get_app_settings
 from app.domain.user.scopes import AdministrationScopes, UserScopes
-from app.domain.user.user import RawPassword, User, UserInLogin
+from app.domain.user.user import RawPassword, User, UserInLogin, Username
 from app.resources import strings
 from app.services.users.users_service import UsersService
 
@@ -63,4 +64,6 @@ def check_user_scopes(required_scopes: List[str]) -> Callable:
 
 
 def get_user_in_login(user: OAuth2PasswordRequestForm = Depends()) -> UserInLogin:
-    return UserInLogin(username=user.username, password=RawPassword(user.password))
+    return UserInLogin(
+        username=Username(user.username), password=RawPassword(SecretStr(user.password))
+    )

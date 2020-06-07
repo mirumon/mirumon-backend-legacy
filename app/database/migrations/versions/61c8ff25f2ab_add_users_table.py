@@ -12,12 +12,6 @@ from alembic import op
 from sqlalchemy import func, text
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.settings.environments.config import (
-    FIRST_SUPERUSER,
-    FIRST_SUPERUSER_PASSWORD,
-    INITIAL_SUPERUSER_SCOPES,
-)
-
 revision = "61c8ff25f2ab"
 down_revision = None
 branch_labels = None
@@ -91,25 +85,6 @@ def upgrade() -> None:
     register_uuid_extension()
     create_updated_at_trigger()
     create_users_table()
-
-    admin_user = UserInDB(username=FIRST_SUPERUSER, scopes=INITIAL_SUPERUSER_SCOPES)
-    admin_user.change_user_password(str(FIRST_SUPERUSER_PASSWORD))
-
-    conn = op.get_bind()
-    conn.execute(
-        text(
-            """
-            INSERT INTO users(username, salt, hashed_password, scopes) 
-            VALUES (:username, :salt, :hashed_password, :scopes)
-        """,
-        ),
-        dict(
-            username=admin_user.username,
-            salt=admin_user.salt,
-            hashed_password=admin_user.hashed_password,
-            scopes=[scope.value for scope in admin_user.scopes],
-        ),
-    )
 
 
 def downgrade() -> None:
