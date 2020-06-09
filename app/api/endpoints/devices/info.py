@@ -1,10 +1,14 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device import detail, hardware, software
 from app.domain.event.types import EventTypes
+from app.domain.user.scopes import UserScopes
 from app.resources import strings
+
+DEVICE_NOT_FOUND = "The device was not found"
 
 router = APIRouter()
 
@@ -19,18 +23,76 @@ def path(event: str) -> str:
 
 @router.get(
     path="",
-    response_model=List[detail.DeviceOverview],
     name=name(EventTypes.list),
     description=strings.DEVICES_LIST_DESCRIPTION,
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
+    response_model=List[detail.DeviceOverview],
+    responses={
+        200: {
+            "description": "Available devices for user",
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "id": "dd8475c9-80b8-472a-a7ba-c5aeff36fb9d",
+                            "online": True,
+                            "name": "Manjaro-Desktop",
+                            "domain": "mirumon.dev",
+                            "last_user": {
+                                "name": "nick",
+                                "fullname": "Nick Khitrov",
+                                "domain": "mirumon.dev",
+                            },
+                        },
+                        {
+                            "id": "8f27dd84-5547-4873-bb80-3e59e5717546",
+                            "online": False,
+                            "name": "RED-DESKTOP",
+                            "domain": "mirumon.dev",
+                            "last_user": {
+                                "name": "aredruss",
+                                "fullname": "Alexander Medyanik",
+                                "domain": "mirumon.dev",
+                            },
+                        },
+                    ]
+                }
+            },
+        },
+    },
 )
 async def devices_list() -> List[detail.DeviceOverview]:
-    pass
+    return [
+        {
+            "id": "dd8475c9-80b8-472a-a7ba-c5aeff36fb9d",
+            "online": True,
+            "name": "Manjaro-Desktop",
+            "domain": "mirumon.dev",
+            "last_user": {
+                "name": "nick",
+                "fullname": "Nick Khitrov",
+                "domain": "mirumon.dev",
+            },
+        },
+        {
+            "id": "8f27dd84-5547-4873-bb80-3e59e5717546",
+            "online": False,
+            "name": "RED-DESKTOP",
+            "domain": "mirumon.dev",
+            "last_user": {
+                "name": "aredruss",
+                "fullname": "Alexander Medyanik",
+                "domain": "mirumon.dev",
+            },
+        },
+    ]
 
 
 @router.get(
     path=path(EventTypes.detail),
     name=name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=detail.DeviceDetail,
 )
 async def get_device_detail(
@@ -62,6 +124,7 @@ async def get_device_detail(
     path=path(EventTypes.hardware),
     name=name(EventTypes.hardware),
     description=strings.DEVICE_HARDWARE_DESCRIPTION,
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=hardware.HardwareModel,
 )
 async def get_device_hardware(
@@ -91,13 +154,14 @@ async def get_device_hardware(
     path=path(EventTypes.software),
     name=name(EventTypes.software),
     description=strings.DEVICE_SOFTWARE_DESCRIPTION,
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[software.InstalledProgram],
 )
 async def get_device_software(
     # client: app.services.devices.client.DeviceClient = Depends(get_client),
     # events_manager: EventsManager = Depends(events_manager_retriever()),
     # sync_id: SyncID = Depends(get_new_sync_id),
-) -> detail.DeviceDetail:
+) -> software.InstalledProgram:
     pass
     # event_payload = EventInRequest(method=EventTypes.software, sync_id=sync_id)
     # await client.send_event(event_payload)

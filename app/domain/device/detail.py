@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.domain.device.base import Device
+from app.domain.device.base import Device, DeviceID
 
 
 class OperatingSystem(BaseModel):
@@ -17,8 +17,8 @@ class OperatingSystem(BaseModel):
 
 class DeviceUser(BaseModel):
     name: str
-    domain: str
     fullname: str
+    domain: str
 
 
 class DeviceDetail(Device):

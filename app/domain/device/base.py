@@ -7,4 +7,4 @@ DeviceID = NewType("DeviceID", UUID)
 
 
 class Device(BaseModel):
-    device_id: DeviceID
+    id: DeviceID

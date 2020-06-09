@@ -1,9 +1,11 @@
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device.detail import DeviceDetail
 from app.domain.event.types import EventTypes
+from app.domain.user.scopes import UserScopes
 from app.resources import strings
 
 router = APIRouter()
@@ -21,6 +23,7 @@ def path(event: str) -> str:
     path=path(EventTypes.execute),
     summary=EventTypes.execute.capitalize(),
     description=strings.DEVICE_EXECUTE_DESCRIPTION,
+    dependencies=[Depends(check_user_scopes([UserScopes.execute]))],
     # response_model=ExecuteResult,
 )
 async def execute_command_on_device(

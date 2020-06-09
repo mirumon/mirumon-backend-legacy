@@ -12,20 +12,20 @@ router = APIRouter()
 
 @router.post(
     "/registration",
-    status_code=status.HTTP_202_ACCEPTED,
-    response_model=DeviceAuthInResponse,
+    status_code=status.HTTP_201_CREATED,
     name="devices:registration",
     summary="Register device",
     description=strings.DEVICE_REGISTRATION_DESCRIPTION,
+    response_model=DeviceAuthInResponse,
 )
 async def register_device(
     credentials: DeviceAuthInRequest,
     devices_service: DevicesService = Depends(get_devices_service),
 ) -> DeviceAuthInRequest:
-    is_shared_token_valid = await devices_service.check_device_credentials(credentials)
+    is_shared_token_valid = devices_service.check_device_credentials(credentials)
     if not is_shared_token_valid:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_TOKEN
         )
 
-    return await devices_service.register_new_device()
+    return devices_service.register_new_device()
