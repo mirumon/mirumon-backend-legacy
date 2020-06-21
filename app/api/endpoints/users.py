@@ -25,7 +25,7 @@ async def register(
         return await users_service.register_new_user(new_user)
     except RuntimeError:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail=strings.USERNAME_TAKEN
+            status_code=HTTP_400_BAD_REQUEST, detail=strings.USERNAME_TAKEN,
         )
 
 
@@ -37,8 +37,8 @@ resp = {
                 "example": {
                     "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJhZG1pbiIsImV4cCI6MTU5MjE1Nzc1OCwic3ViIjoiYWNjZXNzIn0.x2QJcAP2BRPQTp9zxdZwH-rPARYQlEVnA8OqJYPl2yw",
                     "token_type": "Bearer",
-                }
-            }
+                },
+            },
         },
     },
     404: {
@@ -57,5 +57,5 @@ async def login(
         return await users_service.login_user(user)
     except RuntimeError:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail=strings.INCORRECT_LOGIN_INPUT
+            status_code=HTTP_400_BAD_REQUEST, detail=strings.INCORRECT_LOGIN_INPUT,
         )

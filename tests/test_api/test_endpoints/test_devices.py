@@ -3,11 +3,11 @@ from time import sleep
 from typing import Any
 from uuid import UUID
 
-import httpx
 import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
+import httpx
 from tests.testing_helpers.websocket_processing_tools import (
     process_event,
     process_event_by_device,
@@ -56,7 +56,7 @@ async def test_devices_list_with_disconnection(
 
     client1, client2 = await new_clients(2)
 
-    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=client1.websocket),)
+    bad_process = Thread(target=ws_disconnect, kwargs=dict(ws=client1.websocket))
 
     process = Thread(
         target=process_event_by_device,
@@ -126,7 +126,7 @@ async def test_device_detail_event(
 
 def test_device_not_found(app: FastAPI, test_client: TestClient) -> None:
     api_url = app.url_path_for(
-        name="events:detail", device_uid="414912ac-6a9d-49bf-bb41-bc4d002e0a09"
+        name="events:detail", device_uid="414912ac-6a9d-49bf-bb41-bc4d002e0a09",
     )
     response = test_client.get(api_url)
 
@@ -144,7 +144,7 @@ async def test_device_disconnection_in_detail_event(
 
     api_url = app.url_path_for("events:detail", device_uid=device_client.id)
 
-    process = Thread(target=ws_disconnect, kwargs=dict(ws=device_client.websocket),)
+    process = Thread(target=ws_disconnect, kwargs=dict(ws=device_client.websocket))
     process.start()
 
     response = await client.get(api_url)
@@ -177,8 +177,8 @@ async def test_event_validation_error(
                 "loc": ["body", "command_params", "command"],
                 "msg": "field required",
                 "type": "value_error.missing",
-            }
-        ]
+            },
+        ],
     }
 
 
@@ -189,7 +189,7 @@ async def test_validate_event_without_required_fields(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id),
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[{"result": None, "error": None}],

@@ -1,24 +1,22 @@
 import warnings
 from os import environ
-from typing import Callable, List
 
 import alembic
 import alembic.config
 import docker
-import httpx
 import pytest
-from asgi_lifespan import LifespanManager
 from asyncpg import Connection
 from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
+import httpx
+from asgi_lifespan import LifespanManager
 from tests.testing_helpers.test_pools import (
     FakePool,
     create_postgres_container,
     ping_postgres,
 )
-from tests.testing_helpers.websocket_processing_tools import DeviceClient
 
 
 @pytest.fixture(scope="session")
@@ -99,77 +97,3 @@ async def client(app: FastAPI) -> httpx.AsyncClient:
 
         app.router.lifespan.startup_handlers = startup
         app.router.lifespan.shutdown_handlers = shutdown
-
-
-@pytest.fixture
-async def device_client(
-    client: httpx.AsyncClient, test_client: TestClient, app: FastAPI
-) -> DeviceClient:
-    response = await client.post(
-        app.url_path_for("events:registration"),
-        json={"shared_token": environ["SHARED_TOKEN"]},
-    )
-    assert response.status_code == 202
-
-    device_token = response.json()["device_token"]
-
-    ws = test_client.websocket_connect(app.url_path_for("ws:service"))
-    ws.send_json(
-        {"device_token": device_token,}
-    )
-    uid = ws.receive_json()["device_uid"]
-    yield DeviceClient(ws, uid)
-
-
-@pytest.fixture
-def new_clients(client: httpx.AsyncClient, app: FastAPI, test_client) -> Callable:
-    async def foo(clients_count: int) -> List[DeviceClient]:
-        devices = []
-        for _ in range(clients_count):
-            response = await client.post(
-                app.url_path_for("events:registration"),
-                json={"shared_token": environ["SHARED_TOKEN"]},
-            )
-            assert response.status_code == 202
-
-            device_token = response.json()["device_token"]
-
-            ws = test_client.websocket_connect(app.url_path_for("ws:service"))
-            ws.send_json(
-                {"device_token": device_token,}
-            )
-            uid = ws.receive_json()["device_uid"]
-            devices.append(DeviceClient(ws, uid))
-        return devices
-
-    return foo
-
-
-@pytest.fixture
-def computer_inlist_payload() -> dict:
-    return {
-        "name": "string",
-        "domain": "string",
-        "workgroup": "string",
-        "current_user": {"name": "string", "domain": "string", "fullname": "string"},
-    }
-
-
-@pytest.fixture
-def computer_details_payload() -> dict:
-    return {
-        "name": "string",
-        "domain": "string",
-        "workgroup": "string",
-        "current_user": {"name": "string", "domain": "string", "fullname": "string"},
-        "os": [
-            {
-                "name": "string",
-                "version": "string",
-                "os_architecture": "string",
-                "serial_number": "string",
-                "number_of_users": 1,
-                "install_date": "2020-01-12T06:29:25.774088",
-            }
-        ],
-    }

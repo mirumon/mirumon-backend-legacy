@@ -16,7 +16,7 @@ async def process_event(
         process = Thread(
             target=process_event_by_device,
             kwargs=dict(
-                client_websocket=client_websocket, response_payload=response_payload
+                client_websocket=client_websocket, response_payload=response_payload,
             ),
         )
         process.start()

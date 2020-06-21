@@ -55,8 +55,8 @@ def path(event: str) -> str:
                                 "domain": "mirumon.dev",
                             },
                         },
-                    ]
-                }
+                    ],
+                },
             },
         },
     },

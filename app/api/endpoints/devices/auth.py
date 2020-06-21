@@ -25,7 +25,7 @@ async def register_device(
     is_shared_token_valid = devices_service.check_device_credentials(credentials)
     if not is_shared_token_valid:
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_TOKEN
+            status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_TOKEN,
         )
 
     return devices_service.register_new_device()

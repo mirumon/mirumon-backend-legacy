@@ -22,7 +22,7 @@ def register_uuid_extension() -> None:
     op.execute(
         """
     CREATE EXTENSION "uuid-ossp"
-    """
+    """,
     )
 
 
@@ -37,7 +37,7 @@ def create_updated_at_trigger() -> None:
         RETURN NEW;
     END;
     $$ language 'plpgsql';
-    """
+    """,
     )
 
 
@@ -62,7 +62,7 @@ def create_users_table() -> None:
     op.create_table(
         "users",
         sa.Column(
-            "id", UUID, server_default=text("uuid_generate_v4()"), primary_key=True
+            "id", UUID, server_default=text("uuid_generate_v4()"), primary_key=True,
         ),
         sa.Column("username", sa.String(255), unique=True, nullable=False, index=True),
         sa.Column("salt", sa.Text, nullable=False),
@@ -77,7 +77,7 @@ def create_users_table() -> None:
             ON users
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
-        """
+        """,
     )
 
 
@@ -93,5 +93,5 @@ def downgrade() -> None:
     op.execute(
         """
     DROP EXTENSION "uuid-ossp"
-    """
+    """,
     )

@@ -1,10 +1,10 @@
 import uuid
 
-import httpx
 import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
+import httpx
 from tests.testing_helpers.websocket_processing_tools import process_event
 
 
@@ -25,12 +25,12 @@ async def test_computers_list_event(
 
         sync_id = client.websocket.receive_json()["sync_id"]
         client.websocket.send_json(
-            {"result": computer_inlist_payload, "sync_id": sync_id}
+            {"result": computer_inlist_payload, "sync_id": sync_id},
         )
 
         sync_id2 = client2.websocket.receive_json()["sync_id"]
         client2.websocket.send_json(
-            {"result": computer_inlist_payload, "sync_id": sync_id2}
+            {"result": computer_inlist_payload, "sync_id": sync_id2},
         )
 
         payload = computer_inlist_payload
@@ -70,7 +70,7 @@ def test_event_invalid_payload(device_client) -> None:
 
 def test_validation_error_field_in_event(device_client) -> None:
     device_client.websocket.send_json(
-        {"result": None, "error": {"detail": "wrong event"}}
+        {"result": None, "error": {"detail": "wrong event"}},
     )
     assert device_client.websocket.receive_json() == {
         "error": {
@@ -113,7 +113,7 @@ async def test_required_event_fields(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id),
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[invalid_payload],
@@ -130,7 +130,7 @@ async def test_required_event_fields(
                     "loc": ["error"],
                     "msg": "must not provide both result and error",
                     "type": "value_error",
-                }
+                },
             ],
         },
         "result": None,
@@ -152,7 +152,7 @@ async def test_error_response_from_device(
     response = await process_event(
         api_method=client.get,
         api_kwargs=dict(
-            url=app.url_path_for(name="events:detail", device_uid=device_client.id)
+            url=app.url_path_for(name="events:detail", device_uid=device_client.id),
         ),
         client_websockets=[device_client.websocket],
         response_payloads=[invalid_payload],
@@ -163,10 +163,10 @@ async def test_error_response_from_device(
 
 
 def test_unregistered_event(
-    app: FastAPI, test_client: TestClient, device_client, computer_details_payload
+    app: FastAPI, test_client: TestClient, device_client, computer_details_payload,
 ):
     device_client.websocket.send_json(
-        {"result": computer_details_payload, "sync_id": str(uuid.uuid4())}
+        {"result": computer_details_payload, "sync_id": str(uuid.uuid4())},
     )
     assert device_client.websocket.receive_json() == {
         "error": {"code": 404, "message": "'unregistered event'"},

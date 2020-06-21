@@ -1,6 +1,5 @@
 from typing import List
 
-from app.components import jwt
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
 from app.domain.user.scopes import Scopes
@@ -13,6 +12,7 @@ from app.domain.user.user import (
     UserInUpdate,
     Username,
 )
+from app.settings.components import jwt
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
@@ -48,7 +48,7 @@ class UsersRepository(BaseRepository):
             return UserInDB(**user_row)
 
         raise EntityDoesNotExist(
-            "user with username {0} does not exist".format(username)
+            "user with username {0} does not exist".format(username),
         )
 
     async def check_user_credentials(self, user: UserInLogin) -> bool:
@@ -57,7 +57,7 @@ class UsersRepository(BaseRepository):
         except EntityDoesNotExist:
             return False
         return jwt.verify_password(
-            user_db.salt + str(user.password), user_db.hashed_password
+            user_db.salt + str(user.password), user_db.hashed_password,
         )
 
     @staticmethod

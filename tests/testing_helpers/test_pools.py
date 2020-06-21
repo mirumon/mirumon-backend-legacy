@@ -14,7 +14,7 @@ POSTGRES_DOCKER_IMAGE = "postgres:11.4-alpine"
 
 
 def do_with_retry(
-    catcher_exc: Type[Exception], reraised_exc: Type[Exception], error_msg: str
+    catcher_exc: Type[Exception], reraised_exc: Type[Exception], error_msg: str,
 ) -> Callable:
     def outer_wrapper(call: Callable) -> Callable:
         @wraps(call)
@@ -57,6 +57,9 @@ def ping_postgres(dsn: str):
     cur.execute("CREATE EXTENSION hstore; DROP EXTENSION hstore;")
     cur.close()
     conn.close()
+
+
+##
 
 
 class FakePoolAcquireContext:
