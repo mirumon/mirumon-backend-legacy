@@ -1,14 +1,14 @@
 import uuid
 
-from app.components.config import APPSettings
 from app.domain.device.auth import DeviceAuthInRequest, DeviceAuthInResponse
-
 # TODO: save into database
+from app.settings.environments.base import AppSettings
+
 _tokens = {}
 
 
 class DevicesService:
-    def __init__(self, settings: APPSettings) -> None:
+    def __init__(self, settings: AppSettings) -> None:
         self.settings = settings
 
     def check_device_credentials(self, credentials: DeviceAuthInRequest):

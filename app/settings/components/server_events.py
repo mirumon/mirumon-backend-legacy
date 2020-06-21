@@ -2,15 +2,15 @@ from typing import Callable
 
 from fastapi import FastAPI
 
-from app.components.config import APPSettings
-from app.components.database import (
+from app.settings.components.database import (
     close_db_connection,
     create_db_connection,
     create_superuser,
 )
+from app.settings.environments.base import AppSettings
 
 
-def create_startup_events_handler(app: FastAPI, settings: APPSettings) -> Callable:
+def create_startup_events_handler(app: FastAPI, settings: AppSettings) -> Callable:
     async def startup() -> None:  # noqa: WPS430
         await create_db_connection(app=app, settings=settings)
         await create_superuser(app=app, settings=settings)

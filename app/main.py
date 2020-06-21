@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 
 from app.api import routes
-from app.components.config import get_app_settings
-from app.components.events import (
+from app.settings.components.server_events import (
     create_shutdown_events_handler,
     create_startup_events_handler,
 )
+from app.settings.config import get_app_settings
 
 
 def get_app() -> FastAPI:

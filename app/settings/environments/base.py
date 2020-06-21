@@ -1,15 +1,27 @@
-"""
-https://github.com/dmontagu/fastapi-utils/blob/master/fastapi_utils/api_settings.py
-"""
-from functools import lru_cache
+from enum import Enum
 from typing import Any, Dict, Tuple
 
 from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
 
-from app.components.version import get_app_version
+from app.settings.components.version import get_app_version
 
 
-class APPSettings(BaseSettings):
+class AppEnvTypes(str, Enum):
+    prod: str = "prod"
+    dev: str = "dev"
+    test: str = "test"
+
+
+class BaseAppSettings(BaseSettings):
+    """Allows to determine the current application environment."""
+
+    app_env: AppEnvTypes = AppEnvTypes.prod
+
+    class Config:
+        env_file = ".env"
+
+
+class AppSettings(BaseAppSettings):
     """
     This class enables the configuration of your FastAPI instance through the use of environment variables.
     Any of the instance attributes can be overridden upon instantiation by either passing the desired value to the
@@ -39,11 +51,11 @@ class APPSettings(BaseSettings):
     shared_key: SecretStr
     jwt_token_type: str = "Bearer"
 
-    # Infra settings
+    # Infrastructure settings
     database_dsn: PostgresDsn
     redis_dsn: RedisDsn
 
-    # First user credentials
+    # First superuser credentials
     first_superuser: str
     first_superuser_password: str
     initial_superuser_scopes: Tuple[str, ...] = (
@@ -71,21 +83,9 @@ class APPSettings(BaseSettings):
         }
         if self.disable_docs:
             fastapi_kwargs.update(
-                {"docs_url": None, "openapi_url": None, "redoc_url": None}
+                {"docs_url": None, "openapi_url": None, "redoc_url": None},
             )
         return fastapi_kwargs
 
     class Config:
-        env_file = ".env"
         validate_assignment = True
-
-
-@lru_cache()
-def get_app_settings() -> APPSettings:
-    """
-    This function returns a cached instance of the APISettings object.
-    Caching is used to prevent re-reading the environment every time the API settings are used in an endpoint.
-    If you want to change an environment variable and reset the cache (e.g., during testing), this can be done
-    using the `lru_cache` instance method `get_api_settings.cache_clear()`.
-    """
-    return APPSettings()

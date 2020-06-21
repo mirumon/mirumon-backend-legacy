@@ -1,8 +1,8 @@
 from typing import List, NewType, Optional
 from uuid import UUID
 
-from app.components.core import APIModel
 from app.domain.user.scopes import Scopes
+from app.settings.components.core import APIModel
 
 UserID = NewType("UserID", UUID)
 RawPassword = NewType("RawPassword", str)

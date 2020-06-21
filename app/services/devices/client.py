@@ -28,10 +28,10 @@ class DeviceClient:
     ) -> None:
         message = error.errors() if isinstance(error, ValidationError) else str(error)
         error_payload = EventInResponse(
-            error=EventError(code=code, message=message)
+            error=EventError(code=code, message=message),
         ).dict()
         logger.bind(payload=error_payload).error(
-            "sending error to client {0}", self.device_uid
+            "sending error to client {0}", self.device_uid,
         )
         await self.websocket.send_json(error_payload)
 

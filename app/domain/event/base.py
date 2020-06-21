@@ -3,8 +3,8 @@ from uuid import UUID
 
 from pydantic import validator
 
-from app.components.core import APIModel
 from app.domain.event.types import EventTypes
+from app.settings.components.core import APIModel
 
 SyncID = NewType("SyncID", UUID)
 EventParams = Union[Any]

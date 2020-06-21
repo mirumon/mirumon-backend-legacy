@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.components.config import get_app_settings
+from app.settings.components import get_app_settings
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
 

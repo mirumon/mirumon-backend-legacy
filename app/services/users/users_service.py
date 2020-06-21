@@ -4,12 +4,12 @@ from typing import List
 from asyncpg import UniqueViolationError
 from fastapi.security import SecurityScopes
 
-from app.components import jwt
-from app.components.config import APPSettings
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
 from app.domain.user.user import Token, User, UserInCreate, UserInDB, UserInLogin
+from app.settings.components import jwt
+from app.settings.environments.base import AppSettings
 
 
 class UsersService:
@@ -18,7 +18,7 @@ class UsersService:
     jwt_token_type: str
 
     def __init__(
-        self, users_repo: UsersRepository, settings: APPSettings,
+        self, users_repo: UsersRepository, settings: AppSettings,
     ):
         self.users_repo = users_repo
         self.settings = settings
@@ -50,7 +50,7 @@ class UsersService:
 
         try:
             return await self.users_repo.get_user_by_username(
-                username=stored_user.username
+                username=stored_user.username,
             )
         except EntityDoesNotExist:
             raise RuntimeError("user does not exist")

@@ -6,13 +6,13 @@ from fastapi import HTTPException
 from loguru import logger
 from starlette import websockets
 
-from app.components.config import APPSettings
-# Used to indicate that a connection was closed abnormally
-# (that is, with no close frame being sent)
-# when a status code is expected.
 from app.domain.device.detail import DeviceOverview
 from app.domain.event.base import EventInResponse, SyncID
 from app.services.devices.client import DeviceClient
+# Used to indicate that a connection was closed abnormally
+# (that is, with no close frame being sent)
+# when a status code is expected.
+from app.settings.environments.base import AppSettings
 
 ABNORMAL_CLOSURE = 1006
 # The server is terminating the connection due to a temporary condition,
@@ -21,7 +21,7 @@ TRY_AGAIN_LATER = 1013
 
 
 class EventsService:
-    def __init__(self, settings: APPSettings) -> None:
+    def __init__(self, settings: AppSettings) -> None:
         self.settings = settings
         self._registered_events: Set[SyncID] = set()
         self._events_responses: Dict[SyncID, EventInResponse] = {}
@@ -33,7 +33,7 @@ class EventsService:
         return event_sync_id
 
     def set_event_response(
-        self, sync_id: SyncID, event_response: EventInResponse
+        self, sync_id: SyncID, event_response: EventInResponse,
     ) -> None:
         if sync_id not in self._registered_events:
             logger.error(f"unregistered event with sync_id {sync_id}")

@@ -14,7 +14,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_jwt_token(
-    *, jwt_content: Dict[str, str], secret_key: str, expires_delta: timedelta
+    *, jwt_content: Dict[str, str], secret_key: str, expires_delta: timedelta,
 ) -> str:
     to_encode = jwt_content.copy()
     expire = datetime.utcnow() + expires_delta

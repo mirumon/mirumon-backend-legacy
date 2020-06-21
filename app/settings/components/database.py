@@ -2,11 +2,11 @@ import asyncpg
 from fastapi import FastAPI
 from loguru import logger
 
-from app.components.config import APPSettings
 from app.database.repositories.users_repo import UsersRepository
+from app.settings.environments.base import AppSettings
 
 
-async def create_db_connection(app: FastAPI, settings: APPSettings) -> None:
+async def create_db_connection(app: FastAPI, settings: AppSettings) -> None:
     dsn = str(settings.database_dsn)
     logger.info("Connecting to {0}", dsn)
 
@@ -24,7 +24,7 @@ async def close_db_connection(app: FastAPI) -> None:
 
 
 # TODO remove after refactoring
-async def create_superuser(app: FastAPI, settings: APPSettings) -> None:
+async def create_superuser(app: FastAPI, settings: AppSettings) -> None:
     async with app.state.pool.acquire() as conn:
         repo = UsersRepository(conn)
         try:
