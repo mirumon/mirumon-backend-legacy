@@ -1,43 +1,7 @@
-from datetime import timedelta
-
 import pytest
 from async_asgi_testclient import TestClient
 
-from app.settings.components import jwt
-
 pytestmark = [pytest.mark.asyncio]
-
-
-@pytest.fixture
-def superuser_username() -> str:
-    return "test-superuser-username"
-
-
-@pytest.fixture
-def superuser_password() -> str:
-    return "test-superuser-password"
-
-
-@pytest.fixture
-def secret_key() -> str:
-    return "test-secret-key"
-
-
-@pytest.fixture
-def admin(superuser_username: str, superuser_password: str):
-    return {"username": superuser_username, "password": superuser_password}
-
-
-@pytest.fixture
-def token(admin, secret_key):
-    return jwt.create_jwt_token(
-        jwt_content=admin, secret_key=secret_key, expires_delta=timedelta(minutes=1),
-    )
-
-
-@pytest.fixture
-def token_header(token):
-    return {"Authorization": f"Bearer {token}"}
 
 
 async def test_first_superuser_login_success(client: TestClient, admin) -> None:

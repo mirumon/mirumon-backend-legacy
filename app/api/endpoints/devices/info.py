@@ -2,13 +2,14 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
+from app.api.dependencies.services import get_devices_service
 from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device import detail, hardware, software
 from app.domain.event.types import EventTypes
 from app.domain.user.scopes import UserScopes
 from app.resources import strings
-
-DEVICE_NOT_FOUND = "The device was not found"
+from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
+from app.services.devices.devices_service import DevicesService
 
 router = APIRouter()
 
@@ -23,69 +24,16 @@ def path(event: str) -> str:
 
 @router.get(
     path="",
-    name=name(EventTypes.list),
+    name="devices:list",
     description=strings.DEVICES_LIST_DESCRIPTION,
     dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[detail.DeviceOverview],
-    responses={
-        200: {
-            "description": "Available devices for user",
-            "content": {
-                "application/json": {
-                    "example": [
-                        {
-                            "id": "dd8475c9-80b8-472a-a7ba-c5aeff36fb9d",
-                            "online": True,
-                            "name": "Manjaro-Desktop",
-                            "domain": "mirumon.dev",
-                            "last_user": {
-                                "name": "nick",
-                                "fullname": "Nick Khitrov",
-                                "domain": "mirumon.dev",
-                            },
-                        },
-                        {
-                            "id": "8f27dd84-5547-4873-bb80-3e59e5717546",
-                            "online": False,
-                            "name": "RED-DESKTOP",
-                            "domain": "mirumon.dev",
-                            "last_user": {
-                                "name": "aredruss",
-                                "fullname": "Alexander Medyanik",
-                                "domain": "mirumon.dev",
-                            },
-                        },
-                    ],
-                },
-            },
-        },
-    },
+    responses=DEVICES_LIST_EXAMPLES,
 )
-async def devices_list() -> List[detail.DeviceOverview]:
-    return [
-        {
-            "id": "dd8475c9-80b8-472a-a7ba-c5aeff36fb9d",
-            "online": True,
-            "name": "Manjaro-Desktop",
-            "domain": "mirumon.dev",
-            "last_user": {
-                "name": "nick",
-                "fullname": "Nick Khitrov",
-                "domain": "mirumon.dev",
-            },
-        },
-        {
-            "id": "8f27dd84-5547-4873-bb80-3e59e5717546",
-            "online": False,
-            "name": "RED-DESKTOP",
-            "domain": "mirumon.dev",
-            "last_user": {
-                "name": "aredruss",
-                "fullname": "Alexander Medyanik",
-                "domain": "mirumon.dev",
-            },
-        },
-    ]
+async def devices_list(
+    devices_service: DevicesService = Depends(get_devices_service),
+) -> List[detail.DeviceOverview]:
+    return await devices_service.get_devices_overview()
 
 
 @router.get(

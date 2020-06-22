@@ -6,9 +6,9 @@ from fastapi import Depends
 from starlette.requests import Request
 
 from app.database.repositories.base_repo import BaseRepository
+from app.database.repositories.events_repo import EventsService
 from app.database.repositories.users_repo import UsersRepository
 from app.services.devices.devices_service import DevicesService
-from app.services.events_service import EventsService
 from app.services.users.users_service import UsersService
 from app.settings.config import get_app_settings
 from app.settings.environments.base import AppSettings

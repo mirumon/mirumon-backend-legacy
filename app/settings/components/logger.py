@@ -59,3 +59,6 @@ def format_record(record: dict) -> str:
         )
 
     return "{0}{1}{2}".format(LOGURU_FORMAT, "", "{exception}\n")
+
+
+logger = logger

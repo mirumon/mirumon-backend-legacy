@@ -4,7 +4,7 @@ from app.domain.device.base import DeviceID
 from app.services.devices.client import DeviceClient
 
 
-class DeviceClientsGateWay:
+class DeviceClientsGateway:
     def __init__(self) -> None:
         self._clients: Dict[DeviceID, DeviceClient] = {}
 

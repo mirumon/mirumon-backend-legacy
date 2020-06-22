@@ -6,9 +6,9 @@ from pydantic import ValidationError
 from starlette import websockets
 
 from app.api.dependencies.services import get_devices_service, get_events_service
+from app.database.repositories.events_repo import EventsService
 from app.services.devices.client import DeviceClient
 from app.services.devices.devices_service import DevicesService
-from app.services.events_service import EventsService
 
 router = APIRouter()
 
