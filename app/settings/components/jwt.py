@@ -29,7 +29,6 @@ def get_user_from_token(token: str, secret_key: str) -> UserInToken:
         raise ValueError("unable to decode JWT token") from decode_error
 
     try:
-        print(user_from_jwt)
         return UserInToken(**user_from_jwt)
     except ValidationError as validation_error:
         raise ValueError("malformed payload in token") from validation_error
