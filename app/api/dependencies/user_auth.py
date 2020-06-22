@@ -35,7 +35,7 @@ async def _get_current_user(
 ) -> User:
     try:
         user = await users_service.find_user_by_token(
-            token=token, secret_key=str(settings.secret_key),
+            token=token, secret_key=settings.secret_key.get_secret_value(),
         )
     except RuntimeError:
         raise HTTPException(
