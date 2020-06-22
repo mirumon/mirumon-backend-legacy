@@ -111,3 +111,6 @@ venv.bak/
 
 # Temp files
 tmp.*
+
+# Docker containers volumes
+docker_data/

@@ -21,7 +21,7 @@ router = APIRouter()
 async def register_device(
     credentials: DeviceAuthInRequest,
     devices_service: DevicesService = Depends(get_devices_service),
-) -> DeviceAuthInRequest:
+) -> DeviceAuthInResponse:
     is_shared_token_valid = devices_service.check_device_credentials(credentials)
     if not is_shared_token_valid:
         raise HTTPException(

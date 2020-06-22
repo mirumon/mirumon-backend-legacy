@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Set
 
 from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
 
@@ -56,14 +56,14 @@ class AppSettings(BaseAppSettings):
     redis_dsn: RedisDsn
 
     # First superuser credentials
-    first_superuser: str
+    first_superuser_username: str
     first_superuser_password: str
-    initial_superuser_scopes: Tuple[str, ...] = (
+    initial_superuser_scopes: Set[str] = {
         "users:execute",
         "users:read",
         "admin:view",
         "admin:edit",
-    )
+    }
 
     @property
     def fastapi_kwargs(self) -> Dict[str, Any]:

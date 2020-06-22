@@ -60,9 +60,7 @@ target/
 # Docker
 Dockerfile
 docker-compose.yml
-docker-compose.override.yml
-docker/docker-compose.prod.yml
-
+docker_data/
 # JetBrains
 .idea/
 

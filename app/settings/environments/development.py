@@ -9,19 +9,19 @@ class DevAppSettings(AppSettings):
     # fastapi.applications.FastAPI initializer kwargs
     debug: bool = True
 
-    title: str = "Mirumon Dev Service"
+    title: str = "Dev Mirumon Service"
 
     # Auth settings
-    secret_key: SecretStr = SecretStr("secret-dev-key")
-    shared_key: SecretStr = SecretStr("shared-dev-key")
+    secret_key: SecretStr = SecretStr("dev-secret-key")
+    shared_key: SecretStr = SecretStr("dev-shared-key")
 
     # Infrastructure settings
     database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
     redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/redis"
 
     # First superuser credentials
-    first_superuser: str = "dev-superuser"
-    first_superuser_password: str = "dev_superuser_password"
+    first_superuser_username: str = "dev-superuser"
+    first_superuser_password: str = "dev-superuser-password"
 
     class Config(AppSettings.Config):
         env_file = ".env"

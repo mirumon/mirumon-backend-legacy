@@ -1,16 +1,22 @@
 """add users table
 
 Revision ID: 61c8ff25f2ab
-Revises: 
+Revises:
 Create Date: 2019-12-01 15:12:34.692592
 
 """
+from os import environ
 from typing import Tuple
 
 import sqlalchemy as sa
 from alembic import op
+from dotenv import load_dotenv
 from sqlalchemy import func, text
 from sqlalchemy.dialects.postgresql import UUID
+
+from app.database.repositories.users_repo import UsersRepository
+from app.settings.components import jwt
+from app.settings.config import get_app_settings
 
 revision = "61c8ff25f2ab"
 down_revision = None
@@ -59,7 +65,7 @@ def timestamps() -> Tuple[sa.Column, sa.Column]:
 
 
 def create_users_table() -> None:
-    op.create_table(
+    users = op.create_table(
         "users",
         sa.Column(
             "id", UUID, server_default=text("uuid_generate_v4()"), primary_key=True,
@@ -79,12 +85,26 @@ def create_users_table() -> None:
         EXECUTE PROCEDURE update_updated_at_column();
         """,
     )
+    return users
+
+
+def create_first_super_user(users_table) -> None:
+    settings = get_app_settings()
+    salt = jwt.generate_salt()
+    hashed_password = jwt.get_password_hash(salt + settings.first_superuser_password)
+    op.bulk_insert(
+        users_table,
+        [
+            {"username": settings.first_superuser_username, "hashed_password": hashed_password, "salt": salt, "scopes": settings.initial_superuser_scopes},
+        ]
+    )
 
 
 def upgrade() -> None:
     register_uuid_extension()
     create_updated_at_trigger()
-    create_users_table()
+    users = create_users_table()
+    create_first_super_user(users)
 
 
 def downgrade() -> None:

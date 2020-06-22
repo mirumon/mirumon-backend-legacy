@@ -1,60 +1,33 @@
 import warnings
-from os import environ
+from inspect import Traceback
+from typing import Type, Optional
 
-import alembic
 import alembic.config
-import docker
 import pytest
+from async_asgi_testclient import TestClient
 from asyncpg import Connection
+from asyncpg.pool import Pool
 from asyncpg.transaction import Transaction
 from fastapi import FastAPI
-from starlette.testclient import TestClient
 
-import httpx
-from asgi_lifespan import LifespanManager
-from tests.testing_helpers.test_pools import (
-    FakePool,
-    create_postgres_container,
-    ping_postgres,
-)
+from app.main import get_app
 
 
-@pytest.fixture(scope="session")
-def docker_client() -> docker.APIClient:
-    with docker.APIClient(version="auto") as client:
-        yield client
+pytest_plugins = [
+    # pytest logs plugin
+    "tests.plugins.printer",
+    # cmd args to run docker, slow tests, etc.
+    "tests.plugins.options",
+    "tests.plugins.docker",
+    "tests.services.postgres",
+    # application
+    # "tests.fixtures.application.services",
+    # "tests.fixtures.application.web",
+]
 
 
-@pytest.fixture(scope="session", autouse=True)
-def postgres_server(docker_client: docker.APIClient) -> None:
-    test_db_dsn = environ.get("TEST_DB_CONNECTION")
-    use_local_db = environ.get("DB")
-    if test_db_dsn:  # pragma: no cover
-        environ["DB_CONNECTION"] = test_db_dsn
-        ping_postgres(test_db_dsn)
-        yield
-    elif use_local_db:  # pragma: no cover
-        default_dsn = environ["DEFAULT_TEST_DB_CONNECTION"]
-        environ["DB_CONNECTION"] = default_dsn
-        ping_postgres(default_dsn)
-        yield
-    else:
-        container = create_postgres_container(docker_client)
-        try:
-            docker_client.start(container=container["Id"])
-            inspection = docker_client.inspect_container(container["Id"])
-            host = inspection["NetworkSettings"]["IPAddress"]
-            docker_dsn = f"postgres://postgres:postgres@{host}/postgres"
-            environ["DB_CONNECTION"] = docker_dsn
-            ping_postgres(docker_dsn)
-            yield
-        finally:
-            docker_client.kill(container["Id"])
-            docker_client.remove_container(container["Id"])
-
-
-@pytest.fixture(autouse=True)
-def migrations(postgres_server) -> None:
+@pytest.fixture
+def migrations(postgres):
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     alembic.config.main(argv=["upgrade", "head"])
     yield
@@ -62,38 +35,58 @@ def migrations(postgres_server) -> None:
 
 
 @pytest.fixture
-def app(migrations) -> FastAPI:
-    from old_app.main import get_application  # local import for testing purpose
-
-    return get_application()
+async def app(printer) -> FastAPI:
+    app = get_app()
+    return app
 
 
 @pytest.fixture
-def test_client(app: FastAPI) -> TestClient:
-    with TestClient(app) as client:
-        yield client
-
-
-@pytest.fixture(autouse=True)
-async def client(app: FastAPI) -> httpx.AsyncClient:
-    async with LifespanManager(app):
-        startup = app.router.lifespan.startup_handlers
-        shutdown = app.router.lifespan.shutdown_handlers
-
-        app.router.lifespan.startup_handlers = []
-        app.router.lifespan.shutdown_handlers = []
-
+async def client(app: FastAPI, printer, migrations):
+    async with TestClient(app, headers={"Content-Type": "application/json"}) as client:
+        printer(app.state.__dict__)
         app.state.pool = await FakePool.create_pool(app.state.pool)
         connection: Connection
         async with app.state.pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
             await transaction.start()
-            async with httpx.AsyncClient(
-                app=app, base_url="http://testserver",
-            ) as client:
-                yield client
+            yield client
             await transaction.rollback()
         await app.state.pool.close()
 
-        app.router.lifespan.startup_handlers = startup
-        app.router.lifespan.shutdown_handlers = shutdown
+
+@pytest.fixture
+def shared_key() -> str:
+    return "shared-key-test"
+
+
+class FakePoolAcquireContext:
+    def __init__(self, pool: "FakePool") -> None:
+        self.pool = pool
+
+    async def __aenter__(self) -> Connection:
+        return self.pool.connection
+
+    async def __aexit__(
+        self, exc_type: Type[Exception], exc_val: Exception, exc_tb: Traceback
+    ) -> None:
+        pass
+
+
+class FakePool:
+    def __init__(self, pool: Pool) -> None:
+        self.pool: Pool = pool
+        self.connection: Optional[Connection] = None
+
+    @classmethod
+    async def create_pool(cls, pool: Pool) -> "FakePool":
+        fake = cls(pool)
+        fake.connection = await pool.acquire()
+        return fake
+
+    def acquire(self) -> FakePoolAcquireContext:
+        return FakePoolAcquireContext(self)
+
+    async def close(self) -> None:
+        if self.connection:  # pragma: no cover
+            await self.pool.release(self.connection)
+        await self.pool.close()

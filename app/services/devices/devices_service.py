@@ -14,10 +14,11 @@ class DevicesService:
     def check_device_credentials(self, credentials: DeviceAuthInRequest):
         return credentials.shared_key == self.settings.shared_key
 
-    def register_new_device(self):
+    def register_new_device(self) -> DeviceAuthInResponse:
         # TODO: repo save or error
-        token = str(uuid.uuid4())
         device_id = uuid.uuid4()
+        token = f"token:{device_id}"
+
         _tokens[device_id] = token
         return DeviceAuthInResponse(device_id=device_id, device_token=token)
 

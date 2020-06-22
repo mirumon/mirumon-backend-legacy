@@ -22,16 +22,3 @@ async def close_db_connection(app: FastAPI) -> None:
 
     logger.info("Connection closed")
 
-
-# TODO remove after refactoring
-async def create_superuser(app: FastAPI, settings: AppSettings) -> None:
-    async with app.state.pool.acquire() as conn:
-        repo = UsersRepository(conn)
-        try:
-            await repo.create_user(
-                username=settings.first_superuser,
-                scopes=settings.initial_superuser_scopes,
-                password=settings.first_superuser_password,
-            )
-        except:
-            pass

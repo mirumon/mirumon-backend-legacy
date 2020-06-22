@@ -9,19 +9,19 @@ class TestAppSettings(AppSettings):
     # fastapi.applications.FastAPI initializer kwargs
     debug: bool = True
 
-    title: str = "Mirumon Test Service"
+    title: str = "Test Mirumon Service"
 
     # Auth settings
-    secret_key: SecretStr = SecretStr("secret-test-key")
-    shared_key: SecretStr = SecretStr("shared-test-key")
+    secret_key: SecretStr = SecretStr("test-secret-key")
+    shared_key: SecretStr = SecretStr("test-shared-key")
 
     # Infrastructure settings
-    database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
-    redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/redis"
+    database_dsn: PostgresDsn = "postgres://postgres:postgres@172.17.0.2/postgres"
+    redis_dsn: RedisDsn = "redis://redis:redis@172.17.0.2/redis"
 
     # First superuser credentials
-    first_superuser: str = "test-superuser"
-    first_superuser_password: str = "test_superuser_password"
+    first_superuser_username: str = "test-superuser"
+    first_superuser_password: str = "test-superuser-password"
 
     class Config(AppSettings.Config):
         env_file = "test.env"
