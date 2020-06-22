@@ -16,11 +16,11 @@ class TestAppSettings(AppSettings):
     shared_key: SecretStr = SecretStr("test-shared-key")
 
     # Infrastructure settings
-    database_dsn: PostgresDsn = "postgres://postgres:postgres@172.17.0.2/postgres"
+    database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
     redis_dsn: RedisDsn = "redis://redis:redis@172.17.0.2/redis"
 
     # First superuser credentials
-    first_superuser_username: str = "test-superuser"
+    first_superuser_username: str = "test-superuser-username"
     first_superuser_password: str = "test-superuser-password"
 
     class Config(AppSettings.Config):
