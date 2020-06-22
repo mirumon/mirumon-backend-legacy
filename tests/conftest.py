@@ -55,7 +55,7 @@ async def client(app: FastAPI, printer, migrations):
 
 @pytest.fixture
 def shared_key() -> str:
-    return "shared-key-test"
+    return "test-shared-key"
 
 
 class FakePoolAcquireContext:

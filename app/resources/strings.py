@@ -29,6 +29,6 @@ MALFORMED_PAYLOAD = "could not validate credentials"
 NOT_ENOUGH_PRIVILEGES = "unable to perform action"
 
 # Devices API messages
-INVALID_SHARED_TOKEN = "invalid shared token"
+INVALID_SHARED_KEY = "invalid shared key"
 EVENT_NOT_SUPPORTED = "event is not supported by device"
 DEVICE_DISCONNECTED = "device disconnected"
