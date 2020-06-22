@@ -2,7 +2,6 @@ import asyncpg
 from fastapi import FastAPI
 from loguru import logger
 
-from app.database.repositories.users_repo import UsersRepository
 from app.settings.environments.base import AppSettings
 
 
@@ -21,4 +20,3 @@ async def close_db_connection(app: FastAPI) -> None:
     await app.state.pool.close()
 
     logger.info("Connection closed")
-

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Tuple, Set
+from typing import Any, Dict, Set
 
 from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
 

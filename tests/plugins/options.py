@@ -16,8 +16,10 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--docker"):
-        docker_services = ["tests.plugins.docker",
-                           "tests.services.postgres", ]  # "tests.fixtures.services.redis"]
+        docker_services = [
+            "tests.plugins.docker",
+            "tests.services.postgres",
+        ]  # "tests.fixtures.services.redis"]
         config.pluginmanager.register("tests.plugins.docker")
 
     if config.getoption("--runslow"):
@@ -31,4 +33,3 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_report_header(config):
     return "docker: " + str(config.getoption("--docker"))
-

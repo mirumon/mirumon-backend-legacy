@@ -4,9 +4,7 @@ from fastapi import FastAPI
 pytestmark = [pytest.mark.asyncio, pytest.mark.skip]
 
 
-async def test_device_registration_success(
-    app: FastAPI, client, shared_key
-) -> None:
+async def test_device_registration_success(app: FastAPI, client, shared_key) -> None:
     payload = {"shared_key": shared_key}
     url = app.url_path_for("devices:registration")
     response = await client.post(url, json=payload)

@@ -1,6 +1,6 @@
 import warnings
 from inspect import Traceback
-from typing import Type, Optional
+from typing import Optional, Type
 
 import alembic.config
 import pytest
@@ -12,14 +12,13 @@ from fastapi import FastAPI
 
 from app.main import get_app
 
-
 pytest_plugins = [
     # pytest logs plugin
     "tests.plugins.printer",
     # cmd args to run docker, slow tests, etc.
     "tests.plugins.options",
-    "tests.plugins.docker",
-    "tests.services.postgres",
+    # "tests.plugins.docker",
+    # "tests.services.postgres",
     # application
     # "tests.fixtures.application.services",
     # "tests.fixtures.application.web",
@@ -27,7 +26,7 @@ pytest_plugins = [
 
 
 @pytest.fixture
-def migrations(postgres):
+def migrations():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     alembic.config.main(argv=["upgrade", "head"])
     yield

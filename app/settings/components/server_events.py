@@ -2,10 +2,7 @@ from typing import Callable
 
 from fastapi import FastAPI
 
-from app.settings.components.database import (
-    close_db_connection,
-    create_db_connection,
-)
+from app.settings.components.database import close_db_connection, create_db_connection
 from app.settings.environments.base import AppSettings
 
 

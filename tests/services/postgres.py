@@ -12,10 +12,10 @@ CONTAINER_NAME = "mirumon-postgres-test"
 @pytest.fixture(scope="session")
 def postgres_server(create_docker_service):
     yield from create_docker_service(
-            "postgres://postgres:postgres@{host}/postgres",
-            POSTGRES_DOCKER_IMAGE,
-            CONTAINER_NAME,
-        )
+        "postgres://postgres:postgres@{host}/postgres",
+        POSTGRES_DOCKER_IMAGE,
+        CONTAINER_NAME,
+    )
 
 
 @pytest.fixture(scope="session")

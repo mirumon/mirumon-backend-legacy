@@ -5,16 +5,13 @@ Revises:
 Create Date: 2019-12-01 15:12:34.692592
 
 """
-from os import environ
 from typing import Tuple
 
 import sqlalchemy as sa
 from alembic import op
-from dotenv import load_dotenv
 from sqlalchemy import func, text
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.database.repositories.users_repo import UsersRepository
 from app.settings.components import jwt
 from app.settings.config import get_app_settings
 
@@ -95,8 +92,13 @@ def create_first_super_user(users_table) -> None:
     op.bulk_insert(
         users_table,
         [
-            {"username": settings.first_superuser_username, "hashed_password": hashed_password, "salt": salt, "scopes": settings.initial_superuser_scopes},
-        ]
+            {
+                "username": settings.first_superuser_username,
+                "hashed_password": hashed_password,
+                "salt": salt,
+                "scopes": settings.initial_superuser_scopes,
+            },
+        ],
     )
 
 

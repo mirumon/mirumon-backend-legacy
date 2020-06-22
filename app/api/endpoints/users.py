@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.requests import Request
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from app.api.dependencies.services import get_users_service
@@ -47,6 +46,7 @@ resp = {
         "content": {"application/json": {"example": {"poshel": "na hui"}}},
     },
 }
+
 
 # TODO: remove scope, client_id, client_secret, gran_type
 @router.post("/login", name="auth:login", response_model=Token, responses=resp)

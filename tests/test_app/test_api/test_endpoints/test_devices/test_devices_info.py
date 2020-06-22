@@ -4,9 +4,7 @@ from fastapi import FastAPI
 pytestmark = [pytest.mark.asyncio, pytest.mark.skip, pytest.mark.slow]
 
 
-async def test_empty_devices_list_event(
-    client, app: FastAPI
-) -> None:
+async def test_empty_devices_list_event(client, app: FastAPI) -> None:
     url = app.url_path_for(name="events:list")
     response = await client.get(url)
     assert response.status_code == 200
@@ -17,9 +15,7 @@ async def test_devices_list_event():
     pass
 
 
-async def test_devices_list_with_disconnection(
-    app: FastAPI, client
-) -> None:
+async def test_devices_list_with_disconnection(app: FastAPI, client) -> None:
     pass
     # def ws_disconnect(ws: Any) -> None:
     #     sleep(1)
@@ -53,18 +49,23 @@ async def test_device_detail_event():
 async def test_device_not_found():
     pass
 
+
 async def test_device_disconnection_in_detail_event_no_db():
     pass
+
 
 async def test_device_disconnection_in_detail_event_with_db():
     pass
 
+
 async def test_event_timeout_response_error():
     pass
+
 
 async def test_event_validation_error():
     # todo parametrize events
     pass
+
 
 async def test_validate_event_without_required_fields():
     pass
