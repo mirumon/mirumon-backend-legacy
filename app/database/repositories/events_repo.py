@@ -110,6 +110,6 @@ class EventsService:
         #         continue
         #     else:
         #         devices.append(
-        #             DeviceOverview(uid=client.device_uid, online=True, **device)
+        #             DeviceOverview(uid=client.device_id, online=True, **device)
         #         )
         # return devices

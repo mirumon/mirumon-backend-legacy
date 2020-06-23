@@ -9,18 +9,20 @@ from app.domain.event.base import EventError, EventInRequest, EventInResponse
 
 
 class DeviceClient:
-    def __init__(self, device_uid: DeviceID, websocket: WebSocket) -> None:
-        self.device_uid = device_uid
+    def __init__(self, device_id: DeviceID, websocket: WebSocket) -> None:
+        self.device_id = device_id
         self.websocket = websocket
 
     async def send_event(self, event: EventInRequest) -> None:
-        logger.debug("sending event {0} to {1}", event, self.device_uid)
+        logger.debug("sending event {0} to device:{1}", event, self.device_id)
         await self.websocket.send_text(event.json())
 
     async def read_event(self) -> EventInResponse:
-        logger.debug("start reading event data from {0}", self.device_uid)
+        logger.debug("start reading event data from device:{0}", self.device_id)
         payload = await self.websocket.receive_json()
-        logger.bind(payload=payload).debug("event payload from {0}", self.device_uid)
+        logger.bind(payload=payload).debug(
+            "event payload from device:{0}", self.device_id
+        )
         return EventInResponse(**payload)
 
     async def send_error(
@@ -28,10 +30,10 @@ class DeviceClient:
     ) -> None:
         message = error.errors() if isinstance(error, ValidationError) else str(error)
         error_payload = EventInResponse(
-            error=EventError(code=code, message=message),
+            error=EventError(code=code, detail=message),
         ).dict()
         logger.bind(payload=error_payload).error(
-            "sending error to client {0}", self.device_uid,
+            "sending error to device:{0}", self.device_id,
         )
         await self.websocket.send_json(error_payload)
 
@@ -41,6 +43,6 @@ class DeviceClient:
 
     async def close(self, code: int = 1000) -> None:
         await self.websocket.close(code)
-        client = self.websocket.scope.get("client")
-        path = self.websocket.scope.get("raw_path")
+        client = self.websocket.scope.get("client", "")
+        path = self.websocket.scope.get("raw_path", "")
         logger.info("{0} WebSocket {1} [closed]", client, path)

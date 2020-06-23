@@ -5,14 +5,18 @@ from app.services.devices.client import DeviceClient
 
 
 class DeviceClientsGateway:
-    def __init__(self) -> None:
-        self._clients: Dict[DeviceID, DeviceClient] = {}
+    def __init__(self, clients: Dict[DeviceID, DeviceClient]) -> None:
+        self.clients = clients
 
     def add_client(self, client: DeviceClient) -> None:
-        self._clients[client.device_uid] = client
+        self.clients[client.device_id] = client
 
     def remove_client(self, client: DeviceClient) -> None:
-        self._clients.pop(client.device_uid)
+        self.clients.pop(client.device_id)
 
     def get_client(self, device_uid: DeviceID) -> DeviceClient:
-        return self._clients[device_uid]
+        return self.clients[device_uid]
+
+    async def close(self) -> None:
+        for client in self.clients.values():
+            await client.close()

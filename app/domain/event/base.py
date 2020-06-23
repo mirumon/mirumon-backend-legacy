@@ -22,7 +22,7 @@ class EventInRequest(Event):
 
 class EventError(APIModel):
     code: int
-    message: str
+    detail: Union[list, dict, str]
 
 
 class EventInResponse(Event):

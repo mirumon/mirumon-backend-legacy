@@ -1,14 +1,17 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from starlette import status
 
 from app.api.dependencies.services import get_devices_service
 from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device import detail, hardware, software
+from app.domain.device.base import DeviceID
 from app.domain.event.types import EventTypes
 from app.domain.user.scopes import UserScopes
 from app.resources import strings
 from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
+from app.services.devices.client import DeviceClient
 from app.services.devices.devices_service import DevicesService
 
 router = APIRouter()
@@ -19,7 +22,7 @@ def name(event: str) -> str:
 
 
 def path(event: str) -> str:
-    return "/{0}/{1}".format("{device_uid}", event)
+    return "/{0}/{1}".format("{device_id}", event)
 
 
 @router.get(
@@ -44,28 +47,16 @@ async def devices_list(
     response_model=detail.DeviceDetail,
 )
 async def get_device_detail(
-    # events_service: EventsService = Depends(get_events_service),
-    # client: app.DeviceClient = Depends(get_avialable)
+    device_id: DeviceID,
+    devices_service: DevicesService = Depends(get_devices_service),
 ) -> detail.DeviceDetail:
-    pass
-
-
-#    await events_service.send_event(method=EventTypes.detail, client=client)
-#
-#     try:
-#         payload = await events_manager.wait_event_from_client(
-#             sync_id=event_payload.sync_id, client=client
-#         )
-#         return DeviceDetail(uid=client.device_uid, online=True, **payload)
-#     except WebSocketDisconnect:
-#         error_detail = (
-#             strings.EVENT_NOT_SUPPORTED
-#             if client.is_connected
-#             else strings.DEVICE_DISCONNECTED
-#         )
-#         raise HTTPException(
-#             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=error_detail,
-#         )
+    sync_id = await devices_service.send_event(method=EventTypes.detail, device_id=device_id)
+    try:
+        return devices_service.wait_event_response(sync_id=sync_id, device_id=device_id)
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
+        )
 
 
 @router.get(

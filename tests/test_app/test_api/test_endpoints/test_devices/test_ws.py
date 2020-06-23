@@ -35,7 +35,7 @@
 #     response = await process_event(
 #         api_method=client.get,
 #         api_kwargs=dict(
-#             url=app.url_path_for(name="events:detail", device_uid=device_client.id),
+#             url=app.url_path_for(name="events:detail", device_id=device_client.id),
 #         ),
 #         client_websockets=[device_client.websocket],
 #         response_payloads=[invalid_payload],
@@ -73,7 +73,7 @@
 #     response = await process_event(
 #         api_method=client.get,
 #         api_kwargs=dict(
-#             url=app.url_path_for(name="events:detail", device_uid=device_client.id),
+#             url=app.url_path_for(name="events:detail", device_id=device_client.id),
 #         ),
 #         client_websockets=[device_client.websocket],
 #         response_payloads=[invalid_payload],

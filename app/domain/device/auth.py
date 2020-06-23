@@ -16,3 +16,7 @@ class DeviceAuthInRequest(APIModel):
 class DeviceAuthInResponse(APIModel):
     device_id: DeviceID
     device_token: DeviceToken
+
+
+class DeviceCredentials(APIModel):
+    token: DeviceToken
