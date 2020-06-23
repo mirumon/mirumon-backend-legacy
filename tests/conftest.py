@@ -45,14 +45,14 @@ async def app(printer) -> FastAPI:
 async def client(app: FastAPI, printer, migrations):
     async with TestClient(app, headers={"Content-Type": "application/json"}) as client:
         printer(app.state.__dict__)
-        app.state.pool = await FakePool.create_pool(app.state.pool)
+        app.state.db_pool = await FakePool.create_pool(app.state.db_pool)
         connection: Connection
-        async with app.state.pool.acquire() as connection:
+        async with app.state.db_pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
             await transaction.start()
             yield client
             await transaction.rollback()
-        await app.state.pool.close()
+        await app.state.db_pool.close()
 
 
 @pytest.fixture

@@ -46,9 +46,11 @@ async def device_ws_endpoint(
 ) -> None:
     while client.is_connected:
         try:
-            await devices_service.read_incoming_event(client)
-        except RuntimeError as error:
-            await devices_service.send_error(client, error, WS_BAD_REQUEST_CODE)
+            event = await client.read_event()
+        except (ValidationError, JSONDecodeError) as validation_error:
+            await client.send_error(validation_error, WS_BAD_REQUEST_CODE)
         except websockets.WebSocketDisconnect:
             logger.info("device:{0} disconnected", client.device_id)
             devices_service.remove_client(client)
+        else:
+            await devices_service.update_device(client.device_id, event)

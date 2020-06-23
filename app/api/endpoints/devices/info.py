@@ -1,17 +1,18 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import ValidationError
 from starlette import status
 
 from app.api.dependencies.services import get_devices_service
 from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device import detail, hardware, software
 from app.domain.device.base import DeviceID
+from app.domain.device.detail import DeviceDetail, DeviceOverview
 from app.domain.event.types import EventTypes
 from app.domain.user.scopes import UserScopes
 from app.resources import strings
 from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
-from app.services.devices.client import DeviceClient
 from app.services.devices.devices_service import DevicesService
 
 router = APIRouter()
@@ -35,7 +36,7 @@ def path(event: str) -> str:
 )
 async def devices_list(
     devices_service: DevicesService = Depends(get_devices_service),
-) -> List[detail.DeviceOverview]:
+) -> List[DeviceOverview]:
     return await devices_service.get_devices_overview()
 
 
@@ -44,18 +45,23 @@ async def devices_list(
     name=name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
     dependencies=[Depends(check_user_scopes([UserScopes.read]))],
-    response_model=detail.DeviceDetail,
+    response_model=DeviceDetail,
 )
 async def get_device_detail(
-    device_id: DeviceID,
-    devices_service: DevicesService = Depends(get_devices_service),
-) -> detail.DeviceDetail:
-    sync_id = await devices_service.send_event(method=EventTypes.detail, device_id=device_id)
+    device_id: DeviceID, devices_service: DevicesService = Depends(get_devices_service),
+) -> DeviceDetail:
     try:
-        return devices_service.wait_event_response(sync_id=sync_id, device_id=device_id)
-    except RuntimeError:
+        payload = await devices_service.get_event_payload(
+            device_id=device_id, event_type=EventTypes.detail
+        )
+        return DeviceDetail(**payload)
+    except (RuntimeError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
+        )
+    finally:
+        await devices_service.send_event(
+            event_type=EventTypes.detail, device_id=device_id
         )
 
 

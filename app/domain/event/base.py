@@ -12,7 +12,7 @@ EventResult = Union[Any]
 
 
 class Event(APIModel):
-    sync_d: SyncID
+    sync_id: SyncID
     method: EventTypes
 
 
