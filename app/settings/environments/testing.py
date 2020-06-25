@@ -17,7 +17,7 @@ class TestAppSettings(AppSettings):
 
     # Infrastructure settings
     database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
-    redis_dsn: RedisDsn = "redis://redis:redis@172.17.0.2/redis"
+    redis_dsn: RedisDsn = "redis://redis:redis@localhost/0"
 
     # First superuser credentials
     first_superuser_username: str = "test-superuser-username"

@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import List, NewType, Optional
 from uuid import UUID
 
-from app.domain.user.scopes import Scopes
+from app.domain.user.scopes import Scopes, UserScopes
 from app.settings.components.core import APIModel
 
 UserID = NewType("UserID", UUID)
@@ -34,14 +35,19 @@ class UserInLogin(APIModel):
     password: RawPassword
 
 
-class Token(APIModel):
+class UserToken(APIModel):
     access_token: AccessToken
     token_type: str
 
 
-class UserInToken(UserInCreate):
-    exp: int
+class MetaJWT(APIModel):
+    exp: datetime
     sub: str
+
+
+class UserJWT(APIModel):
+    username: str
+    scopes: List[Scopes] = [UserScopes.read]
 
 
 class UserInDB(User):

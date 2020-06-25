@@ -17,10 +17,10 @@ class DevAppSettings(AppSettings):
 
     # Infrastructure settings
     database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
-    redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/redis"
+    redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/0"
 
     # First superuser credentials
-    first_superuser_username: str = "dev-superuser"
+    first_superuser_username: str = "dev-superuser-username"
     first_superuser_password: str = "dev-superuser-password"
 
     class Config(AppSettings.Config):

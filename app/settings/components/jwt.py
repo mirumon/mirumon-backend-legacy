@@ -6,7 +6,8 @@ import jwt
 from passlib.context import CryptContext
 from pydantic import ValidationError
 
-from app.domain.user.user import UserInToken
+from app.domain.user.user import UserJWT, MetaJWT
+from app.settings.components.logger import logger
 
 JWT_SUBJECT = "access"
 ALGORITHM = "HS256"
@@ -18,19 +19,21 @@ def create_jwt_token(
 ) -> str:
     to_encode = jwt_content.copy()
     expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire, "sub": JWT_SUBJECT})
+    to_encode.update(MetaJWT(exp=expire, sub=JWT_SUBJECT).dict())
     return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM).decode()
 
 
-def get_user_from_token(token: str, secret_key: str) -> UserInToken:
+def get_user_from_token(token: str, secret_key: str) -> UserJWT:
     try:
         user_from_jwt = jwt.decode(token, secret_key, algorithms=[ALGORITHM])
     except jwt.PyJWTError as decode_error:
+        logger.debug("jwt decode error")
         raise ValueError("unable to decode JWT token") from decode_error
 
     try:
-        return UserInToken(**user_from_jwt)
+        return UserJWT(**user_from_jwt)
     except ValidationError as validation_error:
+        logger.debug(f"validation error:{validation_error.errors()}")
         raise ValueError("malformed payload in token") from validation_error
 
 

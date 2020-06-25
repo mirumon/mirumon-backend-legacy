@@ -4,7 +4,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from app.api.dependencies.services import get_users_service
 from app.api.dependencies.user_auth import check_user_scopes, get_user_in_login
 from app.domain.user.scopes import AdministrationScopes
-from app.domain.user.user import Token, User, UserInCreate, UserInLogin
+from app.domain.user.user import UserToken, User, UserInCreate, UserInLogin
 from app.resources import strings
 from app.services.users.users_service import UsersService
 
@@ -49,11 +49,11 @@ resp = {
 
 
 # TODO: remove scope, client_id, client_secret, gran_type
-@router.post("/login", name="auth:login", response_model=Token, responses=resp)
+@router.post("/login", name="auth:login", response_model=UserToken, responses=resp)
 async def login(
     user: UserInLogin = Depends(get_user_in_login),
     users_service: UsersService = Depends(get_users_service),
-) -> Token:
+) -> UserToken:
     try:
         return await users_service.login_user(user)
     except RuntimeError:

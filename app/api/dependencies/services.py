@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, Callable, Type
 
+from aioredis import Redis
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import Depends
@@ -7,7 +8,7 @@ from starlette.requests import Request
 
 from app.database.repositories.base_repo import BaseRepository
 from app.database.repositories.devices_repo import DevicesRepository
-from app.database.repositories.events_repo import EventsRepository, EventsService
+from app.database.repositories.events_repo import EventsRepository
 from app.database.repositories.users_repo import UsersRepository
 from app.services.devices.devices_service import DevicesService
 from app.services.users.users_service import UsersService
@@ -18,8 +19,11 @@ from app.settings.environments.base import AppSettings
 def _get_db_pool(request: Request) -> Pool:
     return request.app.state.db_pool
 
+def _get_redis_pool(request: Request) -> Redis:
+    return request.app.state.redis_pool
 
-def _get_connections(request: Request) -> dict:
+
+def _get_ws_connections(request: Request) -> dict:
     """Connections state for websockets for devices."""
     return request.app.state.connections
 
@@ -38,8 +42,10 @@ def _get_db_repository(repository_type: Type[BaseRepository]) -> Callable:
     return _get_repo
 
 
-def get_events_repo() -> EventsRepository:
-    return EventsRepository()
+def get_events_repo(    settings: AppSettings = Depends(get_app_settings),
+    redis_pool: Redis = Depends(_get_redis_pool)
+) -> EventsRepository:
+    return EventsRepository(settings=settings, pool=redis_pool)
 
 
 def get_users_service(
@@ -52,12 +58,6 @@ def get_users_service(
 def get_devices_service(
     settings: AppSettings = Depends(get_app_settings),
     devices_repo: DevicesRepository = Depends(get_events_repo),
-    settings: AppSettings = Depends(get_app_settings),
+    events_repo: EventsRepository = Depends(get_events_repo)
 ) -> DevicesService:
-    return DevicesService(settings=settings)
-
-
-def get_events_service(
-    settings: AppSettings = Depends(get_app_settings),
-) -> EventsService:
-    return EventsService(settings=settings)
+    return DevicesService(settings=settings, devices_repo=devices_repo, events_repo=events_repo)

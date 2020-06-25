@@ -37,7 +37,7 @@ def path(event: str) -> str:
 async def devices_list(
     devices_service: DevicesService = Depends(get_devices_service),
 ) -> List[DeviceOverview]:
-    return await devices_service.get_devices_overview()
+    return await devices_service.get_devices_overview() or []
 
 
 @router.get(

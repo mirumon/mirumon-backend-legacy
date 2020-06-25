@@ -24,5 +24,5 @@ class EventsRepository:
 
         return SyncID(event_sync_id)
 
-    def is_event_registered(self, sync_id: SyncID) -> bool:
-        return bool(self.pool.exists(sync_id))
+    async def is_event_registered(self, sync_id: SyncID) -> bool:
+        return bool(await self.pool.exists(sync_id))

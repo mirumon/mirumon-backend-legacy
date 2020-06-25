@@ -21,13 +21,10 @@ services:
     image: postgres:11.5-alpine
     ports:
       - "5432:5432"
-    env_file:
-      - .env
   redis:
     container_name: mirumon-redis
     image: redis:5.0-alpine
     command: redis-server --requirepass redis
     ports:
       - "6379:6379"
-    env_file:
-      - .env
+
