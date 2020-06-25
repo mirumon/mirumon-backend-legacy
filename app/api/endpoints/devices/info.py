@@ -50,18 +50,23 @@ async def devices_list(
 async def get_device_detail(
     device_id: DeviceID, devices_service: DevicesService = Depends(get_devices_service),
 ) -> DeviceDetail:
+    await devices_service.send_event(event_type=EventTypes.detail, device_id=device_id)
     try:
         payload = await devices_service.get_event_payload(
             device_id=device_id, event_type=EventTypes.detail
         )
-        return DeviceDetail(**payload)
-    except (RuntimeError, ValidationError):
+    except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
         )
-    finally:
-        await devices_service.send_event(
-            event_type=EventTypes.detail, device_id=device_id
+
+    online = await devices_service.is_device_online(device_id)
+    try:
+        return DeviceDetail(online=online, **payload)
+    except ValidationError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="device response invalid",
         )
 
 
