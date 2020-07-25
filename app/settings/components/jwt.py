@@ -4,9 +4,8 @@ from typing import Dict
 import bcrypt
 import jwt
 from passlib.context import CryptContext
-from pydantic import ValidationError
 
-from app.domain.user.user import UserJWT, MetaJWT
+from app.domain.user.user import MetaJWT
 from app.settings.components.logger import logger
 
 JWT_SUBJECT = "access"
@@ -23,18 +22,12 @@ def create_jwt_token(
     return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM).decode()
 
 
-def get_user_from_token(token: str, secret_key: str) -> UserJWT:
+def get_content_from_token(token: str, secret_key: str) -> dict:
     try:
-        user_from_jwt = jwt.decode(token, secret_key, algorithms=[ALGORITHM])
+        return jwt.decode(token, secret_key, algorithms=[ALGORITHM])
     except jwt.PyJWTError as decode_error:
         logger.debug("jwt decode error")
         raise ValueError("unable to decode JWT token") from decode_error
-
-    try:
-        return UserJWT(**user_from_jwt)
-    except ValidationError as validation_error:
-        logger.debug(f"validation error:{validation_error.errors()}")
-        raise ValueError("malformed payload in token") from validation_error
 
 
 def generate_salt() -> str:

@@ -1,56 +1,58 @@
 from json import JSONDecodeError
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from pydantic import ValidationError
-from starlette import websockets
+from starlette import websockets, status
 from starlette.websockets import WebSocket
 
-from app.api.dependencies.services import get_devices_service
-from app.domain.device.auth import DeviceCredentials
-from app.domain.event.base import EventError
+from app.api.dependencies.connections import get_clients_gateway_ws
+from app.api.dependencies.services import get_devices_service_ws, get_events_service_ws
 from app.services.devices.client import DeviceClient
 from app.services.devices.devices_service import DevicesService
+from app.services.devices.events_service import EventsService
+from app.services.devices.gateway import DeviceClientsGateway
 
 router = APIRouter()
 
-WS_BAD_REQUEST_CODE = 400  # fixme change to correct code
-
 
 async def get_registered_device_client(
-    websocket: WebSocket, devices_service: DevicesService = Depends(get_devices_service)
+    websocket: WebSocket,
+    token: str = Header(None),
+    devices_service: DevicesService = Depends(get_devices_service_ws),
+    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
 ) -> DeviceClient:
     await websocket.accept()
     try:
-        payload = await websocket.receive_json()
-        credentials = DeviceCredentials(**payload)
-    except JSONDecodeError as decode_error:
-        error = EventError(code=WS_BAD_REQUEST_CODE, detail=decode_error.msg)
-        error_payload = {"error": error.dict()}
-        await websocket.send_json(error_payload)
-    except ValidationError as validation_error:
-        error = EventError(code=WS_BAD_REQUEST_CODE, detail=validation_error.errors())
-        error_payload = {"error": error.dict()}
-        await websocket.send_json(error_payload)
+        device = await devices_service.get_registered_device_by_token(token)
+    except RuntimeError:
+        logger.debug("device token decode error")
+        await websocket.close(status.WS_1008_POLICY_VIOLATION)
     else:
-        device = await devices_service.get_registered_device_by_token(credentials.token)
         client = DeviceClient(device_id=device.id, websocket=websocket)
-        devices_service.add_client(client)
+        clients_manager.add_client(client)
         return client
 
 
 @router.websocket("/service", name="devices:service")
 async def device_ws_endpoint(
     client: DeviceClient = Depends(get_registered_device_client),
-    devices_service: DevicesService = Depends(get_devices_service),
+    devices_service: DevicesService = Depends(get_devices_service_ws),
+    events_service: EventsService = Depends(get_events_service_ws),
+    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
 ) -> None:
-    while client.is_connected:
+    while True:
         try:
             event = await client.read_event()
         except (ValidationError, JSONDecodeError) as validation_error:
-            await client.send_error(validation_error, WS_BAD_REQUEST_CODE)
-        except websockets.WebSocketDisconnect:
-            logger.info("device:{0} disconnected", client.device_id)
-            devices_service.remove_client(client)
+            logger.debug("error {0}", validation_error)
+            await client.send_error(validation_error, status.WS_1002_PROTOCOL_ERROR)
+        except websockets.WebSocketDisconnect as disconnect_error:
+            logger.info("device:{0} disconnected, reason {1}", client.device_id, disconnect_error)
+            clients_manager.remove_client(client)
         else:
-            await devices_service.update_device(client.device_id, event)
+            # save new information about device
+            # and send event to redis
+            logger.debug("got event from device")
+            # await devices_service.update_device(client.device_id, event)
+            await events_service.send_event_response(event)

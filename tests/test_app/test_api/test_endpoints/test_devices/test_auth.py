@@ -1,18 +1,27 @@
 import pytest
 from fastapi import FastAPI
 
+from app.domain.device.base import DeviceID
+from app.settings.components.jwt import get_content_from_token
+
 pytestmark = [pytest.mark.asyncio]
 
 
-async def test_device_registration_success(app: FastAPI, client, shared_key) -> None:
+async def test_device_registration_success(
+    app: FastAPI, client, shared_key, secret_key
+) -> None:
     payload = {"shared_key": shared_key}
     url = app.url_path_for("devices:registration")
+
     response = await client.post(url, json=payload)
     assert response.status_code == 201
-    # TODO fake device service to generate token and id
-    resp_payload = response.json()
-    assert resp_payload["device_id"]
-    assert resp_payload["device_token"]
+
+    resp_payload: dict = response.json()
+    assert len(resp_payload) == 1
+
+    content = get_content_from_token(resp_payload["token"], secret_key)
+    # TODO: check id from db when move device storage from redis to postgres
+    assert DeviceID(content["device_id"])
 
 
 async def test_device_registration_with_invalid_shared_key_failed(
@@ -20,6 +29,8 @@ async def test_device_registration_with_invalid_shared_key_failed(
 ) -> None:
     payload = {"shared_key": "not-secret"}
     url = app.url_path_for("devices:registration")
+
     response = await client.post(url, json=payload)
+
     assert response.status_code == 401
     assert response.json() == {"detail": "invalid shared key"}

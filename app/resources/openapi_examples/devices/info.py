@@ -9,6 +9,16 @@ DEVICES_LIST_EXAMPLES = {
                         "online": True,
                         "name": "Manjaro-Desktop",
                         "domain": "mirumon.dev",
+                        "os":[
+                            {
+                                "name": "Windows 10 Edu",
+                                "version": "1.12.12",
+                                "os_architecture": "amd64",
+                                "serial_number": "AGFNE-34GS-RYHRE",
+                                "number_of_users": 4,
+                                "install_date": "2020-09-12"
+                            }
+                        ],
                         "last_user": {
                             "name": "nick",
                             "fullname": "Nick Khitrov",

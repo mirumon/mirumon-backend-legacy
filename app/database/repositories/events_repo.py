@@ -1,28 +1,33 @@
-import uuid
-from datetime import timedelta
+import json
 
-import aioredis
+from aio_pika import DeliveryMode, Message
+from loguru import logger
 
-from app.domain.device.base import DeviceID
-from app.domain.event.base import SyncID
+from app.domain.event.base import EventInResponse, SyncID
 from app.settings.environments.base import AppSettings
 
 
 class EventsRepository:
-    def __init__(self, settings: AppSettings, pool: aioredis.Redis) -> None:
+    def __init__(self, settings: AppSettings, queue, exchange) -> None:
         self.settings = settings
-        self.pool: aioredis.Redis = pool
-        self.expire_timeout = timedelta(hours=2).seconds
+        self.queue = queue
+        self.exchange = exchange
 
-    async def register_event(self, device_id: DeviceID, event_type: str) -> SyncID:
-        event_sync_id = uuid.uuid4()
-        key = f"events:{event_sync_id}"
+    async def publish_event_response(self, event: EventInResponse) -> None:
+        body = event.json().encode()
+        message = Message(body, delivery_mode=DeliveryMode.PERSISTENT)
+        logger.debug(f"publish event response message")
+        await self.exchange.publish(message, routing_key="info")
 
-        await self.pool.hsetnx(key, "event", event_type)
-        await self.pool.hsetnx(key, "device", device_id)
-        await self.pool.expire(key, self.expire_timeout)
-
-        return SyncID(event_sync_id)
-
-    async def is_event_registered(self, sync_id: SyncID) -> bool:
-        return bool(await self.pool.exists(sync_id))
+    async def process_event(self, event_id: SyncID) -> EventInResponse:
+        logger.debug("start processing event:{0}...", event_id)
+        async with self.queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                logger.debug("message {0}", message)
+                async with message.process():
+                    logger.debug(f"process message: {message.body}")
+                    body = message.body.decode()
+                    d = json.loads(body)
+                    event = EventInResponse(**d)
+                    if event.sync_id == event_id:
+                        return event

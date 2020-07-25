@@ -1,11 +1,11 @@
-from typing import List
+from loguru import logger
 
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
-from app.domain.device.auth import DeviceAuthInRequest, DeviceAuthInResponse
+from app.domain.device.auth import DeviceAuthInRequest
 from app.domain.device.base import Device, DeviceID
-from app.domain.device.detail import DeviceOverview
 from app.domain.event.base import EventInResponse
+from app.settings.components import jwt
 from app.settings.environments.base import AppSettings
 
 
@@ -23,13 +23,15 @@ class DevicesService:
     def check_device_credentials(self, credentials: DeviceAuthInRequest) -> bool:
         return credentials.shared_key == self.settings.shared_key
 
-    def register_new_device(self) -> DeviceAuthInResponse:
-        # todo jwt token
-        device = self.devices_repo.create_device()
-        return DeviceAuthInResponse(device_id=device.id, device_token=device.token)
+    async def register_new_device(self) -> str:
+        return await self.devices_repo.create_device()
 
     async def get_registered_device_by_token(self, token: str) -> Device:
-        return self.devices_repo.get_device_by_token(token)
+        try:
+            content = jwt.get_content_from_token(token, self.settings.secret_key.get_secret_value())
+            return Device(id=content["device_id"])
+        except ValueError:
+            raise RuntimeError
 
     async def set_online(self, device_id: DeviceID) -> None:
         await self.devices_repo.set_online(device_id)
@@ -37,15 +39,10 @@ class DevicesService:
     async def is_device_online(self, device_id: DeviceID) -> bool:
         return await self.devices_repo.is_online(device_id)
 
-    async def send_event(self, device_id: DeviceID, event_type: str) -> None:
-        await self.events_repo.register_event(
-            device_id=device_id, event_type=event_type
-        )
-
-    async def get_event_payload(self, device_id: DeviceID, event_type: str) -> dict:
+    async def get_event_result(self, device_id: DeviceID, event_type: str) -> dict:
         return await self.devices_repo.get_event(device_id, event_type)
 
-    async def update_device(self, device_id, event: EventInResponse) -> None:
+    async def update_device(self, device_id: DeviceID, event: EventInResponse) -> None:
         if not self.events_repo.is_event_registered(event.sync_id):
             raise RuntimeError(f"unregistered event:{event.sync_id}")
 
@@ -54,7 +51,7 @@ class DevicesService:
                 device_id, event.method, event.result.json()
             )
         else:
+            logger.bind(payload=event.error.dict()).error(
+                "device response contains error"
+            )
             raise RuntimeError("device response contains error")
-
-    async def get_devices_overview(self) -> List[DeviceOverview]:
-        pass

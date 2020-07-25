@@ -19,7 +19,7 @@ async def test_first_superuser_login_failed(client: TestClient) -> None:
     url = client.application.url_path_for("auth:login")
     response = await client.post(url, form={"username": "admin", "password": "admin"})
     assert response.status_code == 400
-    assert response.json() == {"detail": "incorrect login or password"}
+    assert response.json() == {"detail": "incorrect login or password or scopes"}
 
 
 async def test_first_superuser_create_new_user_with_empty_scopes_success(

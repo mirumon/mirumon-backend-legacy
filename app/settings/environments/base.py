@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Set
 
-from pydantic import BaseSettings, PostgresDsn, RedisDsn, SecretStr
+from pydantic import AnyUrl, BaseSettings, PostgresDsn, RedisDsn, SecretStr
 
 from app.settings.components.version import get_app_version
 
@@ -54,6 +54,7 @@ class AppSettings(BaseAppSettings):
     # Infrastructure settings
     database_dsn: PostgresDsn
     redis_dsn: RedisDsn
+    rabbit_dsn: AnyUrl  # same as redis
 
     # First superuser credentials
     first_superuser_username: str

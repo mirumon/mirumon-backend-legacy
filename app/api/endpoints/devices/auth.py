@@ -28,4 +28,5 @@ async def register_device(
             status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_KEY,
         )
 
-    return devices_service.register_new_device()
+    token = await devices_service.register_new_device()
+    return {"token": token}

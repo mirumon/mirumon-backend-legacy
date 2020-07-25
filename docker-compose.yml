@@ -5,8 +5,6 @@ services:
     container_name: mirumon-backend:dev
     build:
       context: .
-#      cache_from:
-#        - mirumon-backend:dev
     ports:
       - "8000:8000"
     env_file:
@@ -16,15 +14,28 @@ services:
     depends_on:
       - postgres
       - redis
+      - rabbitmq
   postgres:
     container_name: mirumon-postgres
     image: postgres:11.5-alpine
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
+  rabbitmq:
+    container_name: mirumon-rabbitmq
+    image: rabbitmq:3-management-alpine
+    volumes:
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+    ports:
+    - 5672:5672
+    - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
   redis:
     container_name: mirumon-redis
     image: redis:5.0-alpine
     command: redis-server --requirepass redis
     ports:
       - "6379:6379"
-

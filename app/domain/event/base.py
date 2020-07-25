@@ -7,8 +7,15 @@ from app.domain.event.types import EventTypes
 from app.settings.components.core import APIModel
 
 SyncID = NewType("SyncID", UUID)
+
+# add validator with map of `method: model`
 EventParams = Union[Any]
 EventResult = Union[Any]
+
+
+class EventError(APIModel):
+    code: int
+    detail: Union[list, dict, str]
 
 
 class Event(APIModel):
@@ -17,12 +24,7 @@ class Event(APIModel):
 
 
 class EventInRequest(Event):
-    event_params: Optional[EventParams] = None
-
-
-class EventError(APIModel):
-    code: int
-    detail: Union[list, dict, str]
+    params: Optional[EventParams] = None
 
 
 class EventInResponse(Event):

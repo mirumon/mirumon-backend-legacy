@@ -1,4 +1,4 @@
-from pydantic import PostgresDsn, RedisDsn, SecretStr
+from pydantic import AnyUrl, PostgresDsn, RedisDsn, SecretStr
 
 from app.settings.environments.base import AppSettings
 
@@ -18,6 +18,7 @@ class DevAppSettings(AppSettings):
     # Infrastructure settings
     database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
     redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/0"
+    rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost/"
 
     # First superuser credentials
     first_superuser_username: str = "dev-superuser-username"

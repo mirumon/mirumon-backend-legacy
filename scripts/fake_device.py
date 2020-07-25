@@ -58,7 +58,7 @@ async def start_connection(
         try:
             event_payload: Union[PayloadInResponse, EventErrorResponse] = handle_event(
                 event_type=request.event.type,
-                payload=request.payload,
+                payload=request.result,
                 computer=computer_wmi,
             )
         except KeyError:

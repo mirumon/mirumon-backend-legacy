@@ -8,8 +8,14 @@ from pydantic import ValidationError
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import UserToken, User, UserInCreate, UserInDB, UserInLogin, \
-    UserJWT
+from app.domain.user.user import (
+    User,
+    UserInCreate,
+    UserInDB,
+    UserInLogin,
+    UserJWT,
+    UserToken,
+)
 from app.settings.components import jwt
 from app.settings.components.logger import logger
 from app.settings.environments.base import AppSettings
@@ -55,15 +61,19 @@ class UsersService:
     async def find_user_by_token(self, token: str, secret_key: str) -> UserInDB:
         try:
             logger.debug(f"secret:{secret_key}\ttoken:{token}")
-            stored_user = jwt.get_user_from_token(token, secret_key)
+            payload = jwt.get_content_from_token(token, secret_key)
         except ValueError:
             logger.debug("token decode error")
             raise RuntimeError("token decode error")
 
         try:
-            return await self.users_repo.get_user_by_username(
-                username=stored_user.username,
-            )
+            user = UserJWT(**payload)
+        except ValidationError as validation_error:
+            logger.debug(f"validation error:{validation_error.errors()}")
+            raise RuntimeError("malformed payload in token") from validation_error
+
+        try:
+            return await self.users_repo.get_user_by_username(username=user.username,)
         except EntityDoesNotExist:
             logger.debug("user does not exist")
             raise RuntimeError("user does not exist")

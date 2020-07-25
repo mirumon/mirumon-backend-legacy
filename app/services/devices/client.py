@@ -20,8 +20,8 @@ class DeviceClient:
     async def read_event(self) -> EventInResponse:
         logger.debug("start reading event data from device:{0}", self.device_id)
         payload = await self.websocket.receive_json()
-        logger.bind(payload=payload).debug(
-            "event payload from device:{0}", self.device_id
+        logger.debug(
+            "event payload from device:{0}\n{1}", self.device_id, payload
         )
         return EventInResponse(**payload)
 

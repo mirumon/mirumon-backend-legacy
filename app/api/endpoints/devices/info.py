@@ -1,10 +1,9 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import ValidationError
 from starlette import status
 
-from app.api.dependencies.services import get_devices_service
+from app.api.dependencies.services import get_devices_service, get_events_service
 from app.api.dependencies.user_auth import check_user_scopes
 from app.domain.device import detail, hardware, software
 from app.domain.device.base import DeviceID
@@ -14,6 +13,7 @@ from app.domain.user.scopes import UserScopes
 from app.resources import strings
 from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
 from app.services.devices.devices_service import DevicesService
+from app.services.devices.events_service import EventsService
 
 router = APIRouter()
 
@@ -30,44 +30,42 @@ def path(event: str) -> str:
     path="",
     name="devices:list",
     description=strings.DEVICES_LIST_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
+    # dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[detail.DeviceOverview],
     responses=DEVICES_LIST_EXAMPLES,
 )
 async def devices_list(
     devices_service: DevicesService = Depends(get_devices_service),
 ) -> List[DeviceOverview]:
-    return await devices_service.get_devices_overview() or []
+    return []
 
 
 @router.get(
     path=path(EventTypes.detail),
     name=name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
+    # dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=DeviceDetail,
 )
 async def get_device_detail(
-    device_id: DeviceID, devices_service: DevicesService = Depends(get_devices_service),
+    device_id: DeviceID, events_service: EventsService = Depends(get_events_service),
 ) -> DeviceDetail:
-    await devices_service.send_event(event_type=EventTypes.detail, device_id=device_id)
     try:
-        payload = await devices_service.get_event_payload(
-            device_id=device_id, event_type=EventTypes.detail
+        sync_id = await events_service.send_event_request(
+            event_type=EventTypes.detail, device_id=device_id, params=[]
         )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="device not found"
+        )
+
+    try:
+        event = await events_service.listen_event(sync_id)
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
         )
-
-    online = await devices_service.is_device_online(device_id)
-    try:
-        return DeviceDetail(online=online, **payload)
-    except ValidationError:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="device response invalid",
-        )
+    return DeviceDetail(online=True, **event.result)
 
 
 @router.get(
