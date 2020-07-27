@@ -28,7 +28,9 @@ class DevicesService:
 
     async def get_registered_device_by_token(self, token: str) -> Device:
         try:
-            content = jwt.get_content_from_token(token, self.settings.secret_key.get_secret_value())
+            content = jwt.get_content_from_token(
+                token, self.settings.secret_key.get_secret_value()
+            )
             return Device(id=content["device_id"])
         except ValueError:
             raise RuntimeError

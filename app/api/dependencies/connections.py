@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import Depends
 from starlette.requests import Request
 from starlette.websockets import WebSocket

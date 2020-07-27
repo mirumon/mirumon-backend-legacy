@@ -36,7 +36,7 @@ def migrations():
 
 
 @pytest.fixture
-async def app(printer) -> FastAPI:
+def app(printer) -> FastAPI:
     app = get_app()
     return app
 

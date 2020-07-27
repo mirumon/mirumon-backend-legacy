@@ -4,7 +4,9 @@ from app.api.dependencies.connections import get_clients_gateway, get_clients_ga
 from app.api.dependencies.repositories import (
     _get_db_repository,
     get_devices_repo,
-    get_events_repo, get_events_repo_ws, get_devices_repo_ws,
+    get_devices_repo_ws,
+    get_events_repo,
+    get_events_repo_ws,
 )
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository

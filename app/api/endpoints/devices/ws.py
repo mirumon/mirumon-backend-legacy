@@ -3,7 +3,7 @@ from json import JSONDecodeError
 from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from pydantic import ValidationError
-from starlette import websockets, status
+from starlette import status, websockets
 from starlette.websockets import WebSocket
 
 from app.api.dependencies.connections import get_clients_gateway_ws
@@ -48,7 +48,11 @@ async def device_ws_endpoint(
             logger.debug("error {0}", validation_error)
             await client.send_error(validation_error, status.WS_1002_PROTOCOL_ERROR)
         except websockets.WebSocketDisconnect as disconnect_error:
-            logger.info("device:{0} disconnected, reason {1}", client.device_id, disconnect_error)
+            logger.info(
+                "device:{0} disconnected, reason {1}",
+                client.device_id,
+                disconnect_error,
+            )
             clients_manager.remove_client(client)
         else:
             # save new information about device
