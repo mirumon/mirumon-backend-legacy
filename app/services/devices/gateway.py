@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from app.domain.device.base import DeviceID
 from app.services.devices.client import DeviceClient
@@ -24,3 +24,7 @@ class DeviceClientsGateway:
     async def close(self) -> None:
         for client in self.clients.values():
             await client.close()
+
+    @property
+    def client_ids(self) -> List[DeviceID]:
+        return list(self.clients.keys())

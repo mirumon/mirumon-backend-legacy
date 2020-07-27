@@ -12,7 +12,6 @@ from app.domain.event.types import EventTypes
 from app.domain.user.scopes import UserScopes
 from app.resources import strings
 from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
-from app.services.devices.devices_service import DevicesService
 from app.services.devices.events_service import EventsService
 
 router = APIRouter()
@@ -30,21 +29,29 @@ def path(event: str) -> str:
     path="",
     name="devices:list",
     description=strings.DEVICES_LIST_DESCRIPTION,
-    # dependencies=[Depends(check_user_scopes([UserScopes.read]))],
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[detail.DeviceOverview],
     responses=DEVICES_LIST_EXAMPLES,
 )
 async def devices_list(
-    devices_service: DevicesService = Depends(get_devices_service),
+    events_service: EventsService = Depends(get_events_service),
 ) -> List[DeviceOverview]:
-    return []
+    events = []
+    for device_id in events_service.gateway.client_ids:
+        sync_id = await events_service.send_event_request(
+            event_type=EventTypes.list, device_id=device_id, params=[]
+        )
+        event = await events_service.listen_event(sync_id)
+        events.append(DeviceOverview(online=True, **event.result))
+
+    return events
 
 
 @router.get(
     path=path(EventTypes.detail),
     name=name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
-    # dependencies=[Depends(check_user_scopes([UserScopes.read]))],
+    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=DeviceDetail,
 )
 async def get_device_detail(

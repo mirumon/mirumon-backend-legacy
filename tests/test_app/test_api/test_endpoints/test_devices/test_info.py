@@ -46,6 +46,17 @@ class FakeDevice:
 
     def get_event_result(self, method: str):
         events = {}
+        events["list"] = {
+            "id": self.id,
+            "name": "Manjaro-Desktop",
+            "domain": "mirumon.dev",
+            "workgroup": None,
+            "last_user": {
+                "name": "nick",
+                "fullname": "Nick Khitrov",
+                "domain": "mirumon.dev",
+            },
+        }
         events["detail"] = {
             "id": self.id,
             "name": "Manjaro-Desktop",
@@ -93,7 +104,6 @@ def device_factory(app: FastAPI, client, secret_key, event_loop, printer):
     return create_device
 
 
-# wip
 async def test_device_detail_event(app: FastAPI, client, token_header, device_factory):
     async with device_factory() as device:
         url = app.url_path_for("devices:detail", device_id=device.id)
@@ -123,36 +133,48 @@ async def test_device_detail_event(app: FastAPI, client, token_header, device_fa
         }
 
 
-async def test_devices_list_without_registered_devices(
-    app, client, token_header
+async def test_devices_list_with_two_devices(
+    app, client, token_header, device_factory
 ) -> None:
+    async with device_factory() as device:
+        async with device_factory() as device2:
+            url = app.url_path_for("devices:list")
+            response = await client.get(url, headers=token_header)
+            assert response.status_code == 200
+            assert response.json() == [
+                {
+                    "id": device.id,
+                    "online": True,
+                    "name": "Manjaro-Desktop",
+                    "domain": "mirumon.dev",
+                    "workgroup": None,
+                    "last_user": {
+                        "name": "nick",
+                        "fullname": "Nick Khitrov",
+                        "domain": "mirumon.dev",
+                    },
+                },
+                {
+                    "id": device2.id,
+                    "online": True,
+                    "name": "Manjaro-Desktop",
+                    "domain": "mirumon.dev",
+                    "workgroup": None,
+                    "last_user": {
+                        "name": "nick",
+                        "fullname": "Nick Khitrov",
+                        "domain": "mirumon.dev",
+                    },
+                }
+            ]
+
+
+@pytest.mark.skip
+async def test_devices_list_without_registered_devices(app, client, token_header):
     url = app.url_path_for("devices:list")
     response = await client.get(url, headers=token_header)
     assert response.status_code == 200
     assert response.json() == []
-
-
-@pytest.mark.skip
-async def test_devices_list_with_two_devices(app, client, token_header, device_factory):
-
-    device = device_factory()
-    payload = {
-        "id": "8f27dd84-5547-4873-bb80-3e59e5717546",
-        "online": True,
-        "name": "RED-DESKTOP",
-        "domain": "mirumon.dev",
-        "last_user": {
-            "name": "aredruss",
-            "fullname": "Alexander Medyanik",
-            "domain": "mirumon.dev",
-        },
-    }
-    device.set_response(payload)
-
-    url = app.url_path_for("devices:list")
-    response = await client.get(url, headers=token_header)
-    assert response.status_code == 200
-    assert response.json() == [payload]
 
 
 async def test_device_not_found():
