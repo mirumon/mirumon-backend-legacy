@@ -1,4 +1,5 @@
 import uuid
+from asyncio.exceptions import TimeoutError
 
 from loguru import logger
 
@@ -39,5 +40,7 @@ class EventsService:
         await self.events_repo.publish_event_response(event)
 
     async def listen_event(self, event_id: SyncID) -> EventInResponse:
-        # todo runtime error on timeout
-        return await self.events_repo.process_event(event_id)
+        try:
+            return await self.events_repo.process_event(event_id)
+        except TimeoutError:
+            raise RuntimeError

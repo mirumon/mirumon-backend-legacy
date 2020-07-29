@@ -42,8 +42,10 @@ def app(printer) -> FastAPI:
 
 
 @pytest.fixture
-async def client(app: FastAPI, printer, migrations):
-    async with TestClient(app, headers={"Content-Type": "application/json"}) as client:
+async def client(app: FastAPI, token_header, printer, migrations):
+    async with TestClient(
+        app, headers={**token_header, "Content-Type": "application/json"}
+    ) as client:
         printer(app.state.__dict__)
         app.state.db_pool = await FakePool.create_pool(app.state.db_pool)
         connection: Connection

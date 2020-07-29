@@ -10,15 +10,15 @@ async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
 
     dsn = str(settings.rabbit_dsn)
     connection = await connect(dsn)
-    # Creating a channel
+
     channel = await connection.channel()
 
-    # Configure exchange for pushing events to all consumers
+    # Configure exchange for pushing events to all consumers (http views)
     exchange = await channel.declare_exchange("events", ExchangeType.FANOUT)
 
-    # Declaring queue for listening new events
-    # and binding the queue to the exchange
-    queue = await channel.declare_queue(exclusive=True)
+    # Declare a queue and disable saving messages,
+    # since messages have a small life cycle and we can save memory
+    queue = await channel.declare_queue(exclusive=True, durable=False)
     await queue.bind(exchange)
 
     # add to app state to use later

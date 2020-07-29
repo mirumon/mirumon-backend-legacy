@@ -1,17 +1,15 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from loguru import logger
 from starlette import status
 
-from app.api.dependencies.services import get_devices_service, get_events_service
-from app.api.dependencies.user_auth import check_user_scopes
+from app.api.dependencies.services import get_events_service
 from app.domain.device import detail, hardware, software
 from app.domain.device.base import DeviceID
 from app.domain.device.detail import DeviceDetail, DeviceOverview
 from app.domain.event.types import EventTypes
-from app.domain.user.scopes import UserScopes
 from app.resources import strings
-from app.resources.openapi_examples.devices.info import DEVICES_LIST_EXAMPLES
 from app.services.devices.events_service import EventsService
 
 router = APIRouter()
@@ -29,9 +27,8 @@ def path(event: str) -> str:
     path="",
     name="devices:list",
     description=strings.DEVICES_LIST_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[detail.DeviceOverview],
-    responses=DEVICES_LIST_EXAMPLES,
+    # responses=DEVICES_LIST_EXAMPLES,
 )
 async def devices_list(
     events_service: EventsService = Depends(get_events_service),
@@ -41,8 +38,12 @@ async def devices_list(
         sync_id = await events_service.send_event_request(
             event_type=EventTypes.list, device_id=device_id, params=[]
         )
-        event = await events_service.listen_event(sync_id)
-        events.append(DeviceOverview(online=True, **event.result))
+        try:
+            event = await events_service.listen_event(sync_id)
+        except RuntimeError:
+            logger.debug(f"timeout on event:{sync_id} for device:{device_id}")
+        else:
+            events.append(DeviceOverview(online=True, **event.result))
 
     return events
 
@@ -51,7 +52,6 @@ async def devices_list(
     path=path(EventTypes.detail),
     name=name(EventTypes.detail),
     description=strings.DEVICE_DETAIL_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=DeviceDetail,
 )
 async def get_device_detail(
@@ -79,7 +79,6 @@ async def get_device_detail(
     path=path(EventTypes.hardware),
     name=name(EventTypes.hardware),
     description=strings.DEVICE_HARDWARE_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=hardware.HardwareModel,
 )
 async def get_device_hardware(
@@ -109,7 +108,6 @@ async def get_device_hardware(
     path=path(EventTypes.software),
     name=name(EventTypes.software),
     description=strings.DEVICE_SOFTWARE_DESCRIPTION,
-    dependencies=[Depends(check_user_scopes([UserScopes.read]))],
     response_model=List[software.InstalledProgram],
 )
 async def get_device_software(
