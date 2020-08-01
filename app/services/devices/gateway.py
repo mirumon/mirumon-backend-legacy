@@ -8,7 +8,7 @@ Connections = Dict[DeviceID, DeviceClient]
 
 
 class DeviceClientsGateway:
-    def __init__(self, settings: AppSettings, clients: Connections,) -> None:
+    def __init__(self, settings: AppSettings, clients: Connections) -> None:
         self.settings = settings
         self.clients = clients
 

@@ -37,11 +37,10 @@ async def get_registered_device_client(
 @router.websocket("/service", name="devices:service")
 async def device_ws_endpoint(
     client: DeviceClient = Depends(get_registered_device_client),
-    devices_service: DevicesService = Depends(get_devices_service_ws),
     events_service: EventsService = Depends(get_events_service_ws),
     clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
 ) -> None:
-    while True:
+    while client.is_connected:
         try:
             event = await client.read_event()
         except (ValidationError, JSONDecodeError) as validation_error:
@@ -55,8 +54,5 @@ async def device_ws_endpoint(
             )
             clients_manager.remove_client(client)
         else:
-            # save new information about device
-            # and send event to redis
-            logger.debug("got event from device")
-            # await devices_service.update_device(client.device_id, event)
+            logger.debug("received event from device")
             await events_service.send_event_response(event)

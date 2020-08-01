@@ -42,16 +42,14 @@ def _get_db_repository(repository_type: Type[BaseRepository]) -> Callable:
 
 def get_devices_repo(
     settings: AppSettings = Depends(get_app_settings),
-    redis_pool: Redis = Depends(_get_redis_pool),
 ) -> DevicesRepository:
-    return DevicesRepository(settings=settings, pool=redis_pool)
+    return DevicesRepository(settings=settings)
 
 
 def get_devices_repo_ws(
     settings: AppSettings = Depends(get_app_settings),
-    redis_pool: Redis = Depends(_get_redis_pool_ws),
 ) -> DevicesRepository:
-    return DevicesRepository(settings=settings, pool=redis_pool)
+    return DevicesRepository(settings=settings)
 
 
 def get_events_repo(
