@@ -13,15 +13,8 @@ from app.settings.components import jwt
 from tests.test_integration.conftest import FakePool
 
 pytest_plugins = [
-    # pytest logs plugin
     "tests.plugins.printer",
-    # cmd args to run docker, slow tests, etc.
     "tests.plugins.options",
-    # "tests.plugins.docker",
-    # "tests.services.postgres",
-    # application
-    # "tests.fixtures.application.services",
-    # "tests.fixtures.application.web",
 ]
 
 

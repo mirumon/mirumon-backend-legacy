@@ -29,7 +29,7 @@ class FakeDevice:
     async def receive_request(self, response_payload: Optional[dict] = None) -> dict:
         try:
             payload = await self.ws.receive_json()
-        except Exception as error:
+        except Exception as error:  # pragma: no cover
             self.printer(f"{self} except error {error} during receive_json")
             raise RuntimeError from error
 
