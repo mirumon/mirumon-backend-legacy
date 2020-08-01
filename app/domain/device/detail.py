@@ -71,7 +71,6 @@ class DeviceOverview(Device):
                 "online": True,
                 "name": "Manjaro-Desktop",
                 "domain": "mirumon.dev",
-                "os": ...,
                 "last_user": {
                     "name": "nick",
                     "fullname": "Nick Khitrov",

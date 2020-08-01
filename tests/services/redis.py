@@ -1,8 +1,8 @@
 import pytest
-import redis as redislib
-from redis.exceptions import ConnectionError as RedisConnError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
+import redis as redislib
+from redis.exceptions import ConnectionError as RedisConnError
 from tests.plugins.printer import Printer
 
 REDIS_DOCKER_IMAGE = "redis:6.0.1-alpine"

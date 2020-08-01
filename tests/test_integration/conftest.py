@@ -3,10 +3,13 @@ import json
 import uuid
 from contextlib import asynccontextmanager
 from datetime import timedelta
-from typing import Optional
+from inspect import Traceback
+from typing import Optional, Type
 
 import pytest
 from async_asgi_testclient.websocket import WebSocketSession
+from asyncpg import Connection
+from asyncpg.pool import Pool
 from fastapi import FastAPI
 
 from app.domain.event.base import EventInRequest, EventInResponse
@@ -85,7 +88,62 @@ class FakeDevice:
                 "domain": "mirumon.dev",
             },
         }
-
+        events["software"] = [
+            {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
+            {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
+        ]
+        events["hardware"] = {
+            "motherboard": {
+                "name": "string",
+                "caption": "string",
+                "status": "string",
+                "product": "string",
+                "serial_number": "string",
+            },
+            "cpu": [
+                {
+                    "status": "string",
+                    "name": "string",
+                    "caption": "string",
+                    "current_clock_speed": "string",
+                    "current_cthread_countlock_speed": 0,
+                    "virtualization_firmware_enabled": True,
+                    "load_percentage": 0,
+                    "number_of_cores": 0,
+                    "number_of_enabled_core": 0,
+                    "number_of_logical_processors": 0,
+                }
+            ],
+            "gpu": [
+                {
+                    "status": "string",
+                    "name": "string",
+                    "caption": "string",
+                    "driver_version": "string",
+                    "driver_date": "string",
+                    "video_mode_description": "string",
+                    "current_vertical_resolution": "string",
+                }
+            ],
+            "network": [
+                {
+                    "description": "string",
+                    "mac_address": "string",
+                    "ip_addresses": ["string"],
+                }
+            ],
+            "disks": [
+                {
+                    "status": "string",
+                    "caption": "string",
+                    "serial_number": "string",
+                    "size": 0,
+                    "model": "string",
+                    "description": "string",
+                    "partitions": 0,
+                }
+            ],
+        }
         return events[method]
 
     def __str__(self):
@@ -97,8 +155,10 @@ def device_factory(app: FastAPI, client, secret_key, event_loop, printer):
     url = app.url_path_for("devices:service")
 
     @asynccontextmanager
-    async def create_device(response_payload: Optional[dict] = None):
-        device_id = str(uuid.uuid4())
+    async def create_device(
+        *, device_id: Optional[str] = None, response_payload: Optional[dict] = None
+    ):
+        device_id = device_id or str(uuid.uuid4())
         content = {"device_id": device_id}
         token = create_jwt_token(
             jwt_content=content, secret_key=secret_key, expires_delta=timedelta(hours=1)
@@ -109,3 +169,36 @@ def device_factory(app: FastAPI, client, secret_key, event_loop, printer):
             yield device
 
     return create_device
+
+
+class FakePoolAcquireContext:
+    def __init__(self, pool: "FakePool") -> None:
+        self.pool = pool
+
+    async def __aenter__(self) -> Connection:
+        return self.pool.connection
+
+    async def __aexit__(
+        self, exc_type: Type[Exception], exc_val: Exception, exc_tb: Traceback
+    ) -> None:
+        pass
+
+
+class FakePool:
+    def __init__(self, pool: Pool) -> None:
+        self.pool: Pool = pool
+        self.connection: Optional[Connection] = None
+
+    @classmethod
+    async def create_pool(cls, pool: Pool) -> "FakePool":
+        fake = cls(pool)
+        fake.connection = await pool.acquire()
+        return fake
+
+    def acquire(self) -> FakePoolAcquireContext:
+        return FakePoolAcquireContext(self)
+
+    async def close(self) -> None:
+        if self.connection:  # pragma: no cover
+            await self.pool.release(self.connection)
+        await self.pool.close()
