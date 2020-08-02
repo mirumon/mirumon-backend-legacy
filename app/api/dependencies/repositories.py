@@ -1,5 +1,3 @@
-from typing import AsyncGenerator, Callable, Type
-
 from aioredis import Redis
 from asyncpg import Connection
 from asyncpg.pool import Pool
@@ -7,9 +5,9 @@ from fastapi import Depends
 from starlette.requests import Request
 from starlette.websockets import WebSocket
 
-from app.database.repositories.base_repo import BaseRepository
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
+from app.database.repositories.users_repo import UsersRepository
 from app.settings.config import get_app_settings
 from app.settings.environments.base import AppSettings
 
@@ -31,13 +29,8 @@ async def _get_pool_connection(pool: Pool = Depends(_get_db_pool)) -> Connection
         yield conn
 
 
-def _get_db_repository(repository_type: Type[BaseRepository]) -> Callable:
-    async def _get_repo(
-        conn: Connection = Depends(_get_pool_connection),
-    ) -> AsyncGenerator[BaseRepository, None]:
-        yield repository_type(conn)
-
-    return _get_repo
+def get_users_repo(conn: Connection = Depends(_get_pool_connection)) -> UsersRepository:
+    return UsersRepository(conn=conn)
 
 
 def get_devices_repo(

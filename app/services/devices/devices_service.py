@@ -1,6 +1,6 @@
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
-from app.domain.device.auth import DeviceAuthInRequest
+from app.domain.device.auth import DeviceAuthInRequest, DeviceToken
 from app.domain.device.base import Device
 from app.settings.components import jwt
 from app.settings.environments.base import AppSettings
@@ -20,7 +20,7 @@ class DevicesService:
     def check_device_credentials(self, credentials: DeviceAuthInRequest) -> bool:
         return credentials.shared_key == self.settings.shared_key
 
-    async def register_new_device(self) -> str:
+    async def register_new_device(self) -> DeviceToken:
         return await self.devices_repo.create_device()
 
     async def get_registered_device_by_token(self, token: str) -> Device:

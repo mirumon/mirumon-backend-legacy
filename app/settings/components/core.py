@@ -1,4 +1,5 @@
 from pydantic import BaseConfig, BaseModel
+from pydantic.typing import DictStrAny
 
 
 class APIModel(BaseModel):
@@ -7,7 +8,7 @@ class APIModel(BaseModel):
     """
 
     @classmethod
-    def schema(cls, by_alias: bool = True) -> "DictStrAny":
+    def schema(cls, by_alias: bool = True) -> DictStrAny:
         model_schema = super().schema()
         properties: dict = model_schema["properties"]
 

@@ -2,11 +2,11 @@ from fastapi import Depends
 
 from app.api.dependencies.connections import get_clients_gateway, get_clients_gateway_ws
 from app.api.dependencies.repositories import (
-    _get_db_repository,
     get_devices_repo,
     get_devices_repo_ws,
     get_events_repo,
     get_events_repo_ws,
+    get_users_repo,
 )
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
@@ -20,7 +20,7 @@ from app.settings.environments.base import AppSettings
 
 
 def get_users_service(
-    users_repository: UsersRepository = Depends(_get_db_repository(UsersRepository)),
+    users_repository: UsersRepository = Depends(get_users_repo),
     settings: AppSettings = Depends(get_app_settings),
 ) -> UsersService:
     return UsersService(users_repo=users_repository, settings=settings)

@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Coroutine
 
 from fastapi import FastAPI
 
@@ -17,8 +17,12 @@ from app.settings.components.redis import (
 )
 from app.settings.environments.base import AppSettings
 
+EventHandlerType = Callable[[], Coroutine[None, None, None]]
 
-def create_startup_events_handler(app: FastAPI, settings: AppSettings) -> Callable:
+
+def create_startup_events_handler(
+    app: FastAPI, settings: AppSettings
+) -> EventHandlerType:
     async def startup() -> None:  # noqa: WPS430
         create_devices_connections(app=app, settings=settings)
         await create_db_connection(app=app, settings=settings)
@@ -28,7 +32,7 @@ def create_startup_events_handler(app: FastAPI, settings: AppSettings) -> Callab
     return startup
 
 
-def create_shutdown_events_handler(app: FastAPI) -> Callable:
+def create_shutdown_events_handler(app: FastAPI) -> EventHandlerType:
     async def shutdown() -> None:  # noqa: WPS430
         await close_devices_connections(app)
         await close_rabbit_connection(app)

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from pydantic import ValidationError
 from starlette import status, websockets
-from starlette.websockets import WebSocket
+from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.api.dependencies.connections import get_clients_gateway_ws
 from app.api.dependencies.services import get_devices_service_ws, get_events_service_ws
@@ -28,6 +28,7 @@ async def get_registered_device_client(
     except RuntimeError:
         logger.debug("device token decode error")
         await websocket.close(status.WS_1008_POLICY_VIOLATION)
+        raise WebSocketDisconnect
     else:
         client = DeviceClient(device_id=device.id, websocket=websocket)
         clients_manager.add_client(client)

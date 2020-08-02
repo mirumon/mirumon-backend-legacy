@@ -9,8 +9,8 @@ from app.settings.components.core import APIModel
 SyncID = NewType("SyncID", UUID)
 
 # add validator with map of `method: model`
-EventParams = Union[Any]
-EventResult = Union[Any]
+EventParams = Union[dict, list]
+EventResult = Union[dict, list]
 
 
 class EventError(APIModel):

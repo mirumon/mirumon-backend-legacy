@@ -5,9 +5,11 @@ from loguru import logger
 from starlette import status
 
 from app.api.dependencies.services import get_events_service
-from app.domain.device import detail, hardware, software
+from app.domain.device import detail, software
 from app.domain.device.base import DeviceID
 from app.domain.device.detail import DeviceDetail, DeviceOverview
+from app.domain.device.hardware import HardwareModel
+from app.domain.device.software import InstalledProgram
 from app.domain.event.types import EventTypes
 from app.resources import strings
 from app.services.devices.events_service import EventsService
@@ -42,7 +44,7 @@ async def devices_list(
         except RuntimeError:
             logger.debug(f"timeout on event:{sync_id} for device:{device_id}")
         else:
-            events.append(DeviceOverview(online=True, **event.result))
+            events.append(DeviceOverview(online=True, **event.result))  # type: ignore
 
     return events
 
@@ -71,7 +73,7 @@ async def get_device_detail(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
         )
-    return DeviceDetail(online=True, **event.result)
+    return DeviceDetail(online=True, **event.result)  # type: ignore
 
 
 @router.get(
@@ -82,7 +84,7 @@ async def get_device_detail(
 )
 async def get_device_software(
     device_id: DeviceID, events_service: EventsService = Depends(get_events_service)
-) -> List[software.InstalledProgram]:
+) -> List[InstalledProgram]:
     try:
         sync_id = await events_service.send_event_request(
             event_type=EventTypes.software, device_id=device_id, params=[]
@@ -98,18 +100,18 @@ async def get_device_software(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
         )
-    return event.result
+    return [InstalledProgram.parse_obj(item) for item in event.result]  # type: ignore
 
 
 @router.get(
     path=path(EventTypes.hardware),
     name=name(EventTypes.hardware),
     description=strings.DEVICE_HARDWARE_DESCRIPTION,
-    response_model=hardware.HardwareModel,
+    response_model=HardwareModel,
 )
 async def get_device_hardware(
     device_id: DeviceID, events_service: EventsService = Depends(get_events_service)
-) -> hardware.HardwareModel:
+) -> HardwareModel:
     try:
         sync_id = await events_service.send_event_request(
             event_type=EventTypes.hardware, device_id=device_id, params=[]
@@ -125,4 +127,4 @@ async def get_device_hardware(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
         )
-    return hardware.HardwareModel(**event.result)
+    return HardwareModel.parse_obj(event.result)

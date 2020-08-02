@@ -20,7 +20,7 @@ router = APIRouter()
 )
 async def register(
     new_user: UserInCreate, users_service: UsersService = Depends(get_users_service),
-) -> None:
+) -> User:
     try:
         return await users_service.register_new_user(new_user)
     except RuntimeError:
@@ -29,27 +29,8 @@ async def register(
         )
 
 
-resp = {
-    200: {
-        "description": "Success login",
-        "content": {
-            "application/multipart": {
-                "example": {
-                    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicGFzc3dvcmQiOiJhZG1pbiIsImV4cCI6MTU5MjE1Nzc1OCwic3ViIjoiYWNjZXNzIn0.x2QJcAP2BRPQTp9zxdZwH-rPARYQlEVnA8OqJYPl2yw",
-                    "token_type": "Bearer",
-                },
-            },
-        },
-    },
-    404: {
-        "description": "Success login",
-        "content": {"application/json": {"example": {"poshel": "na hui"}}},
-    },
-}
-
-
 # TODO: remove scope, client_id, client_secret, gran_type
-@router.post("/login", name="auth:login", response_model=UserToken, responses=resp)
+@router.post("/login", name="auth:login", response_model=UserToken)
 async def login(
     user: UserInLogin = Depends(get_user_in_login),
     users_service: UsersService = Depends(get_users_service),

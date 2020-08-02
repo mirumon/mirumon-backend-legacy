@@ -54,7 +54,7 @@ def get_current_user(user: User = Security(_get_current_user)) -> User:
     return user
 
 
-def check_user_scopes(required_scopes: List[str]) -> Callable:
+def check_user_scopes(required_scopes: List[str]) -> Callable[[User], User]:
     def _check_scopes(
         user: User = Security(get_current_user, scopes=required_scopes),
     ) -> User:

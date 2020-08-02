@@ -29,4 +29,4 @@ async def register_device(
         )
 
     token = await devices_service.register_new_device()
-    return {"token": token}
+    return DeviceAuthInResponse(**{"token": token})
