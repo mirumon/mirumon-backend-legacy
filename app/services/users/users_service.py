@@ -3,12 +3,14 @@ from typing import List
 
 from asyncpg import UniqueViolationError
 from fastapi.security import SecurityScopes
+from loguru import logger
 from pydantic import ValidationError
 
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
 from app.domain.user.user import (
+    AccessToken,
     User,
     UserInCreate,
     UserInDB,
@@ -17,7 +19,6 @@ from app.domain.user.user import (
     UserToken,
 )
 from app.settings.components import jwt
-from app.settings.components.logger import logger
 from app.settings.environments.base import AppSettings
 
 
@@ -56,7 +57,9 @@ class UsersService:
             secret_key=self.settings.secret_key.get_secret_value(),
             expires_delta=self.access_token_expire,
         )
-        return UserToken(access_token=token, token_type=self.jwt_token_type)
+        return UserToken(
+            access_token=AccessToken(token), token_type=self.jwt_token_type
+        )
 
     async def find_user_by_token(self, token: str, secret_key: str) -> UserInDB:
         try:
@@ -78,5 +81,7 @@ class UsersService:
             logger.debug("user does not exist")
             raise RuntimeError("user does not exist")
 
-    def check_user_scopes(self, scopes: List[Scopes], security_scopes: SecurityScopes):
+    def check_user_scopes(
+        self, scopes: List[Scopes], security_scopes: SecurityScopes
+    ) -> bool:
         return not all(scope in scopes for scope in security_scopes.scopes)

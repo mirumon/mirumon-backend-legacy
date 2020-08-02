@@ -1,4 +1,4 @@
-from aio_pika import Message
+from aio_pika import Exchange, Message, Queue
 from async_timeout import timeout
 from loguru import logger
 
@@ -7,7 +7,7 @@ from app.settings.environments.base import AppSettings
 
 
 class EventsRepository:
-    def __init__(self, settings: AppSettings, queue, exchange) -> None:
+    def __init__(self, settings: AppSettings, queue: Queue, exchange: Exchange) -> None:
         self.settings = settings
         self.queue = queue
         self.exchange = exchange
@@ -19,7 +19,7 @@ class EventsRepository:
         logger.debug(f"publish event response message")
         await self.exchange.publish(message, routing_key="info")
 
-    async def process_event(self, event_id: SyncID) -> EventInResponse:
+    async def process_event(self, event_id: SyncID) -> EventInResponse:  # type: ignore
         logger.debug("start processing event:{0}", event_id)
         async with timeout(self.PROCESS_TIMEOUT):
             async with self.queue.iterator() as queue_iter:
