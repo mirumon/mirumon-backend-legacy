@@ -27,9 +27,7 @@ class DeviceClient:
         self, error: Union[ValidationError, Exception], code: int
     ) -> None:
         message = error.errors() if isinstance(error, ValidationError) else str(error)
-        error_payload = EventInResponse(
-            error=EventError(code=code, detail=message),
-        ).dict()
+        error_payload = {"error": EventError(code=code, detail=message).dict()}
         logger.bind(payload=error_payload).error(
             "sending error to device:{0}", self.device_id,
         )

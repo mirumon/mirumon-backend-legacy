@@ -5,7 +5,7 @@ Revises:
 Create Date: 2019-12-01 15:12:34.692592
 
 """
-from typing import Tuple
+from typing import Tuple, Any
 
 import sqlalchemy as sa
 from alembic import op
@@ -61,7 +61,7 @@ def timestamps() -> Tuple[sa.Column, sa.Column]:
     )
 
 
-def create_users_table() -> None:
+def create_users_table() -> Any:
     users = op.create_table(
         "users",
         sa.Column(
