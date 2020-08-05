@@ -1,7 +1,7 @@
 import pytest
 from fastapi import FastAPI
 
-from app.domain.device.base import DeviceID
+from app.domain.device.typing import DeviceID
 from app.settings.components.jwt import get_content_from_token
 
 pytestmark = [pytest.mark.asyncio]

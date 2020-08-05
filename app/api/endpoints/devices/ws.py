@@ -46,7 +46,7 @@ async def device_ws_endpoint(
             event = await client.read_event()
         except (ValidationError, JSONDecodeError) as validation_error:
             logger.debug("error {0}", validation_error)
-            await client.send_error(validation_error, status.WS_1002_PROTOCOL_ERROR)
+            await client.send_error(str(validation_error))
         except websockets.WebSocketDisconnect as disconnect_error:
             logger.info(
                 "device:{0} disconnected, reason {1}",

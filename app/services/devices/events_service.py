@@ -4,9 +4,10 @@ from asyncio.exceptions import TimeoutError
 from loguru import logger
 
 from app.database.repositories.events_repo import EventsRepository
-from app.domain.device.base import DeviceID
-from app.domain.event.base import EventInRequest, EventInResponse, EventParams, SyncID
+from app.domain.device.typing import DeviceID
+from app.domain.event.base import EventInRequest, EventInResponse
 from app.domain.event.types import EventTypes
+from app.domain.event.typing import EventParams, SyncID
 from app.services.devices.gateway import DeviceClientsGateway
 from app.settings.environments.base import AppSettings
 

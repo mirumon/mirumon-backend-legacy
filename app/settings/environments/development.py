@@ -16,9 +16,9 @@ class DevAppSettings(AppSettings):
     shared_key: SecretStr = SecretStr("dev-shared-key")
 
     # Infrastructure settings
-    database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
-    redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/0"
-    rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost/"
+    database_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"  # type: ignore
+    redis_dsn: RedisDsn = "redis://user:pass@localhost:6379/0"  # type: ignore
+    rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost/"  # type: ignore
 
     # First superuser credentials
     first_superuser_username: str = "dev-superuser-username"

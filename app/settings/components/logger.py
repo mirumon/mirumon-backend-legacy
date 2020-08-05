@@ -2,7 +2,7 @@
 import logging
 from pprint import pformat
 
-from loguru import logger
+from loguru import Record, logger
 from loguru._defaults import LOGURU_FORMAT  # noqa: WPS436
 
 MAX_PAYLOAD_WIDTH = 88
@@ -26,7 +26,7 @@ class InterceptHandler(logging.Handler):
         # Find caller from where originated the logged message
         frame, depth = logging.currentframe(), 2
         while frame.f_code.co_filename == logging.__file__:  # noqa: WPS609
-            frame = frame.f_back
+            frame = frame.f_back  # type: ignore
             depth += 1
 
         logger.opt(depth=depth, exception=record.exc_info).log(
@@ -34,7 +34,7 @@ class InterceptHandler(logging.Handler):
         )
 
 
-def format_record(record: dict) -> str:
+def format_record(record: Record) -> str:
     """
     Customize format for loguru loggers.
 

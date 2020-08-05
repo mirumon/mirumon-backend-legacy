@@ -5,7 +5,7 @@ Revises:
 Create Date: 2019-12-01 15:12:34.692592
 
 """
-from typing import Tuple, Any
+from typing import Tuple
 
 import sqlalchemy as sa
 from alembic import op
@@ -16,9 +16,9 @@ from app.settings.components import jwt
 from app.settings.config import get_app_settings
 
 revision = "61c8ff25f2ab"
-down_revision = None
-branch_labels = None
-depends_on = None
+down_revision = None  # type: ignore
+branch_labels = None  # type: ignore
+depends_on = None  # type: ignore
 
 
 def register_uuid_extension() -> None:
@@ -61,7 +61,7 @@ def timestamps() -> Tuple[sa.Column, sa.Column]:
     )
 
 
-def create_users_table() -> Any:
+def create_users_table() -> sa.Table:
     users = op.create_table(
         "users",
         sa.Column(
@@ -85,7 +85,7 @@ def create_users_table() -> Any:
     return users
 
 
-def create_first_super_user(users_table) -> None:
+def create_first_super_user(users_table: sa.Table) -> None:
     settings = get_app_settings()
     salt = jwt.generate_salt()
     hashed_password = jwt.get_password_hash(salt + settings.first_superuser_password)

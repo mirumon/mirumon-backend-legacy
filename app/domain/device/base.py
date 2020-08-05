@@ -1,9 +1,5 @@
-from typing import NewType
-from uuid import UUID
-
-from app.settings.components.core import APIModel
-
-DeviceID = NewType("DeviceID", UUID)
+from app.api.models.base import APIModel
+from app.domain.device.typing import DeviceID
 
 
 class Device(APIModel):

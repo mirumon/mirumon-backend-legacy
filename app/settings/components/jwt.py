@@ -3,10 +3,10 @@ from typing import Dict
 
 import bcrypt
 import jwt
+from loguru import logger
 from passlib.context import CryptContext
 
 from app.domain.user.user import MetaJWT
-from app.settings.components.logger import logger
 
 JWT_SUBJECT = "access"
 ALGORITHM = "HS256"
@@ -22,7 +22,7 @@ def create_jwt_token(
     return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM).decode()
 
 
-def get_content_from_token(token: str, secret_key: str) -> dict:
+def get_content_from_token(token: str, secret_key: str) -> Dict[str, str]:
     try:
         return jwt.decode(token, secret_key, algorithms=[ALGORITHM])
     except jwt.PyJWTError as decode_error:

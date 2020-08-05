@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from app.domain.device.base import DeviceID
+from app.domain.device.typing import DeviceID
 from app.services.devices.client import DeviceClient
 from app.settings.environments.base import AppSettings
 

@@ -70,7 +70,7 @@ class UsersService:
             raise RuntimeError("token decode error")
 
         try:
-            user = UserJWT(**payload)
+            user = UserJWT(**payload)  # type: ignore
         except ValidationError as validation_error:
             logger.debug(f"validation error:{validation_error.errors()}")
             raise RuntimeError("malformed payload in token") from validation_error

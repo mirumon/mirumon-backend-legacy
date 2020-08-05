@@ -2,7 +2,8 @@ from aio_pika import Exchange, Message, Queue
 from async_timeout import timeout
 from loguru import logger
 
-from app.domain.event.base import EventInResponse, SyncID
+from app.domain.event.base import EventInResponse
+from app.domain.event.typing import SyncID
 from app.settings.environments.base import AppSettings
 
 

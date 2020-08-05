@@ -6,10 +6,10 @@ from starlette import status
 
 from app.api.dependencies.services import get_events_service
 from app.domain.device import detail, software
-from app.domain.device.base import DeviceID
 from app.domain.device.detail import DeviceDetail, DeviceOverview
 from app.domain.device.hardware import HardwareModel
 from app.domain.device.software import InstalledProgram
+from app.domain.device.typing import DeviceID
 from app.domain.event.types import EventTypes
 from app.resources import strings
 from app.services.devices.events_service import EventsService

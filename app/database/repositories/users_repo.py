@@ -92,7 +92,7 @@ class UsersRepository(BaseRepository):
             self.change_user_password(user=user_in_db, password=user.password)
 
         async with self.connection.transaction():
-            user_in_db.updated_at = await self._log_and_fetch_row(
+            user_in_db = await self._log_and_fetch_row(
                 UPDATE_USER_QUERY,
                 user_in_db.username,
                 user_in_db.salt,
@@ -101,4 +101,4 @@ class UsersRepository(BaseRepository):
                 user.username,
             )
 
-        return user_in_db
+        return UserInDB.parse_obj(user_in_db)

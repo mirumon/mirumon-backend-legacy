@@ -2,8 +2,8 @@ from datetime import datetime
 from typing import List, NewType, Optional
 from uuid import UUID
 
+from app.api.models.base import APIModel
 from app.domain.user.scopes import Scopes, UserScopes
-from app.settings.components.core import APIModel
 
 UserID = NewType("UserID", UUID)
 RawPassword = NewType("RawPassword", str)
@@ -27,7 +27,7 @@ class UserInCreate(APIModel):
 class UserInUpdate(APIModel):
     username: Optional[Username] = None
     password: Optional[RawPassword] = None
-    scopes: List[str] = []
+    scopes: List[Scopes] = []
 
 
 class UserInLogin(APIModel):
@@ -51,6 +51,6 @@ class UserJWT(APIModel):
 
 
 class UserInDB(User):
-    id: Optional[UserID]
+    id: Optional[UserID]  # type: ignore
     salt: str = ""
-    hashed_password: HashedPassword = ""
+    hashed_password: HashedPassword = ""  # type: ignore

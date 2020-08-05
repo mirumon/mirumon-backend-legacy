@@ -1,11 +1,8 @@
-from typing import Union
-
 from loguru import logger
-from pydantic import ValidationError
 from starlette.websockets import WebSocket, WebSocketState
 
-from app.domain.device.base import DeviceID
-from app.domain.event.base import EventError, EventInRequest, EventInResponse
+from app.domain.device.typing import DeviceID
+from app.domain.event.base import EventInRequest, EventInResponse
 
 
 class DeviceClient:
@@ -23,11 +20,8 @@ class DeviceClient:
         logger.debug("event payload from device:{0}\n{1}", self.device_id, payload)
         return EventInResponse(**payload)
 
-    async def send_error(
-        self, error: Union[ValidationError, Exception], code: int
-    ) -> None:
-        message = error.errors() if isinstance(error, ValidationError) else str(error)
-        error_payload = {"error": EventError(code=code, detail=message).dict()}
+    async def send_error(self, message: str) -> None:
+        error_payload = {"error": message}
         logger.bind(payload=error_payload).error(
             "sending error to device:{0}", self.device_id,
         )

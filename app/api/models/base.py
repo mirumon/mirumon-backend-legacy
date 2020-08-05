@@ -10,7 +10,7 @@ class APIModel(BaseModel):
     @classmethod
     def schema(cls, by_alias: bool = True) -> DictStrAny:
         model_schema = super().schema()
-        properties: dict = model_schema["properties"]
+        properties = model_schema["properties"]
 
         for key, value in properties.items():
             # if not isinstance(, ...):

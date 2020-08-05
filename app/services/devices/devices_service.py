@@ -1,7 +1,8 @@
+from app.api.models.device_auth import DeviceAuthInRequest
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
-from app.domain.device.auth import DeviceAuthInRequest, DeviceToken
 from app.domain.device.base import Device
+from app.domain.device.typing import DeviceToken
 from app.settings.components import jwt
 from app.settings.environments.base import AppSettings
 
@@ -28,6 +29,7 @@ class DevicesService:
             content = jwt.get_content_from_token(
                 token, self.settings.secret_key.get_secret_value()
             )
-            return Device(id=content["device_id"])
+            device_id = content["device_id"]
+            return Device(id=device_id)  # type: ignore
         except ValueError:
             raise RuntimeError

@@ -8,9 +8,9 @@ from app.settings.environments.base import AppSettings
 def create_devices_connections(app: FastAPI, settings: AppSettings) -> None:
     logger.info("Initialize connections for devices")
 
-    app.state.device_connections: Connections = {}
-    app.state.gateway = DeviceClientsGateway(
-        settings=settings, clients=app.state.device_connections
+    app.state.device_connections: Connections = {}  # type: ignore
+    app.state.gateway = DeviceClientsGateway(  # type: ignore
+        settings=settings, clients=app.state.device_connections  # type: ignore
     )
 
     logger.info("Connections initialized")
@@ -19,6 +19,6 @@ def create_devices_connections(app: FastAPI, settings: AppSettings) -> None:
 async def close_devices_connections(app: FastAPI) -> None:
     logger.info("Closing connections to devices")
 
-    await app.state.gateway.close()
+    await app.state.gateway.close()  # type: ignore
 
     logger.info("Connections closed")

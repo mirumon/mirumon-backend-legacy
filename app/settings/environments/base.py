@@ -67,13 +67,13 @@ class AppSettings(BaseAppSettings):
     }
 
     @property
-    def fastapi_kwargs(self) -> Dict[str, Any]:
+    def fastapi_kwargs(self) -> Dict[str, Any]:  # type: ignore
         """
         This returns a dictionary of the most commonly used keyword arguments when initializing a FastAPI instance
         If `self.disable_docs` is True, the various docs-related arguments are disabled, preventing your spec from being
         published.
         """
-        fastapi_kwargs: Dict[str, Any] = {
+        fastapi_kwargs = {
             "debug": self.debug,
             "docs_url": self.docs_url,
             "openapi_prefix": self.openapi_prefix,

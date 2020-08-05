@@ -23,7 +23,7 @@ async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
     await queue.bind(exchange)
 
     # add to app state to use later
-    state = app.state
+    state = app.state  # type: ignore
     state.rabbit_conn = connection
     state.rabbit_channel = channel
     state.rabbit_queue = queue
@@ -35,7 +35,7 @@ async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
 async def close_rabbit_connection(app: FastAPI) -> None:
     logger.info("Closing connection to rabbit")
 
-    connection = app.state.rabbit_conn
+    connection = app.state.rabbit_conn  # type: ignore
     await connection.close()
 
     logger.info("Connection closed")

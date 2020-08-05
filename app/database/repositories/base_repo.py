@@ -5,7 +5,7 @@ from asyncpg.connection import Connection
 from loguru import logger
 
 
-def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:
+def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:  # type: ignore
     logger.debug("query: {0}, values: {1}", query, query_params)
 
 
@@ -17,23 +17,23 @@ class BaseRepository:
     def connection(self) -> Connection:
         return self._conn
 
-    async def _log_and_fetch(self, query: str, *query_params: Any) -> List[Record]:
+    async def _log_and_fetch(self, query: str, *query_params: Any) -> List[Record]:  # type: ignore
         _log_query(query, query_params)
         return await self._conn.fetch(query, *query_params)
 
-    async def _log_and_fetch_row(self, query: str, *query_params: Any) -> Record:
+    async def _log_and_fetch_row(self, query: str, *query_params: Any) -> Record:  # type: ignore
         _log_query(query, query_params)
         return await self._conn.fetchrow(query, *query_params)
 
-    async def _log_and_fetch_value(self, query: str, *query_params: Any) -> Any:
+    async def _log_and_fetch_value(self, query: str, *query_params: Any) -> Any:  # type: ignore
         _log_query(query, query_params)
         return await self._conn.fetchval(query, *query_params)
 
-    async def _log_and_execute(self, query: str, *query_params: Any) -> None:
+    async def _log_and_execute(self, query: str, *query_params: Any) -> None:  # type: ignore
         _log_query(query, query_params)
         await self._conn.execute(query, *query_params)
 
-    async def _log_and_execute_many(
+    async def _log_and_execute_many(  # type: ignore
         self, query: str, *query_params: Sequence[Tuple[Any, ...]]
     ) -> None:
         _log_query(query, query_params)

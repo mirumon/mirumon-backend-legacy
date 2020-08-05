@@ -13,7 +13,7 @@ config = context.config
 
 fileConfig(config.config_file_name)
 
-target_metadata = None
+target_metadata = None  # type: ignore
 
 dsn = str(get_app_settings().database_dsn)
 config.set_main_option("sqlalchemy.url", dsn)

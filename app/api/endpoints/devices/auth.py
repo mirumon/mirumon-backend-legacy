@@ -3,7 +3,7 @@ from starlette import status
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from app.api.dependencies.services import get_devices_service
-from app.domain.device.auth import DeviceAuthInRequest, DeviceAuthInResponse
+from app.api.models.device_auth import DeviceAuthInRequest, DeviceAuthInResponse
 from app.resources import strings
 from app.services.devices.devices_service import DevicesService
 
