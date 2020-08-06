@@ -11,6 +11,7 @@ from app.api.dependencies.repositories import (
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
 from app.database.repositories.users_repo import UsersRepository
+from app.services.devices.auth_service import DevicesAuthService
 from app.services.devices.devices_service import DevicesService
 from app.services.devices.events_service import EventsService
 from app.services.devices.gateway import DeviceClientsGateway
@@ -24,6 +25,12 @@ def get_users_service(
     settings: AppSettings = Depends(get_app_settings),
 ) -> UsersService:
     return UsersService(users_repo=users_repository, settings=settings)
+
+
+def get_devices_auth_service(
+    settings: AppSettings = Depends(get_app_settings),
+) -> DevicesAuthService:
+    return DevicesAuthService(settings=settings)
 
 
 def get_devices_service(

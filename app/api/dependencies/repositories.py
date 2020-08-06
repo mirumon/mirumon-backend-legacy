@@ -1,4 +1,3 @@
-from aioredis import Redis
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import Depends
@@ -14,14 +13,6 @@ from app.settings.environments.base import AppSettings
 
 def _get_db_pool(request: Request) -> Pool:
     return request.app.state.db_pool
-
-
-def _get_redis_pool(request: Request) -> Redis:
-    return request.app.state.redis_pool
-
-
-def _get_redis_pool_ws(websocket: WebSocket) -> Redis:
-    return websocket.app.state.redis_pool
 
 
 async def _get_pool_connection(pool: Pool = Depends(_get_db_pool)) -> Connection:

@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from app.api.models.base import APIModel
-from app.domain.device.base import Device
+from app.api.models.http.base import APIModel
+from app.domain.device.typing import DeviceID
 
 
 class OperatingSystem(APIModel):
@@ -20,7 +20,8 @@ class DeviceUser(APIModel):
     domain: str
 
 
-class DeviceDetail(Device):
+class DeviceDetail(APIModel):
+    id: DeviceID
     online: bool
     name: str
     domain: Optional[str] = None
@@ -29,7 +30,8 @@ class DeviceDetail(Device):
     os: List[OperatingSystem]
 
 
-class DeviceOverview(Device):
+class DeviceOverview(APIModel):
+    id: DeviceID
     online: bool
     name: str
     domain: Optional[str] = None

@@ -1,3 +1,4 @@
+"""Value-objects for device."""
 from typing import NewType
 from uuid import UUID
 

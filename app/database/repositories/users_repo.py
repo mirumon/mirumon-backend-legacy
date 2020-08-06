@@ -1,17 +1,10 @@
 from typing import List
 
+from app.api.models.http.users import UserInLogin, UserInUpdate
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import (
-    HashedPassword,
-    RawPassword,
-    User,
-    UserInDB,
-    UserInLogin,
-    UserInUpdate,
-    Username,
-)
+from app.domain.user.user import HashedPassword, RawPassword, User, UserInDB, Username
 from app.settings.components import jwt
 
 GET_USER_BY_USERNAME_QUERY = """

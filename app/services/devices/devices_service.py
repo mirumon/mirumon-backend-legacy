@@ -1,10 +1,16 @@
-from app.api.models.device_auth import DeviceAuthInRequest
+import uuid
+
+from pydantic import BaseModel
+
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
 from app.domain.device.base import Device
-from app.domain.device.typing import DeviceToken
-from app.settings.components import jwt
+from app.domain.device.typing import DeviceID
 from app.settings.environments.base import AppSettings
+
+
+class DeviceInCreate(BaseModel):
+    id: DeviceID
 
 
 class DevicesService:
@@ -18,18 +24,9 @@ class DevicesService:
         self.devices_repo = devices_repo
         self.events_repo = events_repo
 
-    def check_device_credentials(self, credentials: DeviceAuthInRequest) -> bool:
-        return credentials.shared_key == self.settings.shared_key
-
-    async def register_new_device(self) -> DeviceToken:
-        return await self.devices_repo.create_device()
-
-    async def get_registered_device_by_token(self, token: str) -> Device:
-        try:
-            content = jwt.get_content_from_token(
-                token, self.settings.secret_key.get_secret_value()
-            )
-            device_id = content["device_id"]
-            return Device(id=device_id)  # type: ignore
-        except ValueError:
-            raise RuntimeError
+    async def register_new_device(self) -> Device:
+        device_id = uuid.uuid4()
+        # todo: add ip, mac, etc.
+        device = DeviceInCreate(id=device_id)
+        device_db = await self.devices_repo.create_device(device)
+        return device_db

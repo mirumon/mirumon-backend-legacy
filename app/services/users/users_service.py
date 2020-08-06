@@ -6,18 +6,11 @@ from fastapi.security import SecurityScopes
 from loguru import logger
 from pydantic import ValidationError
 
+from app.api.models.http.users import UserInCreate, UserInLogin, UserToken
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import (
-    AccessToken,
-    User,
-    UserInCreate,
-    UserInDB,
-    UserInLogin,
-    UserJWT,
-    UserToken,
-)
+from app.domain.user.user import AccessToken, User, UserInDB, UserJWT
 from app.settings.components import jwt
 from app.settings.environments.base import AppSettings
 

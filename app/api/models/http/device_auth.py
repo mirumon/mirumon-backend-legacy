@@ -1,4 +1,4 @@
-from app.api.models.base import APIModel
+from app.api.models.http.base import APIModel
 from app.domain.device.typing import DeviceToken, SharedKey
 
 

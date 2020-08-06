@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from app.domain.user.user import UserInLogin
+from app.api.models.http.users import UserInLogin
 from app.settings.components import jwt
 
 

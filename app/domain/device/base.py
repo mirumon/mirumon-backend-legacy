@@ -1,6 +1,7 @@
-from app.api.models.base import APIModel
+from typing import Protocol
+
 from app.domain.device.typing import DeviceID
 
 
-class Device(APIModel):
+class Device(Protocol):
     id: DeviceID

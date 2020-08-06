@@ -2,7 +2,7 @@ from typing import Any, Optional, Union
 
 from pydantic import validator
 
-from app.api.models.base import APIModel
+from app.api.models.http.base import APIModel
 from app.domain.event.types import EventTypes
 from app.domain.event.typing import EventParams, EventResult, SyncID
 
@@ -23,9 +23,10 @@ class EventInRequest(Event):
 
 # add validator with map of `method: model`
 class EventInResponse(Event):
-    result: Optional[EventResult]
+    result: Optional[EventResult]  # noqa: WPS110
     error: Optional[EventError]
 
+    @classmethod
     @validator("error", always=True)
     def check_event_or_error(  # type:ignore
         cls, value: Any, values: dict,  # type: ignore
