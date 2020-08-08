@@ -14,5 +14,4 @@ class DevicesRepository:
     async def create_device(self, device: Device) -> DeviceInDB:
         device_db = DeviceInDB.from_orm(device)
         storage[device.id] = device_db
-        print(storage)
         return device_db

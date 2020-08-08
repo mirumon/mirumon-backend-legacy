@@ -1,10 +1,9 @@
-import uuid
 from datetime import timedelta
 
-from pydantic import SecretStr, BaseModel
+from pydantic import BaseModel, SecretStr
 
 from app.domain.device.base import Device
-from app.domain.device.typing import DeviceToken, DeviceID
+from app.domain.device.typing import DeviceToken
 from app.services.authentication.base_auth_service import AuthService
 from app.settings.environments.base import AppSettings
 
@@ -17,12 +16,13 @@ class DeviceInToken(BaseModel):
 
 
 class DevicesAuthService(AuthService):
-
     def __init__(self, settings: AppSettings):
         self.settings = settings
 
     def is_valid_shared_key(self, shared_key: SecretStr) -> bool:
-        return shared_key.get_secret_value() == self.settings.shared_key.get_secret_value()
+        return (
+            shared_key.get_secret_value() == self.settings.shared_key.get_secret_value()
+        )
 
     def create_device_token(self, device: Device) -> DeviceToken:
         content = {"device": DeviceInToken(id=str(device.id)).dict()}
@@ -33,7 +33,7 @@ class DevicesAuthService(AuthService):
         )
         return DeviceToken(token)
 
-    async def get_device_from_token(self, token: str) -> Device:
+    async def get_device_from_token(self, token: str) -> DeviceInToken:
         try:
             content = self.get_content_from_token(
                 token, self.settings.secret_key.get_secret_value()

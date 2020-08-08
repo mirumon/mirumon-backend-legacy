@@ -11,15 +11,11 @@ from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
 from app.domain.user.user import AccessToken, User, UserInDB, UserJWT
-from app.settings.components import jwt
+from app.services.authentication.base_auth_service import AuthService
 from app.settings.environments.base import AppSettings
 
 
-class UsersService:
-    users_repo: UsersRepository
-    secret_key: str
-    jwt_token_type: str
-
+class UsersService(AuthService):
     def __init__(
         self, users_repo: UsersRepository, settings: AppSettings,
     ):
@@ -45,7 +41,7 @@ class UsersService:
             logger.debug(f"jwt user invalid:{error.errors()}")
             raise RuntimeError
 
-        token = jwt.create_jwt_token(
+        token = self.create_jwt_token(
             jwt_content=jwt_user.dict(),
             secret_key=self.settings.secret_key.get_secret_value(),
             expires_delta=self.access_token_expire,
@@ -57,7 +53,7 @@ class UsersService:
     async def find_user_by_token(self, token: str, secret_key: str) -> UserInDB:
         try:
             logger.debug(f"secret:{secret_key}\ttoken:{token}")
-            payload = jwt.get_content_from_token(token, secret_key)
+            payload = self.get_content_from_token(token, secret_key)
         except ValueError:
             logger.debug("token decode error")
             raise RuntimeError("token decode error")
@@ -77,4 +73,5 @@ class UsersService:
     def check_user_scopes(
         self, scopes: List[Scopes], security_scopes: SecurityScopes
     ) -> bool:
+        # todo: add is active check
         return not all(scope in scopes for scope in security_scopes.scopes)

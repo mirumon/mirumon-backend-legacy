@@ -25,7 +25,7 @@ class DevicesService:
         self.events_repo = events_repo
 
     async def register_new_device(self) -> Device:
-        device_id = uuid.uuid4()
+        device_id = DeviceID(uuid.uuid4())  # todo: generate in db
         # todo: add ip, mac, etc.
         device = DeviceInCreate(id=device_id)
         device_db = await self.devices_repo.create_device(device)

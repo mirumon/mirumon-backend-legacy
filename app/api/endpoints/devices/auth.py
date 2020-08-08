@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from starlette.status import HTTP_401_UNAUTHORIZED
+from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.api.dependencies.services import get_devices_auth_service, get_devices_service
 from app.api.models.http.device_auth import DeviceAuthInRequest, DeviceAuthInResponse
@@ -27,7 +27,7 @@ async def register_device(
     is_shared_token_valid = auth_service.is_valid_shared_key(credentials.shared_key)
     if not is_shared_token_valid:
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail=strings.INVALID_SHARED_KEY,
+            status_code=HTTP_400_BAD_REQUEST, detail=strings.INVALID_SHARED_KEY,
         )
 
     device = await devices_service.register_new_device()
