@@ -2,7 +2,7 @@ import pytest
 from fastapi import FastAPI
 
 from app.domain.device.typing import DeviceID
-from app.settings.components.jwt import get_content_from_token
+from tests.test_integration.support import decode_jwt_token
 
 pytestmark = [pytest.mark.asyncio]
 
@@ -19,7 +19,7 @@ async def test_device_registration_success(
     resp_payload: dict = response.json()
     assert len(resp_payload) == 1
 
-    content = get_content_from_token(resp_payload["token"], secret_key)
+    content = decode_jwt_token(resp_payload["token"], secret_key)
     # TODO: check id from db when move device storage from redis to postgres
     assert DeviceID(content["device_id"])
 
