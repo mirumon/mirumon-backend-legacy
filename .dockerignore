@@ -57,12 +57,16 @@ docs/_build/
 # PyBuilder
 target/
 
-# Docker
-Dockerfile
-docker-compose.yml
-docker_data/
 # JetBrains
 .idea/
 
 # VSCode
 .vscode/
+
+# Docker files
+Dockerfile
+docker-compose.yml
+
+# Local files
+docker_data/
+.env
