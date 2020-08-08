@@ -10,7 +10,7 @@ MAX_PAYLOAD_WIDTH = 88
 
 class InterceptHandler(logging.Handler):
     """
-    Logging handler interceptor from loguru documentaion.
+    Logging handler interceptor from loguru documentation.
 
     For more info see https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging  # noqa: E501
     """
