@@ -1,23 +1,20 @@
 import asyncio
 import json
+import traceback
 from datetime import datetime, timedelta
 from inspect import Traceback
-from typing import Optional, Type, Dict
+from typing import Optional, Type
 
 import jwt
 import pytest
-from async_asgi_testclient import TestClient
 from async_asgi_testclient.websocket import WebSocketSession
 from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import FastAPI
-from passlib.context import CryptContext
 
 from app.domain.event.base import EventInRequest, EventInResponse
-from app.services.authentication.base_auth_service import MetaJWT
 
 
-@pytest.mark.usefixtures("migrations")
 class BaseTestDevice:
     """Test scenario for http request for one device."""
 
@@ -27,13 +24,6 @@ class BaseTestDevice:
 
     device_id = "baa81326-9953-4587-92ce-82bb1ca1373c"
     pytestmark = pytest.mark.asyncio
-
-    @pytest.fixture
-    async def client(self, app: FastAPI, token_header):
-        async with TestClient(
-            app, headers={**token_header, "Content-Type": "application/json"}
-        ) as client:
-            yield client
 
     @pytest.fixture
     async def response(self, app: FastAPI, client, device_factory):
@@ -61,13 +51,13 @@ class FakeDevice:
 
     async def receive_request(self, response_payload: Optional[dict] = None) -> dict:
         try:
-            payload = await self.ws.receive_json()
+            payload = await self.ws.receive_text()
         except Exception as error:  # pragma: no cover
             self.printer(f"{self} except error {error} during receive_json")
-            raise RuntimeError from error
+            traceback.print_exc()
+            raise error
 
-        request = EventInRequest(**payload)
-
+        request = EventInRequest.parse_raw(payload)
         if not response_payload:
             response_json = EventInResponse(
                 sync_id=request.sync_id,
@@ -76,7 +66,6 @@ class FakeDevice:
             ).json()
         else:
             response_json = json.dumps(response_payload)
-        print(response_payload)
 
         self.printer(f"{self} send payload to server", response_json)
         await self.ws.send_text(response_json)
@@ -226,4 +215,4 @@ def create_jwt_token(
 
 
 def decode_jwt_token(token: str, secret_key: str):
-    jwt.decode(token, secret_key, algorithms=["HS256"])
+    return jwt.decode(token, secret_key, algorithms=["HS256"])

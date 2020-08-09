@@ -1,10 +1,10 @@
 from typing import List
 
-from app.api.models.http.users import UserInLogin, UserInUpdate
+from app.api.models.http.users import UserInUpdate
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.base_repo import BaseRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import HashedPassword, RawPassword, User, UserInDB, Username
+from app.domain.user.user import HashedPassword, User, UserInDB, Username
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,
@@ -35,10 +35,16 @@ RETURNING username, scopes
 
 class UsersRepository(BaseRepository):
     async def create_user(
-        self, *, username: Username, scopes: List[Scopes], password: RawPassword
+        self,
+        *,
+        username: Username,
+        salt: str,
+        password: HashedPassword,
+        scopes: List[Scopes],
     ) -> User:
-        new_user = UserInDB(username=username, scopes=scopes)
-        self.change_user_password(new_user, password)
+        new_user = UserInDB(
+            username=username, scopes=scopes, salt=salt, hashed_password=password
+        )
 
         async with self.connection.transaction():
             user_row = await self._log_and_fetch_row(
@@ -56,8 +62,6 @@ class UsersRepository(BaseRepository):
 
         user_in_db.username = user.username or user_in_db.username
         user_in_db.scopes = user.scopes or user_in_db.scopes
-        if user.password:
-            self.change_user_password(user=user_in_db, password=user.password)
 
         async with self.connection.transaction():
             user_in_db = await self._log_and_fetch_row(
@@ -79,18 +83,3 @@ class UsersRepository(BaseRepository):
         raise EntityDoesNotExist(
             "user with username {0} does not exist".format(username),
         )
-
-    async def check_user_credentials(self, user: UserInLogin) -> bool:
-        try:
-            user_db = await self.get_user_by_username(username=user.username)
-        except EntityDoesNotExist:
-            return False
-        return jwt.verify_password(
-            user_db.salt + str(user.password), user_db.hashed_password,
-        )
-
-    @staticmethod
-    def change_user_password(user: UserInDB, password: RawPassword) -> None:
-        user.salt = jwt.generate_salt()
-        hashed_password = jwt.get_password_hash(user.salt + str(password))
-        user.hashed_password = HashedPassword(hashed_password)

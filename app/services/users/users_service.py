@@ -10,7 +10,14 @@ from app.api.models.http.users import UserInCreate, UserInLogin, UserToken
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import Scopes
-from app.domain.user.user import AccessToken, User, UserInDB, UserJWT
+from app.domain.user.user import (
+    AccessToken,
+    HashedPassword,
+    RawPassword,
+    User,
+    UserInDB,
+    UserJWT,
+)
 from app.services.authentication.base_auth_service import AuthService
 from app.settings.environments.base import AppSettings
 
@@ -26,13 +33,20 @@ class UsersService(AuthService):
         self.access_token_expire = timedelta(weeks=1)
 
     async def register_new_user(self, user: UserInCreate) -> User:
+        salt = self.generate_salt()
+        hashed_password = self.get_password_hash(salt + str(user.password))
         try:
-            return await self.users_repo.create_user(**user.dict())
+            return await self.users_repo.create_user(
+                username=user.username,
+                salt=salt,
+                password=hashed_password,
+                scopes=user.scopes,
+            )
         except UniqueViolationError:  # todo add exception type
             raise RuntimeError("username is already exists")
 
     async def login_user(self, user: UserInLogin) -> UserToken:
-        if not await self.users_repo.check_user_credentials(user):
+        if not await self.check_user_credentials(user):
             raise RuntimeError("incorrect user credentials")
 
         try:
@@ -65,13 +79,27 @@ class UsersService(AuthService):
             raise RuntimeError("malformed payload in token") from validation_error
 
         try:
-            return await self.users_repo.get_user_by_username(username=user.username,)
+            return await self.users_repo.get_user_by_username(username=user.username)
         except EntityDoesNotExist:
             logger.debug("user does not exist")
             raise RuntimeError("user does not exist")
+
+    async def check_user_credentials(self, user: UserInLogin) -> bool:
+        try:
+            user_db = await self.users_repo.get_user_by_username(username=user.username)
+        except EntityDoesNotExist:
+            return False
+        return self.verify_password(
+            user_db.salt + str(user.password), user_db.hashed_password,
+        )
 
     def check_user_scopes(
         self, scopes: List[Scopes], security_scopes: SecurityScopes
     ) -> bool:
         # todo: add is active check
         return not all(scope in scopes for scope in security_scopes.scopes)
+
+    def change_user_password(self, user: UserInDB, password: RawPassword) -> None:
+        user.salt = self.generate_salt()
+        hashed_password = self.get_password_hash(user.salt + str(password))
+        user.hashed_password = HashedPassword(hashed_password)

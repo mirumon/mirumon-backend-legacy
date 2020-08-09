@@ -7,6 +7,8 @@ from loguru import logger
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
+from app.domain.user.user import HashedPassword
+
 
 class MetaJWT(BaseModel):
     exp: datetime
@@ -39,5 +41,5 @@ class AuthService:
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def get_password_hash(self, password: str) -> str:
-        return self.pwd_context.hash(password)
+    def get_password_hash(self, password: str) -> HashedPassword:
+        return HashedPassword(self.pwd_context.hash(password))

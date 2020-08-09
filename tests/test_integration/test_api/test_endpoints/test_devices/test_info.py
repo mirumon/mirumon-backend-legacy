@@ -144,7 +144,7 @@ async def test_devices_list_with_two_devices(app, client, device_factory) -> Non
 
 # 4xx and 5xx
 async def test_device_not_found(app, client):
-    url = app.url_path_for("devices:detail", device_id=uuid.uuid4())
+    url = app.url_path_for("devices:detail", device_id=str(uuid.uuid4()))
     response = await client.get(url)
     assert response.status_code == 404
     assert response.json() == {"detail": "device not found"}

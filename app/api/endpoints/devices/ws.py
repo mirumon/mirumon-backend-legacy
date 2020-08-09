@@ -7,9 +7,12 @@ from starlette import status, websockets
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from app.api.dependencies.connections import get_clients_gateway_ws
-from app.api.dependencies.services import get_devices_service_ws, get_events_service_ws
+from app.api.dependencies.services import (
+    get_devices_auth_service,
+    get_events_service_ws,
+)
+from app.services.devices.auth_service import DevicesAuthService
 from app.services.devices.client import DeviceClient
-from app.services.devices.devices_service import DevicesService
 from app.services.devices.events_service import EventsService
 from app.services.devices.gateway import DeviceClientsGateway
 
@@ -19,12 +22,12 @@ router = APIRouter()
 async def get_registered_device_client(
     websocket: WebSocket,
     token: str = Header(None),
-    devices_service: DevicesService = Depends(get_devices_service_ws),
+    auth_service: DevicesAuthService = Depends(get_devices_auth_service),
     clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
 ) -> DeviceClient:
     await websocket.accept()
     try:
-        device = await devices_service.get_registered_device_by_token(token)
+        device = await auth_service.get_device_from_token(token)
     except RuntimeError:
         logger.debug("device token decode error")
         await websocket.close(status.WS_1008_POLICY_VIOLATION)

@@ -8,7 +8,7 @@ from app.domain.user.user import AccessToken, RawPassword, Username
 class UserInCreate(APIModel):
     username: str
     password: RawPassword
-    scopes: List[Scopes] = []
+    scopes: List[Scopes]
 
 
 class UserInUpdate(APIModel):
@@ -20,6 +20,7 @@ class UserInUpdate(APIModel):
 class UserInLogin(APIModel):
     username: Username
     password: RawPassword
+    scopes: List[Scopes]
 
 
 class UserToken(APIModel):

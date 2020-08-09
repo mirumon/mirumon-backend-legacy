@@ -2,7 +2,7 @@ from typing import List, NewType, Optional
 from uuid import UUID
 
 from app.api.models.http.base import APIModel
-from app.domain.user.scopes import Scopes, UserScopes
+from app.domain.user.scopes import Scopes
 
 UserID = NewType("UserID", UUID)
 RawPassword = NewType("RawPassword", str)
@@ -13,7 +13,7 @@ AccessToken = NewType("AccessToken", str)
 
 class UserJWT(APIModel):
     username: str
-    scopes: List[Scopes] = [UserScopes.read]
+    scopes: List[Scopes]
 
 
 class User(APIModel):
@@ -24,5 +24,5 @@ class User(APIModel):
 
 class UserInDB(User):
     id: Optional[UserID]  # type: ignore
-    salt: str = ""
-    hashed_password: HashedPassword = ""  # type: ignore
+    salt: str
+    hashed_password: HashedPassword  # type: ignore

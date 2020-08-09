@@ -12,8 +12,6 @@ from alembic import op
 from sqlalchemy import func, text
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.settings.config import get_app_settings
-
 revision = "61c8ff25f2ab"
 down_revision = None  # type: ignore
 branch_labels = None  # type: ignore
@@ -60,8 +58,8 @@ def timestamps() -> Tuple[sa.Column, sa.Column]:
     )
 
 
-def create_users_table() -> sa.Table:
-    users = op.create_table(
+def create_users_table() -> None:
+    op.create_table(
         "users",
         sa.Column(
             "id", UUID, server_default=text("uuid_generate_v4()"), primary_key=True,
@@ -81,13 +79,12 @@ def create_users_table() -> sa.Table:
         EXECUTE PROCEDURE update_updated_at_column();
         """,
     )
-    return users
 
 
 def upgrade() -> None:
     register_uuid_extension()
     create_updated_at_trigger()
-    users = create_users_table()
+    create_users_table()
 
 
 def downgrade() -> None:

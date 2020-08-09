@@ -21,7 +21,8 @@ async def test_device_registration_success(
 
     content = decode_jwt_token(resp_payload["token"], secret_key)
     # TODO: check id from db when move device storage from redis to postgres
-    assert DeviceID(content["device_id"])
+    device_payload = content["device"]
+    assert DeviceID(device_payload["id"])
 
 
 async def test_device_registration_with_invalid_shared_key_failed(
@@ -32,5 +33,5 @@ async def test_device_registration_with_invalid_shared_key_failed(
 
     response = await client.post(url, json=payload)
 
-    assert response.status_code == 401
+    assert response.status_code == 400
     assert response.json() == {"detail": "invalid shared key"}

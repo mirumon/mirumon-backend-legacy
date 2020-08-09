@@ -66,5 +66,7 @@ def check_user_scopes(required_scopes: List[str]) -> Callable[[User], User]:
 
 def get_user_in_login(user: OAuth2PasswordRequestForm = Depends()) -> UserInLogin:
     return UserInLogin(
-        username=Username(user.username), password=RawPassword(user.password),
+        username=Username(user.username),
+        password=RawPassword(user.password),
+        scopes=user.scopes,
     )
