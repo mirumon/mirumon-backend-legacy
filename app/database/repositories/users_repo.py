@@ -46,7 +46,7 @@ class UsersRepository(BaseRepository):
             username=username, scopes=scopes, salt=salt, hashed_password=password
         )
 
-        async with self.connection.transaction():
+        async with self.transaction():
             user_row = await self._log_and_fetch_row(
                 CREATE_USER_QUERY,
                 new_user.username,
@@ -63,7 +63,7 @@ class UsersRepository(BaseRepository):
         user_in_db.username = user.username or user_in_db.username
         user_in_db.scopes = user.scopes or user_in_db.scopes
 
-        async with self.connection.transaction():
+        async with self.transaction():
             user_in_db = await self._log_and_fetch_row(
                 UPDATE_USER_QUERY,
                 user_in_db.username,

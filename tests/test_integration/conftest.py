@@ -42,11 +42,10 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
         # Change db pools in client because
         # TestClient trigger server events for connections init
         app.state.db_pool = await FakePool.create_pool(app.state.db_pool)
-        connection: Connection
         async with app.state.db_pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
             await transaction.start()
-            repo = UsersRepository(connection)
+            repo = UsersRepository(app.state.db_pool)
             salt = "fakesalt"
             password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
                 salt + superuser_password

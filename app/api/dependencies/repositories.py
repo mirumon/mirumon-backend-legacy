@@ -1,8 +1,6 @@
-from asyncpg import Connection
 from asyncpg.pool import Pool
 from fastapi import Depends
-from starlette.requests import Request
-from starlette.websockets import WebSocket
+from starlette.requests import HTTPConnection, Request
 
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
@@ -15,13 +13,8 @@ def _get_db_pool(request: Request) -> Pool:
     return request.app.state.db_pool
 
 
-async def _get_pool_connection(pool: Pool = Depends(_get_db_pool)) -> Connection:
-    async with pool.acquire() as conn:
-        yield conn
-
-
-def get_users_repo(conn: Connection = Depends(_get_pool_connection)) -> UsersRepository:
-    return UsersRepository(conn=conn)
+def get_users_repo(pool: Pool = Depends(_get_db_pool)) -> UsersRepository:
+    return UsersRepository(pool=pool)
 
 
 def get_devices_repo(
@@ -30,25 +23,10 @@ def get_devices_repo(
     return DevicesRepository(settings=settings)
 
 
-def get_devices_repo_ws(
-    settings: AppSettings = Depends(get_app_settings),
-) -> DevicesRepository:
-    return DevicesRepository(settings=settings)
-
-
 def get_events_repo(
-    request: Request, settings: AppSettings = Depends(get_app_settings),
+    conn: HTTPConnection, settings: AppSettings = Depends(get_app_settings),
 ) -> EventsRepository:
-    state = request.app.state
-    return EventsRepository(
-        settings=settings, queue=state.rabbit_queue, exchange=state.rabbit_exchange
-    )
-
-
-def get_events_repo_ws(
-    websocket: WebSocket, settings: AppSettings = Depends(get_app_settings),
-) -> EventsRepository:
-    state = websocket.app.state
+    state = conn.app.state
     return EventsRepository(
         settings=settings, queue=state.rabbit_queue, exchange=state.rabbit_exchange
     )

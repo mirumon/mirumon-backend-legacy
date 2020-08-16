@@ -204,6 +204,21 @@ class FakePool:
             await self.pool.release(self.connection)
         await self.pool.close()
 
+    async def execute(self, *args, **kwargs):
+        return await self.connection.execute(*args, **kwargs)
+
+    async def executemany(self, *args, **kwargs):
+        return await self.connection.executemany(*args, **kwargs)
+
+    async def fetch(self, *args, **kwargs):
+        return await self.connection.fetch(*args, **kwargs)
+
+    async def fetchrow(self, *args, **kwargs):
+        return await self.connection.fetchrow(*args, **kwargs)
+
+    async def fetchval(self, *args, **kwargs):
+        return await self.connection.fetchval(*args, **kwargs)
+
 
 def create_jwt_token(
     jwt_content: dict, secret_key: str, expires_delta: timedelta,

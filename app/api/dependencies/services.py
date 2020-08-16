@@ -1,11 +1,9 @@
 from fastapi import Depends
 
-from app.api.dependencies.connections import get_clients_gateway, get_clients_gateway_ws
+from app.api.dependencies.connections import get_clients_gateway
 from app.api.dependencies.repositories import (
     get_devices_repo,
-    get_devices_repo_ws,
     get_events_repo,
-    get_events_repo_ws,
     get_users_repo,
 )
 from app.database.repositories.devices_repo import DevicesRepository
@@ -43,27 +41,9 @@ def get_devices_service(
     )
 
 
-def get_devices_service_ws(
-    settings: AppSettings = Depends(get_app_settings),
-    devices_repo: DevicesRepository = Depends(get_devices_repo_ws),
-    events_repo: EventsRepository = Depends(get_events_repo_ws),
-) -> DevicesService:
-    return DevicesService(
-        settings=settings, devices_repo=devices_repo, events_repo=events_repo
-    )
-
-
 def get_events_service(
     settings: AppSettings = Depends(get_app_settings),
     events_repo: EventsRepository = Depends(get_events_repo),
     gateway: DeviceClientsGateway = Depends(get_clients_gateway),
-) -> EventsService:
-    return EventsService(settings=settings, events_repo=events_repo, gateway=gateway)
-
-
-def get_events_service_ws(
-    settings: AppSettings = Depends(get_app_settings),
-    events_repo: EventsRepository = Depends(get_events_repo_ws),
-    gateway: DeviceClientsGateway = Depends(get_clients_gateway_ws),
 ) -> EventsService:
     return EventsService(settings=settings, events_repo=events_repo, gateway=gateway)

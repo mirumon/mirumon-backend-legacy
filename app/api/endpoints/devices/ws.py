@@ -6,11 +6,8 @@ from pydantic import ValidationError
 from starlette import status, websockets
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from app.api.dependencies.connections import get_clients_gateway_ws
-from app.api.dependencies.services import (
-    get_devices_auth_service,
-    get_events_service_ws,
-)
+from app.api.dependencies.connections import get_clients_gateway
+from app.api.dependencies.services import get_devices_auth_service, get_events_service
 from app.services.devices.auth_service import DevicesAuthService
 from app.services.devices.client import DeviceClient
 from app.services.devices.events_service import EventsService
@@ -23,7 +20,7 @@ async def get_registered_device_client(
     websocket: WebSocket,
     token: str = Header(None),
     auth_service: DevicesAuthService = Depends(get_devices_auth_service),
-    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
+    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway),
 ) -> DeviceClient:
     await websocket.accept()
     try:
@@ -41,8 +38,8 @@ async def get_registered_device_client(
 @router.websocket("/service", name="devices:service")
 async def device_ws_endpoint(
     client: DeviceClient = Depends(get_registered_device_client),
-    events_service: EventsService = Depends(get_events_service_ws),
-    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway_ws),
+    events_service: EventsService = Depends(get_events_service),
+    clients_manager: DeviceClientsGateway = Depends(get_clients_gateway),
 ) -> None:
     while client.is_connected:
         try:
