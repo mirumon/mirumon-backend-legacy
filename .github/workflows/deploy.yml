@@ -3,6 +3,9 @@ name: Deploy
 on:
   release:
     types: [published, edited]
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -10,35 +13,25 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install dependencies
         run: |
-          pip install poetry
-          poetry config settings.virtualenvs.create false
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_VERSION=1.0.10 python
+          source $HOME/.poetry/env
+          poetry config virtualenvs.create false
           poetry install --no-dev
-      - name: Verify that tag is the same as in application and available in docker registry
-        env:
-          IMAGE_NAME: mirumon/mirumon-backend
-          DOCKER_USER: ${{ secrets.DOCKER_USER }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
-          test $(python -c "import app.versions; print(app.versions.get_app_version())") = $TAG
-          ./scripts/check-container-version $IMAGE_NAME:$TAG
       - name: Build image and publish to registry
         env:
           IMAGE_NAME: mirumon/mirumon-backend
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
-          docker build -t $IMAGE_NAME:$TAG -t $IMAGE_NAME:latest .
+          docker build -t $IMAGE_NAME:dev .
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-          docker push $IMAGE_NAME:$TAG
-          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:dev
 
   deploy:
     name: Deploy
@@ -52,8 +45,12 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SHARED_KEY: ${{ secrets.SHARED_KEY }}
+          POSTGRES_DSN: ${{ secrets.POSTGRES_DSN }}
+          REDIS_DSN: ${{ secrets.REDIS_DSN }}
+          RABBIT_DSN: ${{ secrets.RABBIT_DSN }}
         run: |
-          TAG=$(echo $GITHUB_REF | sed -e 's,.*/\(.*\),\1,')
           which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
           eval $(ssh-agent -s)
           echo "add ssh key"
@@ -63,10 +60,10 @@ jobs:
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
           ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" $SSH_USER@$SSH_HOST "
-            docker pull mirumon/mirumon-backend:$TAG && \
-            (docker rm -f mirumon_backend || true) && \
+            docker pull mirumon/mirumon-backend:dev && \
+            (docker rm -f mirumon-backend || true) && \
             docker run -d \
-              --name mirumon_backend \
+              --name mirumon-backend \
               --network web \
               --restart always \
               --label \"traefik.enable=true\" \
@@ -76,5 +73,9 @@ jobs:
               --label \"traefik.http.routers.mirumon-backend.tls.certresolver=letsencrypt\" \
               --label \"traefik.http.routers.mirumon-backend.middlewares=http-to-https@file\" \
               --label \"traefik.http.services.mirumon-backend.loadbalancer.server.port=8000\" \
-              mirumon/mirumon-backend:$TAG"
-
+              -e SECRET_KEY=\"$SECRET_KEY\" \
+              -e SHARED_KEY=\"$SHARED_KEY\" \
+              -e POSTGRES_DSN=\"$POSTGRES_DSN\" \
+              -e REDIS_DSN=\"$REDIS_DSN\" \
+              -e RABBIT_DSN=\"$RABBIT_DSN\" \
+              mirumon/mirumon-backend:dev"

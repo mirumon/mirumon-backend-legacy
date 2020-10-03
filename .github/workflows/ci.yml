@@ -8,39 +8,22 @@ on:
       - master
 
 jobs:
-  check-style:
-    name: StyleCheck
+  lint:
+    name: Lint
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install dependencies
         run: |
           pip install poetry
-          poetry config settings.virtualenvs.create false
+          poetry config virtualenvs.create false
           poetry install
       - name: Lint with black, isort and autoflake
-        run: ./scripts/lint-style
-
-  check-code:
-    name: CodeCheck
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry config settings.virtualenvs.create false
-          poetry install
-      - name: Lint with wps and mypy
-        run: ./scripts/lint-code
+        run: nox -s lint
 
   test:
     name: Tests
@@ -55,26 +38,31 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      rabbitmq:
+        image: rabbitmq:3-management-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: rabbitmq
+          RABBITMQ_DEFAULT_PASS: rabbitmq
+        ports:
+          - 5672:5672
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Install dependencies
         run: |
           pip install poetry
-          poetry config settings.virtualenvs.create false
+          poetry config virtualenvs.create false
           poetry install
       - name: Run tests with pytest
         env:
-          SECRET_KEY: secret_key
-          DB_CONNECTION: postgres://postgres:postgres@localhost/postgres
-        run: |
-            alembic upgrade head
-            USE_LOCAL_DB_FOR_TEST=True ./scripts/test-cov-xml
+          POSTGRES_DSN: postgres://postgres:postgres@localhost/postgres
+          RABBIT_DSN: amqp://rabbitmq:rabbitmq@localhost
+        run: pytest
       - name: Upload coverage to Codecov
-        run: bash <(curl -s https://codecov.io/bash) -t $TOKEN -B $REF
         env:
           TOKEN: ${{ secrets.CODECOV_TOKEN }}
           REF: ${{ github.ref }}
+        run: bash <(curl -s https://codecov.io/bash) -t $TOKEN -B $REF
