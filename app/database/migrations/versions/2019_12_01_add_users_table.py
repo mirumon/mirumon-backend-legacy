@@ -65,7 +65,10 @@ def create_users_table() -> None:
     op.create_table(
         "users",
         sa.Column(
-            "id", UUID, server_default=text("uuid_generate_v4()"), primary_key=True,
+            "id",
+            UUID,
+            server_default=text("uuid_generate_v4()"),
+            primary_key=True,
         ),
         sa.Column(
             "username",

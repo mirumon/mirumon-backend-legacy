@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, Final
 
-import jwt
+from jose import jwt
 from loguru import logger
 from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr
@@ -64,16 +64,16 @@ class DevicesAuthService:
         *,
         jwt_content: Dict[str, Dict[str, str]],
         secret_key: str,
-        expires_delta: timedelta
+        expires_delta: timedelta,
     ) -> str:
         to_encode = jwt_content.copy()
         expire = datetime.utcnow() + expires_delta
         to_encode.update(MetaJWT(exp=expire, sub=self.jwt_subject).dict())
-        return jwt.encode(to_encode, secret_key, algorithm=self.algorithm).decode()
+        return jwt.encode(to_encode, secret_key, algorithm=self.algorithm)
 
     def get_content_from_token(self, token: str, secret_key: str) -> Dict[str, str]:
         try:
             return jwt.decode(token, secret_key, algorithms=[self.algorithm])
-        except jwt.PyJWTError as decode_error:
+        except jwt.JWTError as decode_error:
             logger.debug("jwt decode error")
             raise ValueError("unable to decode JWT token") from decode_error

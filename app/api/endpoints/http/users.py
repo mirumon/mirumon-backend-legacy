@@ -28,7 +28,8 @@ async def register(
         return await auth_users_service.register_new_user(new_user)
     except RuntimeError:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail=strings.USERNAME_TAKEN,
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=strings.USERNAME_TAKEN,
         )
 
 
@@ -44,5 +45,6 @@ async def login(
         return await users_service.create_access_token(user)
     except RuntimeError:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail=strings.INCORRECT_LOGIN_INPUT,
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=strings.INCORRECT_LOGIN_INPUT,
         )

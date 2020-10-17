@@ -63,7 +63,10 @@ class UsersRepository(PostgresRepository):
             return User(**dict(user_row))
 
     async def update_user(
-        self, *, user_in_db: UserInDB, user: UserInUpdate,
+        self,
+        *,
+        user_in_db: UserInDB,
+        user: UserInUpdate,
     ) -> UserInDB:
 
         user_in_db.username = user.username or user_in_db.username

@@ -27,7 +27,8 @@ async def create_device(
     is_shared_token_valid = auth_service.is_valid_shared_key(credentials.shared_key)
     if not is_shared_token_valid:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail=strings.INVALID_SHARED_KEY,
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=strings.INVALID_SHARED_KEY,
         )
 
     device = await devices_service.register_new_device()

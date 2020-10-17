@@ -42,7 +42,9 @@ class EventInResponse(APIModel):
     @classmethod
     @validator("error", always=True)
     def check_event_or_error(  # type:ignore
-        cls, value: Any, values: dict,  # type: ignore
+        cls,
+        value: Any,
+        values: dict,  # type: ignore
     ) -> Optional[EventError]:
         if value is not None and values["result"] is not None:
             raise ValueError("must not provide both result and error")
