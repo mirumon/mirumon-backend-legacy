@@ -15,14 +15,21 @@ from passlib.context import CryptContext
 from app.api.asgi import create_app
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import DevicesScopes, UsersScopes
+from app.settings.config import get_app_settings
+from app.settings.environments.base import AppSettings
 from tests.test_integration.support.fake_device import FakeDevice
 from tests.test_integration.support.fake_pool import FakePool
 from tests.test_integration.support.jwt import create_jwt_token
 
 
 @pytest.fixture
-async def app(migrations) -> FastAPI:
-    app = create_app()
+def default_settings() -> AppSettings:
+    return get_app_settings()
+
+
+@pytest.fixture
+async def app(default_settings, migrations) -> FastAPI:
+    app = create_app(default_settings)
     return app
 
 
