@@ -5,13 +5,11 @@ from app.settings.components.server_events import (
     create_shutdown_events_handler,
     create_startup_events_handler,
 )
-from app.settings.config import get_app_settings
+from app.settings.environments.base import AppSettings
 
 
-def create_app() -> FastAPI:
+def create_app(settings: AppSettings) -> FastAPI:
     """Create FastAPI instance with registered events."""
-    get_app_settings.cache_clear()
-    settings = get_app_settings()
     app = FastAPI(**settings.fastapi_kwargs)
 
     app.include_router(router=routes.router)
