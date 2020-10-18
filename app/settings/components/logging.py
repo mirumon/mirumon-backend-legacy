@@ -30,7 +30,8 @@ class InterceptHandler(logging.Handler):
             depth += 1
 
         logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage(),
+            level,
+            record.getMessage(),
         )
 
 
@@ -52,10 +53,15 @@ def format_record(record: Record) -> str:
     """
     if record["extra"].get("payload") is not None:
         record["extra"]["payload"] = pformat(
-            record["extra"]["payload"], indent=4, compact=True, width=MAX_PAYLOAD_WIDTH,
+            record["extra"]["payload"],
+            indent=4,
+            compact=True,
+            width=MAX_PAYLOAD_WIDTH,
         )
         return "{0}{1}{2}".format(
-            LOGURU_FORMAT, "\n<level>{extra[payload]}</level>", "{exception}\n",
+            LOGURU_FORMAT,
+            "\n<level>{extra[payload]}</level>",
+            "{exception}\n",
         )
 
     return "{0}{1}{2}".format(LOGURU_FORMAT, "", "{exception}\n")

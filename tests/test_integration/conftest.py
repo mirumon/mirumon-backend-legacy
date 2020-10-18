@@ -85,7 +85,9 @@ def token_header(token):
 def token(superuser_username: str, secret_key):
     admin = {"username": superuser_username, "scopes": [DevicesScopes.read]}
     return create_jwt_token(
-        jwt_content=admin, secret_key=secret_key, expires_delta=timedelta(minutes=10),
+        jwt_content=admin,
+        secret_key=secret_key,
+        expires_delta=timedelta(minutes=10),
     )
 
 

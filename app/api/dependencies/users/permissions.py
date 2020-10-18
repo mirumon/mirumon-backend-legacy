@@ -35,12 +35,14 @@ async def _get_current_user(
         user = await users_service.find_user_by_token(token=token)
     except RuntimeError:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=strings.MALFORMED_PAYLOAD,
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=strings.MALFORMED_PAYLOAD,
         )
 
     if users_service.check_user_scopes(user.scopes, security_scopes):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=strings.NOT_ENOUGH_PRIVILEGES,
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=strings.NOT_ENOUGH_PRIVILEGES,
         )
 
     return user

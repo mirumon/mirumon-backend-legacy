@@ -16,7 +16,8 @@ def _do_nothing(*_: Any) -> None:
 
 
 def _create_printer_function(
-    terminal_reporter: TerminalReporter, capture_manager: CaptureManager,
+    terminal_reporter: TerminalReporter,
+    capture_manager: CaptureManager,
 ) -> Callable[..., None]:
     was_called = Event()
     start_time = time.monotonic()

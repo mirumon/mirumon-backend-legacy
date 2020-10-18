@@ -22,14 +22,19 @@ def docker_client():
     wait=wait_fixed(2),
 )
 def pull_image(
-    client: APIClient, image: str, printer: Printer,
+    client: APIClient,
+    image: str,
+    printer: Printer,
 ) -> None:  # pragma: no cover
     printer("pulling image: {0}".format(image))
     client.pull(image)
 
 
 def create_container(
-    docker_client: APIClient, image: str, name: str, printer: Printer,
+    docker_client: APIClient,
+    image: str,
+    name: str,
+    printer: Printer,
 ) -> Any:  # pragma: no cover
     pull_image(docker_client, image, printer=printer)
     ports = [5432]
@@ -39,7 +44,10 @@ def create_container(
     #     docker_client.remove_container(container=name)
     # finally:
     return docker_client.create_container(
-        image=image, name=name, ports=ports, detach=True,
+        image=image,
+        name=name,
+        ports=ports,
+        detach=True,
     )
 
 
@@ -47,7 +55,10 @@ def create_container(
 def create_docker_service(docker_client: APIClient, printer: Printer):
     def factory(dsn_format: str, image: str, container_name: str):
         container = create_container(
-            docker_client, image, container_name, printer=printer,
+            docker_client,
+            image,
+            container_name,
+            printer=printer,
         )
         container_id = container["Id"]
         docker_client.start(container=container_id)

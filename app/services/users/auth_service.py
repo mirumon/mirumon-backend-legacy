@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Final, List
 
 import bcrypt
-import jwt
 from fastapi.security import SecurityScopes
+from jose import jwt
 from loguru import logger
 from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr, ValidationError
@@ -97,7 +97,9 @@ class AuthUsersService:  # noqa: WPS214
         except RuntimeError:
             return False
         return self._verify_password(
-            user_db.salt, user.password, user_db.hashed_password,
+            user_db.salt,
+            user.password,
+            user_db.hashed_password,
         )
 
     def _create_jwt_token(
@@ -106,7 +108,7 @@ class AuthUsersService:  # noqa: WPS214
         to_encode = jwt_content.copy()
         expire = datetime.utcnow() + expires_delta
         to_encode.update(MetaJWT(exp=expire, sub=self.jwt_subject).dict())
-        token = jwt.encode(to_encode, secret_key, algorithm=self.algorithm).decode()
+        token = jwt.encode(to_encode, secret_key, algorithm=self.algorithm)
         return AccessToken(token)
 
     def _get_content_from_token(
@@ -114,7 +116,7 @@ class AuthUsersService:  # noqa: WPS214
     ) -> Dict[str, str]:
         try:
             return jwt.decode(token, secret_key, algorithms=[self.algorithm])
-        except jwt.PyJWTError as decode_error:
+        except jwt.JWTError as decode_error:
             logger.debug("jwt decode error")
             raise ValueError("unable to decode JWT token") from decode_error
 

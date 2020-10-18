@@ -23,7 +23,7 @@ def run_formatters(session: Session) -> None:
     # we need to run isort here, since autoflake is unable to understand unused imports
     # when they are multiline.
     # see https://github.com/myint/autoflake/issues/8
-    session.run("isort", "--recursive", "--force-single-line-imports", *TARGETS)
+    session.run("isort", "--force-single-line-imports", *TARGETS)
     session.run(
         "autoflake",
         "--recursive",
@@ -33,7 +33,7 @@ def run_formatters(session: Session) -> None:
         *TARGETS,
     )
     session.run("black", *TARGETS)
-    session.run("isort", "--recursive", *TARGETS)
+    session.run("isort", *TARGETS)
 
 
 @nox.session(python=False)
@@ -46,6 +46,7 @@ def lint(session: Session) -> None:
     3. flake8 for common python code style issues.
     """
     session.run("black", "--check", "--diff", *TARGETS)
+    session.run("isort", "--check-only", *TARGETS)
     session.run("mypy", *TARGETS)
     session.run("flake8", "app")
 

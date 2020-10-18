@@ -13,9 +13,9 @@ ENV PATH="${PATH}:/root/.poetry/bin"
 COPY poetry.lock .
 COPY pyproject.toml .
 
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-dev
+RUN poetry install --no-dev
 
 COPY . .
 
-CMD alembic upgrade head && uvicorn --host 0.0.0.0 app.main:app
+CMD poetry run alembic upgrade head && \
+    poetry run uvicorn --host 0.0.0.0 app.main:app

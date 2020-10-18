@@ -25,14 +25,16 @@ class DeviceClient:
     async def send_error(self, error: Dict[str, str]) -> None:
         error_payload = {"errors": [error]}
         logger.bind(payload=error_payload).error(
-            "sending error to device:{0}", self.device_id,
+            "sending error to device:{0}",
+            self.device_id,
         )
         await self.websocket.send_json(error_payload)
 
     async def send_errors(self, errors: List[Dict[str, str]]) -> None:
         error_payload = {"errors": errors}
         logger.bind(payload=error_payload).error(
-            "sending errors to device:{0}", self.device_id,
+            "sending errors to device:{0}",
+            self.device_id,
         )
         await self.websocket.send_json(error_payload)
 
