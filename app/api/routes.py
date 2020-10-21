@@ -22,7 +22,6 @@ router.include_router(
     auth.router,
     prefix=DEVICES_PATH,
     tags=[DEVICES_TAG],
-    dependencies=[Depends(check_user_scopes([DevicesScopes.write]))],
 )
 router.include_router(
     list.router,
