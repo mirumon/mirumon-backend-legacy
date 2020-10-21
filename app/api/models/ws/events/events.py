@@ -31,7 +31,7 @@ class EventInResponse(APIModel):
 
     @property
     def is_success(self) -> bool:
-        return self.status == StatusTypes.ok and bool(self.result)
+        return self.status == StatusTypes.ok and self.result is not None
 
     @property
     def payload(self) -> Dict[str, Any]:  # type: ignore
