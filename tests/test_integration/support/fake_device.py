@@ -129,6 +129,7 @@ class FakeDevice:
                 }
             ],
         }
+        events["shutdown"] = {}
         return events[method]
 
     def __str__(self):
