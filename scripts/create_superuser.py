@@ -1,17 +1,21 @@
+#!/usr/bin/env python
+
 import asyncio
 import sys
 
 import asyncpg
+import bcrypt
 from asyncpg import Connection
 from asyncpg.transaction import Transaction
 from passlib.context import CryptContext
-import bcrypt
 
 from app.database.repositories.users_repo import UsersRepository
 from app.domain.user.scopes import DevicesScopes, UsersScopes
 
 
-async def create_superuser(postgres_dsn, superuser_username: str, superuser_password: str):
+async def create_superuser(
+    postgres_dsn: str, superuser_username: str, superuser_password: str
+) -> None:
     conn: Connection = await asyncpg.connect(postgres_dsn)
 
     transaction: Transaction = conn.transaction()
@@ -22,7 +26,7 @@ async def create_superuser(postgres_dsn, superuser_username: str, superuser_pass
         salt + superuser_password
     )
     await repo.create(
-        username=superuser_username,
+        username=superuser_username,  # type: ignore
         salt=salt,
         password=password,
         scopes=[

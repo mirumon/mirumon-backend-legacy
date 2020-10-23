@@ -7,7 +7,7 @@ Docs: https://nox.thea.codes/en/stable/
 import nox
 from nox.sessions import Session
 
-TARGETS = ("app", "tests", "noxfile.py")
+TARGETS = ("app", "tests", "scripts", "noxfile.py")
 
 
 @nox.session(python=False, name="format")
@@ -55,3 +55,17 @@ def lint(session: Session) -> None:
 def test(session: Session) -> None:
     """Run pytest."""
     session.run("pytest", "--cov-config=setup.cfg")
+
+
+@nox.session(python=False)
+def runserver(session: Session) -> None:
+    """Run pytest."""
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        ws="websockets",
+        loop="uvloop",
+        http="httptools",
+        workers=1,
+    )

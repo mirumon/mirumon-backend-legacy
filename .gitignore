@@ -113,4 +113,5 @@ venv.bak/
 tmp.*
 
 # Docker containers volumes
-docker_data/
+postgres/
+rabbitmq/
