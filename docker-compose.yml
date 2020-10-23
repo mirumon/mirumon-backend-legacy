@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:
-    container_name: mirumon-backend:dev
+    container_name: mirumon-backend
     build:
       context: .
     ports:
@@ -11,9 +11,10 @@ services:
       - .env
     environment:
       APP_ENV: dev
+      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres
+      RABBIT_DSN: amqp://rabbitmq:rabbitmq@rabbitmq
     depends_on:
       - postgres
-      - redis
       - rabbitmq
   postgres:
     container_name: mirumon-postgres

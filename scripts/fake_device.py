@@ -1,19 +1,20 @@
+#!/usr/bin/env python
+
 import asyncio
 import json
 import sys
 from random import randint
-from typing import Union
 
+import requests
 import websockets
 from loguru import logger
-from pydantic import BaseSettings, ValidationError
-import requests
+from pydantic import ValidationError
 
 from app.api.models.ws.events.events import EventInRequest, EventInResponse
 
 
 @logger.catch
-async def connect_to_server(server_endpoint, token) -> None:
+async def connect_to_server(server_endpoint: str, token: str) -> None:
     while True:
         try:
             await start_connection(server_endpoint, token)
@@ -43,19 +44,18 @@ async def start_connection(server_endpoint: str, token: str) -> None:
         except KeyError:
             logger.warning(f"event {request.method} is not supported")
             response = EventInResponse(
-                status="error",
+                status="error",  # type: ignore
                 id=request.id,
                 method=request.method,
-                error={"code": 503, "detail": event_payload},
+                error={"code": 503, "detail": event_payload},  # type: ignore
             )
         else:
             response = EventInResponse(
-                status="ok", id=request.id, method=request.method, result=event_payload
+                status="ok", id=request.id, method=request.method, result=event_payload  # type: ignore
             )
 
         logger.bind(payload=response).debug(f"event response: {response.json()}")
         await websocket.send(response.json())
-    await websocket.close()
 
 
 EVENT_PAYLOADS = {
@@ -134,13 +134,15 @@ EVENT_PAYLOADS = {
             }
         ],
     },
+    "shutdown": {},
 }
 
 
-def register_device(server_host, shared_key: str, username: str, password: str) -> str:
+def register_device(server_host: str, username: str, password: str) -> str:
     logger.info("starting user log in...")
     response = requests.post(
-        f"http://{server_host}/users/token", data={"username": username, "password": password}
+        f"http://{server_host}/users/token",
+        data={"username": username, "password": password},
     )
     logger.info(response.json())
     assert response.status_code == 200
@@ -149,7 +151,6 @@ def register_device(server_host, shared_key: str, username: str, password: str) 
     response = requests.post(
         f"http://{server_host}/devices",
         headers={"Authorization": f"Bearer {access_token}"},
-        json={"shared_key": shared_key},
     )
     logger.info(response.json())
 
@@ -160,8 +161,13 @@ def register_device(server_host, shared_key: str, username: str, password: str) 
 
 def run_service() -> None:
     loop = asyncio.get_event_loop()
-    host, shared_key, username, password = sys.argv[1:5]
-    device_token = register_device(host, shared_key, username, password)
+    username, password = sys.argv[1:3]
+    try:
+        host = sys.argv[4]
+    except IndexError:
+        host = "127.0.0.1:8000"
+
+    device_token = register_device(host, username, password)
     device_endpoint = f"ws://{host}/devices/service"
     try:
         task = connect_to_server(server_endpoint=device_endpoint, token=device_token)
