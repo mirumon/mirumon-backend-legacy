@@ -3,8 +3,8 @@ from typing import List, Optional
 from app.api.models.http.users.users import UserInUpdate
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.protocols.base import PostgresRepository
-from app.domain.user.scopes import Scopes
-from app.domain.user.user import HashedPassword, User, UserID, Username
+from app.domain.users.scopes import Scopes
+from app.domain.users.user import HashedPassword, User, UserID, Username
 
 GET_USER_BY_USERNAME_QUERY = """
 SELECT id,

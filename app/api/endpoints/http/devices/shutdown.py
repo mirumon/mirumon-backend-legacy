@@ -4,7 +4,7 @@ from starlette import status
 
 from app.api.dependencies.services import get_service
 from app.api.models.ws.events.types import EventTypes
-from app.domain.device.base import DeviceID
+from app.domain.devices.base import DeviceID
 from app.services.devices.events_service import EventsService
 
 DEVICE_UNAVAILABLE_ERROR = HTTPException(

@@ -10,8 +10,8 @@ from starlette import status
 
 from app.api.dependencies.services import get_service
 from app.api.models.http.users.users import UserInLogin
-from app.domain.user.scopes import DevicesScopes, UsersScopes
-from app.domain.user.user import AccessToken, RawPassword, User, Username
+from app.domain.users.scopes import DevicesScopes, UsersScopes
+from app.domain.users.user import AccessToken, RawPassword, User, Username
 from app.resources import strings
 from app.services.users.auth_service import AuthUsersService
 

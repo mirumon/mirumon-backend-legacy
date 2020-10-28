@@ -4,7 +4,7 @@ from loguru import logger
 from app.api.models.http.users.users import UserInCreate
 from app.database.errors import EntityDoesNotExist
 from app.database.repositories.users_repo import UserInDB, UsersRepository
-from app.domain.user.user import HashedPassword, User, Username
+from app.domain.users.user import HashedPassword, User, Username
 
 
 class UsersService:

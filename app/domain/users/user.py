@@ -2,7 +2,7 @@ from typing import List, NewType
 from uuid import UUID
 
 from app.api.models.http.base import APIModel
-from app.domain.user.scopes import Scopes
+from app.domain.users.scopes import Scopes
 
 UserID = NewType("UserID", UUID)
 RawPassword = NewType("RawPassword", str)

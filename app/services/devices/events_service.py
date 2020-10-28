@@ -16,7 +16,7 @@ from app.api.models.ws.events.events import (
 from app.api.models.ws.events.types import EventTypes
 from app.database.models.device import detail, hardware, software
 from app.database.repositories.events_repo import EventProcessError, EventsRepository
-from app.domain.device.base import DeviceID
+from app.domain.devices.base import DeviceID
 from app.services.devices.gateway import DeviceClientsManager
 
 

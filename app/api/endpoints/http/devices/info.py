@@ -9,7 +9,7 @@ from app.api.dependencies.services import get_service
 from app.api.models.http.devices.hardware import HardwareModel
 from app.api.models.http.devices.software import InstalledProgram
 from app.api.models.ws.events.types import EventTypes
-from app.domain.device.base import DeviceID
+from app.domain.devices.base import DeviceID
 from app.resources import strings
 from app.services.devices.events_service import EventsService
 

@@ -5,7 +5,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app.api.dependencies.services import get_service
 from app.api.dependencies.users.permissions import check_user_scopes
 from app.api.models.http.devices.auth import DeviceAuthInRequest, DeviceAuthInResponse
-from app.domain.user.scopes import DevicesScopes
+from app.domain.users.scopes import DevicesScopes
 from app.resources import strings
 from app.services.devices.auth_service import DevicesAuthService
 from app.services.devices.devices_service import DevicesService

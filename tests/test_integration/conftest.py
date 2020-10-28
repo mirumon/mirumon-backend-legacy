@@ -14,7 +14,7 @@ from passlib.context import CryptContext
 
 from app.api.asgi import create_app
 from app.database.repositories.users_repo import UsersRepository
-from app.domain.user.scopes import DevicesScopes, UsersScopes
+from app.domain.users.scopes import DevicesScopes, UsersScopes
 from app.settings.config import get_app_settings
 from app.settings.environments.base import AppSettings
 from tests.test_integration.support.fake_device import FakeDevice

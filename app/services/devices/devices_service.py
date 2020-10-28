@@ -2,7 +2,7 @@ import uuid
 
 from app.database.repositories.devices_repo import DevicesRepository
 from app.database.repositories.events_repo import EventsRepository
-from app.domain.device.base import Device, DeviceID
+from app.domain.devices.base import Device, DeviceID
 from app.settings.environments.base import AppSettings
 
 

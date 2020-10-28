@@ -1,6 +1,6 @@
 from app.api.models.http.base import APIModel
 from app.database.models.device import detail
-from app.domain.device.base import DeviceID
+from app.domain.devices.base import DeviceID
 
 
 class DeviceDetail(APIModel, detail.DeviceInfo):

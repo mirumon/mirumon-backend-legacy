@@ -10,8 +10,8 @@ from pydantic import BaseModel, SecretStr, ValidationError
 
 from app.api.models.http.users.users import UserInCreate, UserInLogin, UserToken
 from app.database.repositories.users_repo import UserInDB
-from app.domain.user.scopes import Scopes
-from app.domain.user.user import (
+from app.domain.users.scopes import Scopes
+from app.domain.users.user import (
     AccessToken,
     HashedPassword,
     RawPassword,

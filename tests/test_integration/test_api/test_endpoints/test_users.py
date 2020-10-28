@@ -1,7 +1,7 @@
 import pytest
 from async_asgi_testclient import TestClient
 
-from app.domain.user.scopes import DevicesScopes
+from app.domain.users.scopes import DevicesScopes
 
 pytestmark = [pytest.mark.asyncio]
 
