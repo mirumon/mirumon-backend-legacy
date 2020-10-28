@@ -7,10 +7,6 @@ from loguru import logger
 from app.domain.core.repo import Repository
 
 
-def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:  # type: ignore
-    logger.debug("query: {0}, values: {1}", query, query_params)
-
-
 class RabbitMQRepository(Repository):
     """RabbitMQ repository implementation."""
 
@@ -59,3 +55,7 @@ class PostgresRepository(Repository):
     ) -> None:
         _log_query(query, query_params)
         await self._conn.executemany(query, *query_params)
+
+
+def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:  # type: ignore
+    logger.debug("query: {0}, values: {1}", query, query_params)
