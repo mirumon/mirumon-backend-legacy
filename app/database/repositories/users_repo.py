@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from app.api.models.http.users.users import UserInUpdate
 from app.database.errors import EntityDoesNotExist
+from app.database.models.base import ModelDB
 from app.database.repositories.protocols.base import PostgresRepository
 from app.domain.users.scopes import Scopes
 from app.domain.users.user import HashedPassword, User, UserID, Username
@@ -20,7 +21,7 @@ WHERE username = $1
 CREATE_USER_QUERY = """
 INSERT INTO users (username, salt, hashed_password, scopes)
 VALUES ($1, $2, $3, $4)
-RETURNING id, username, scopes
+RETURNING id, username, salt, hashed_password, scopes
 """
 UPDATE_USER_QUERY = """
 UPDATE users
@@ -29,12 +30,14 @@ SET username        = $1,
     hashed_password = $3,
     scopes          = $4
 WHERE username = $7
-RETURNING username, scopes
+RETURNING username, salt, hashed_password, scopes
 """
 
 
-class UserInDB(User):
-    id: Optional[UserID]  # type: ignore
+class UserInDB(ModelDB):
+    id: Optional[UserID]
+    username: Username
+    scopes: List[Scopes]
     salt: str
     hashed_password: HashedPassword
 

@@ -1,12 +1,21 @@
-from typing import Any
+from typing import Any, Type, TypeVar
 
 from pydantic import BaseConfig, BaseModel
+
+from app.domain.core import model
+
+Model = TypeVar("Model", bound="APIModel")
+DomainModel = TypeVar("DomainModel", bound=model.DomainModel)
 
 
 class APIModel(BaseModel):
     """
     Intended for use as a base class for externally-facing models.
     """
+
+    @classmethod
+    def from_domain(cls: Type["Model"], obj: DomainModel) -> "Model":
+        return cls.parse_obj(obj.dict())  # type: ignore
 
     @classmethod
     def schema(cls, by_alias: bool = True) -> Any:  # type: ignore  # noqa: WPS210

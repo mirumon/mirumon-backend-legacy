@@ -1,7 +1,8 @@
+from dataclasses import dataclass
 from typing import List, NewType
 from uuid import UUID
 
-from app.api.models.http.base import APIModel
+from app.domain.core.model import DomainModel
 from app.domain.users.scopes import Scopes
 
 UserID = NewType("UserID", UUID)
@@ -11,7 +12,10 @@ Username = NewType("Username", str)
 AccessToken = NewType("AccessToken", str)
 
 
-class User(APIModel):
+@dataclass
+class User(DomainModel):
     id: UserID
     username: Username
     scopes: List[Scopes]
+    salt: str
+    hashed_password: HashedPassword

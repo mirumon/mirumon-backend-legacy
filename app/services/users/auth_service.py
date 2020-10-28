@@ -9,7 +9,6 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr, ValidationError
 
 from app.api.models.http.users.users import UserInCreate, UserInLogin, UserToken
-from app.database.repositories.users_repo import UserInDB
 from app.domain.users.scopes import Scopes
 from app.domain.users.user import (
     AccessToken,
@@ -66,7 +65,7 @@ class AuthUsersService:  # noqa: WPS214
         )
         return UserToken(access_token=token, token_type=self.jwt_token_type)
 
-    async def find_user_by_token(self, token: AccessToken) -> UserInDB:
+    async def find_user_by_token(self, token: AccessToken) -> User:
         try:
             payload = self._get_content_from_token(
                 token, self.secret_key.get_secret_value()
