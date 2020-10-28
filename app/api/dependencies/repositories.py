@@ -9,8 +9,8 @@ from app.api.dependencies.state import get_state
 from app.database.repositories.protocols.base import (
     PostgresRepository,
     RabbitMQRepository,
-    Repository,
 )
+from app.domain.core.repo import Repository
 from app.settings.config import get_app_settings
 from app.settings.environments.base import AppSettings
 
