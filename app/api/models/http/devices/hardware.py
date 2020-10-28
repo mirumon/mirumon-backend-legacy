@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from app.api.models.http.base import APIModel
+from app.api.models.base import APIModel
 
 
 class MotherBoardModel(APIModel):

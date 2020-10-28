@@ -2,7 +2,7 @@ from typing import NewType
 
 from pydantic import SecretStr
 
-from app.api.models.http.base import APIModel
+from app.api.models.base import APIModel
 
 DeviceToken = NewType("DeviceToken", str)  # for response should be str, not secret
 SharedKey = NewType("SharedKey", SecretStr)
