@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from starlette.websockets import WebSocket
 
-from app.domain.device.base import DeviceID
+from app.domain.devices.device import DeviceID
 from app.services.devices.client import DeviceClient
 from app.settings.environments.base import AppSettings
 

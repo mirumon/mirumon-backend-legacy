@@ -2,7 +2,7 @@ import pytest
 from async_asgi_testclient import TestClient
 from fastapi import FastAPI
 
-from app.domain.device.base import DeviceID
+from app.domain.devices.device import DeviceID
 from tests.test_integration.support.jwt import decode_jwt_token
 
 pytestmark = [pytest.mark.asyncio]

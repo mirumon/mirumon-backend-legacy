@@ -3,9 +3,8 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from app.api.dependencies.services import get_service
 from app.api.dependencies.users.permissions import check_user_scopes, get_user_in_login
-from app.api.models.http.users.users import UserInCreate, UserInLogin, UserToken
-from app.domain.user.scopes import UsersScopes
-from app.domain.user.user import User
+from app.api.models.http.users.users import User, UserInCreate, UserInLogin, UserToken
+from app.domain.users.scopes import UsersScopes
 from app.resources import strings
 from app.services.users.auth_service import AuthUsersService
 
@@ -25,12 +24,14 @@ async def register(
     auth_users_service: AuthUsersService = Depends(get_service(AuthUsersService)),
 ) -> User:
     try:
-        return await auth_users_service.register_new_user(new_user)
+        user = await auth_users_service.register_new_user(new_user)
     except RuntimeError:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=strings.USERNAME_TAKEN,
         )
+
+    return User.from_domain(user)
 
 
 # TODO: remove scope, client_id, client_secret, gran_type

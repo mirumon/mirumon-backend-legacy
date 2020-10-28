@@ -1,11 +1,12 @@
 from datetime import timedelta
-from enum import Enum
 from typing import Any, Dict
 
 from pydantic import AnyUrl, BaseSettings, PostgresDsn, SecretStr
 
+from app.domain.core.enum import StrEnum
 
-class AppEnvTypes(str, Enum):  # noqa: WPS600
+
+class AppEnvTypes(StrEnum):
     prod: str = "prod"
     dev: str = "dev"
     test: str = "test"

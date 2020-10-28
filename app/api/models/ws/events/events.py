@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import validator
 
-from app.api.models.http.base import APIModel
+from app.api.models.base import APIModel
 from app.api.models.ws.events.types import EventTypes, StatusTypes
 
 EventID = NewType("EventID", UUID)

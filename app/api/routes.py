@@ -4,7 +4,7 @@ from app.api.dependencies.users.permissions import check_user_scopes
 from app.api.endpoints.http import users
 from app.api.endpoints.http.devices import auth, detail, info, list, shutdown
 from app.api.endpoints.ws.devices import ws
-from app.domain.user.scopes import DevicesScopes
+from app.domain.users.scopes import DevicesScopes
 
 router = APIRouter()
 

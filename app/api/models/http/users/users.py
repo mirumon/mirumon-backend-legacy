@@ -1,8 +1,14 @@
 from typing import Dict, List, Optional
 
-from app.api.models.http.base import APIModel
-from app.domain.user.scopes import Scopes
-from app.domain.user.user import AccessToken, RawPassword, Username
+from app.api.models.base import APIModel
+from app.domain.users.scopes import Scopes
+from app.domain.users.user import AccessToken, RawPassword, UserID, Username
+
+
+class User(APIModel):
+    id: UserID
+    username: Username
+    scopes: List[Scopes]
 
 
 class UserInCreate(APIModel):

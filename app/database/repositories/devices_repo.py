@@ -1,6 +1,6 @@
 from app.database.models.base import ModelDB
 from app.database.repositories.protocols.base import PostgresRepository
-from app.domain.device.base import Device, DeviceID
+from app.domain.devices.device import Device, DeviceID
 
 _storage = {}  # type: ignore
 

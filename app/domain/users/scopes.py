@@ -1,8 +1,9 @@
-from enum import Enum
 from typing import Union
 
+from app.domain.core.enum import StrEnum
 
-class DevicesScopes(str, Enum):  # noqa: WPS600
+
+class DevicesScopes(StrEnum):
     read: str = "devices:read"
     write: str = "devices:write"
 
@@ -10,7 +11,7 @@ class DevicesScopes(str, Enum):  # noqa: WPS600
         return self.value
 
 
-class UsersScopes(str, Enum):  # noqa: WPS600
+class UsersScopes(StrEnum):
     read: str = "users:read"
     write: str = "users:write"
 

@@ -1,16 +1,10 @@
-from typing import Any, List, Protocol, Sequence, Tuple
+from typing import Any, List, Sequence, Tuple
 
 from asyncpg import Connection
 from asyncpg.protocol.protocol import Record
 from loguru import logger
 
-
-def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:  # type: ignore
-    logger.debug("query: {0}, values: {1}", query, query_params)
-
-
-class Repository(Protocol):
-    """Base repository for usage in domain."""
+from app.domain.core.repo import Repository
 
 
 class RabbitMQRepository(Repository):
@@ -61,3 +55,7 @@ class PostgresRepository(Repository):
     ) -> None:
         _log_query(query, query_params)
         await self._conn.executemany(query, *query_params)
+
+
+def _log_query(query: str, query_params: Tuple[Any, ...]) -> None:  # type: ignore
+    logger.debug("query: {0}, values: {1}", query, query_params)
