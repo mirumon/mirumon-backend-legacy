@@ -4,7 +4,7 @@ from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
 from app.api.models.ws.events.events import EventInRequest, EventInResponse
-from app.domain.devices.base import DeviceID
+from app.domain.devices.device import DeviceID
 
 
 class DeviceClient:

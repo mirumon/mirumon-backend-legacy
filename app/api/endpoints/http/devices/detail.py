@@ -6,7 +6,7 @@ from starlette import status
 from app.api.dependencies.services import get_service
 from app.api.models.http.devices.detail import DeviceDetail
 from app.api.models.ws.events.types import EventTypes
-from app.domain.devices.base import DeviceID
+from app.domain.devices.device import DeviceID
 from app.resources import strings
 from app.services.devices.events_service import EventsService
 

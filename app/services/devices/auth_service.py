@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr
 
 from app.api.models.http.devices.auth import DeviceToken
-from app.domain.devices.base import Device, DeviceID
+from app.domain.devices.device import Device, DeviceID
 from app.settings.environments.base import AppSettings
 
 
