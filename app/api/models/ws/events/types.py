@@ -1,7 +1,7 @@
-from enum import Enum
+from app.domain.core.enum import StrEnum
 
 
-class EventTypes(str, Enum):  # noqa: WPS600
+class EventTypes(StrEnum):
     # system events
     error: str = "error"
 
@@ -17,6 +17,6 @@ class EventTypes(str, Enum):  # noqa: WPS600
         return self.value
 
 
-class StatusTypes(str, Enum):  # noqa: WPS600
+class StatusTypes(StrEnum):
     ok = "ok"
     error = "error"
