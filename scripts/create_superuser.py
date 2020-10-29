@@ -10,7 +10,7 @@ from asyncpg.transaction import Transaction
 from passlib.context import CryptContext
 
 from app.database.repositories.users_repo import UsersRepository
-from app.domain.user.scopes import DevicesScopes, UsersScopes
+from app.domain.users.scopes import DevicesScopes, UsersScopes
 
 
 async def create_superuser(
