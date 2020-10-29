@@ -135,6 +135,7 @@ EVENT_PAYLOADS = {
         ],
     },
     "shutdown": {},
+    "execute": {},
 }
 
 

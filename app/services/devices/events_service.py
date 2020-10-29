@@ -75,6 +75,7 @@ _EVENT_MAPPER = MappingProxyType(
         EventTypes.detail: detail.DeviceInfo,
         EventTypes.hardware: hardware.HardwareModel,
         EventTypes.software: List[software.InstalledProgram],
+        EventTypes.execute: dict,
         EventTypes.shutdown: dict,
     }
 )
