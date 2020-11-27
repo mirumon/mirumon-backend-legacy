@@ -9,8 +9,8 @@ from asyncpg import Connection
 from asyncpg.transaction import Transaction
 from passlib.context import CryptContext
 
-from app.database.repositories.users_repo import UsersRepository
-from app.domain.users.scopes import DevicesScopes, UsersScopes
+from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
+from mirumon.infra.users.users_repo import UsersRepository
 
 
 async def create_superuser(
@@ -26,7 +26,7 @@ async def create_superuser(
         salt + superuser_password
     )
     await repo.create(
-        username=superuser_username,  # type: ignore
+        username=superuser_username,
         salt=salt,
         password=password,
         scopes=[
