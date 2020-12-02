@@ -1,15 +1,15 @@
 from fastapi import Depends
 
 from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.device_repo import DevicesRepository
 from mirumon.application.devices.devices_service import DevicesService
-from mirumon.application.devices.events_service import EventsService
 from mirumon.application.devices.gateway import DeviceClientsManager
+from mirumon.application.events.events_repo import EventsRepository
+from mirumon.application.events.events_service import EventsService
 from mirumon.infra.api.dependencies.devices.connections import (
     get_device_clients_manager,
 )
 from mirumon.infra.api.dependencies.repositories import get_repository
-from mirumon.infra.devices.repo import DevicesRepository
-from mirumon.infra.events.repo import EventsRepository
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.base import AppSettings
 

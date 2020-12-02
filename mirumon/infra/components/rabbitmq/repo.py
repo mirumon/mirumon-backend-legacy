@@ -1,4 +1,4 @@
-from mirumon.infra.repo_protocol import Repository
+from mirumon.application.repo_protocol import Repository
 
 
 class RabbitMQRepository(Repository):

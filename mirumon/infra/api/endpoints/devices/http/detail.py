@@ -3,11 +3,11 @@ from loguru import logger
 from pydantic import ValidationError
 from starlette import status
 
-from mirumon.application.devices.events_service import EventsService
+from mirumon.application.events.events_service import EventsService
+from mirumon.application.events.models import EventTypes
 from mirumon.domain.devices.entities import DeviceID
 from mirumon.infra.api.dependencies.services import get_service
 from mirumon.infra.api.endpoints.devices.http.models.detail import DeviceDetail
-from mirumon.infra.events.events import EventTypes
 from mirumon.resources import strings
 
 DEVICE_UNAVAILABLE_ERROR = HTTPException(

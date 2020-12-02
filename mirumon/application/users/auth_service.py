@@ -17,11 +17,6 @@ from mirumon.domain.users.entities import (
     Username,
 )
 from mirumon.domain.users.scopes import Scopes
-from mirumon.infra.api.endpoints.users.http.models.auth import (
-    UserInLoginRequest,
-    UserTokenInResponse,
-)
-from mirumon.infra.api.endpoints.users.http.models.crud import UserInCreateRequest
 
 
 class MetaJWT(BaseModel):
@@ -50,26 +45,31 @@ class AuthUsersService:  # noqa: WPS214
         self.access_token_expire = access_token_expire
         self.secret_key = secret_key
 
-    async def register_new_user(self, user: UserInCreateRequest) -> User:
+    async def register_new_user(
+        self, username: Username, password: RawPassword, scopes: Scopes
+    ) -> User:
         salt = _generate_salt()
-        hashed_password = self._get_password_hash(salt, user.password)
+        hashed_password = self._get_password_hash(salt, password)
 
         return await self.users_service.create_new_user(
-            user=user, salt=salt, hashed_password=hashed_password
+            username=username,
+            scopes=scopes,
+            salt=salt,
+            hashed_password=hashed_password,
         )
 
     async def create_access_token(
-        self, user: UserInLoginRequest
-    ) -> UserTokenInResponse:
-        if not await self._check_user_credentials(user):
+        self, username: Username, raw_password: RawPassword, scopes: Scopes
+    ) -> Dict[str, str]:
+        if not await self._check_user_credentials(username, raw_password):
             raise RuntimeError("incorrect user credentials")
 
         token = self._create_jwt_token(
-            jwt_content=user.fields_to_jwt,
+            jwt_content={"username": username, "scopes": scopes},
             secret_key=self.secret_key.get_secret_value(),
             expires_delta=self.access_token_expire,
         )
-        return UserTokenInResponse(access_token=token, token_type=self.jwt_token_type)
+        return dict(access_token=token, token_type=self.jwt_token_type)
 
     async def find_user_by_token(self, token: AccessToken) -> User:
         try:
@@ -94,16 +94,16 @@ class AuthUsersService:  # noqa: WPS214
         # todo: add is_active check
         return not all(scope in scopes for scope in security_scopes.scopes)
 
-    async def _check_user_credentials(self, user: UserInLoginRequest) -> bool:
+    async def _check_user_credentials(
+        self, username: Username, raw_password: RawPassword
+    ) -> bool:
         try:
-            user_db = await self.users_service.find_user_by_username(
-                username=user.username
-            )
+            user_db = await self.users_service.find_user_by_username(username=username)
         except RuntimeError:
             return False
         return self._verify_password(
             user_db.salt,
-            user.password,
+            raw_password,
             user_db.hashed_password,
         )
 

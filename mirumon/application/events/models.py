@@ -1,10 +1,9 @@
 from typing import Any, Dict, NewType, Optional, Union
 from uuid import UUID
 
-from pydantic import validator
+from pydantic import BaseModel, validator
 
 from mirumon.domain.core.enums import StrEnum
-from mirumon.infra.api.api_model import APIModel
 
 EventID = NewType("EventID", UUID)
 EventParams = NewType("EventParams", dict)  # type: ignore
@@ -16,7 +15,7 @@ class StatusTypes(StrEnum):
     error = "error"
 
 
-class EventError(APIModel):
+class EventError(BaseModel):
     code: int
     detail: Union[list, dict, str]  # type: ignore
 
@@ -37,13 +36,13 @@ class EventTypes(StrEnum):
         return self.value
 
 
-class EventInRequest(APIModel):
+class EventInRequest(BaseModel):
     id: EventID
     method: EventTypes
     params: Optional[EventParams] = None
 
 
-class EventInResponse(APIModel):
+class EventInResponse(BaseModel):
     status: StatusTypes
     id: EventID
     method: EventTypes

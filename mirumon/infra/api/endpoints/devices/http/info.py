@@ -3,14 +3,14 @@ from loguru import logger
 from pydantic import parse_obj_as
 from starlette import status
 
-from mirumon.application.devices.events_service import EventsService
+from mirumon.application.events.events_service import EventsService
+from mirumon.application.events.models import EventTypes
 from mirumon.domain.devices.entities import DeviceID
 from mirumon.infra.api.dependencies.services import get_service
 from mirumon.infra.api.endpoints.devices.http.models.hardware import HardwareModel
 from mirumon.infra.api.endpoints.devices.http.models.software import (
     ListInstalledProgram,
 )
-from mirumon.infra.events.events import EventTypes
 from mirumon.resources import strings
 
 DEVICE_UNAVAILABLE_ERROR = HTTPException(

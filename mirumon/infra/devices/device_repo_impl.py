@@ -1,8 +1,8 @@
 from typing import Dict
 
+from mirumon.application.devices.device_repo import DeviceDoesNotExist
 from mirumon.domain.devices.entities import Device, DeviceID
 from mirumon.infra.components.postgres.repo import PostgresRepository
-from mirumon.infra.errors import EntityDoesNotExist
 from mirumon.infra.infra_model import InfraModel
 
 
@@ -19,7 +19,7 @@ class DeviceInfraModel(InfraModel):
 _storage: Dict[DeviceID, DeviceInfraModel] = {}
 
 
-class DevicesRepository(PostgresRepository):
+class DevicesRepositoryImplementation(PostgresRepository):
     """Fake storage implementation for devices."""
 
     async def create(self, device: Device) -> Device:
@@ -31,6 +31,6 @@ class DevicesRepository(PostgresRepository):
         try:
             infra_device = _storage[device_id]
         except KeyError:
-            raise EntityDoesNotExist()
+            raise DeviceDoesNotExist()
 
         return infra_device.to_entity()

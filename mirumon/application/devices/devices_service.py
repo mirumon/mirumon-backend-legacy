@@ -1,6 +1,6 @@
+from mirumon.application.devices.device_repo import DevicesRepository
+from mirumon.application.events.events_repo import EventsRepository
 from mirumon.domain.devices.entities import Device
-from mirumon.infra.devices.repo import DevicesRepository
-from mirumon.infra.events.repo import EventsRepository
 from mirumon.settings.environments.base import AppSettings
 
 

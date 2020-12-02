@@ -6,11 +6,8 @@ from loguru import logger
 from pydantic import parse_obj_as
 
 from mirumon.application.devices.gateway import DeviceClientsManager
-from mirumon.domain.devices.entities import DeviceID
-from mirumon.domain.events.device_detail import DeviceDetail
-from mirumon.domain.events.device_hardware import DeviceHardware
-from mirumon.domain.events.device_software import InstalledProgram
-from mirumon.infra.events.events import (
+from mirumon.application.events.events_repo import EventProcessError, EventsRepository
+from mirumon.application.events.models import (
     EventID,
     EventInRequest,
     EventInResponse,
@@ -18,7 +15,10 @@ from mirumon.infra.events.events import (
     EventResult,
     EventTypes,
 )
-from mirumon.infra.events.repo import EventProcessError, EventsRepository
+from mirumon.domain.devices.entities import DeviceID
+from mirumon.domain.events.device_detail import DeviceDetail
+from mirumon.domain.events.device_hardware import DeviceHardware
+from mirumon.domain.events.device_software import InstalledProgram
 
 
 class EventsService:

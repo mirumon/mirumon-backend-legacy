@@ -25,9 +25,13 @@ async def login(
     users_service: AuthUsersService = Depends(get_service(AuthUsersService)),
 ) -> UserTokenInResponse:
     try:
-        return await users_service.create_access_token(user)
+        token_payload = await users_service.create_access_token(
+            username=user.username, raw_password=user.password, scopes=user.scopes
+        )
     except RuntimeError:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=strings.INCORRECT_LOGIN_INPUT,
         )
+
+    return UserTokenInResponse.parse_obj(token_payload)

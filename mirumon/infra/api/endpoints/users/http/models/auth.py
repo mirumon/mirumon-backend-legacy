@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import List
 
 from mirumon.domain.users.entities import AccessToken, RawPassword, Username
 from mirumon.domain.users.scopes import Scopes
@@ -9,10 +9,6 @@ class UserInLoginRequest(APIModel):
     username: Username
     password: RawPassword
     scopes: List[Scopes]
-
-    @property
-    def fields_to_jwt(self) -> Dict[str, str]:
-        return self.dict(include={"username", "scopes"})
 
 
 class UserTokenInResponse(APIModel):

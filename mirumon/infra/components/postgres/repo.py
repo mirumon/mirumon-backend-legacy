@@ -4,7 +4,7 @@ from asyncpg import Connection
 from asyncpg.protocol.protocol import Record
 from loguru import logger
 
-from mirumon.infra.repo_protocol import Repository
+from mirumon.application.repo_protocol import Repository
 
 
 class PostgresRepository(Repository):

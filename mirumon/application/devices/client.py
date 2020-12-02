@@ -3,8 +3,8 @@ from typing import Dict, List
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketState
 
+from mirumon.application.events.models import EventInRequest, EventInResponse
 from mirumon.domain.devices.entities import DeviceID
-from mirumon.infra.events.events import EventInRequest, EventInResponse
 
 
 class DeviceClient:

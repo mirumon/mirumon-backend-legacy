@@ -10,7 +10,7 @@ import websockets
 from loguru import logger
 from pydantic import ValidationError
 
-from mirumon.infra.events.events import (
+from mirumon.application.events.models import (
     EventError,
     EventInRequest,
     EventInResponse,

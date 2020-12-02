@@ -3,7 +3,7 @@ from typing import Callable, Type, Union
 
 from mirumon.application.devices.auth_service import DevicesAuthService
 from mirumon.application.devices.devices_service import DevicesService
-from mirumon.application.devices.events_service import EventsService
+from mirumon.application.events.events_service import EventsService
 from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.infra.api.dependencies.devices.services import (
     get_devices_auth_service,

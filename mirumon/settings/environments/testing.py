@@ -13,7 +13,7 @@ class TestAppSettings(AppSettings):
 
     # Timeout settings
     rest_max_response_time: float = 2.0
-    event_timeout: int = 5
+    event_timeout: int = 2
 
     # Auth settings
     secret_key: SecretStr = SecretStr("test-secret-key")

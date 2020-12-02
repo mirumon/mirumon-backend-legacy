@@ -7,15 +7,12 @@ from async_timeout import timeout
 from loguru import logger
 from pydantic import ValidationError
 
+from mirumon.application.events.events_repo import EventProcessError
+from mirumon.application.events.models import EventID, EventInResponse, EventResult
 from mirumon.infra.components.rabbitmq.repo import RabbitMQRepository
-from mirumon.infra.events.events import EventID, EventInResponse, EventResult
 
 
-class EventProcessError(Exception):
-    """Error class for exit from consuming event."""
-
-
-class EventsRepository(RabbitMQRepository):
+class EventsRepositoryImplementation(RabbitMQRepository):
     def __init__(
         self, queue: Queue, exchange: Exchange, process_timeout: float
     ) -> None:

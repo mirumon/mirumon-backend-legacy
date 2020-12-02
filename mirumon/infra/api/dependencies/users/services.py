@@ -1,9 +1,9 @@
 from fastapi import Depends
 
 from mirumon.application.users.auth_service import AuthUsersService
+from mirumon.application.users.users_repo import UsersRepository
 from mirumon.application.users.users_service import UsersService
 from mirumon.infra.api.dependencies.repositories import get_repository
-from mirumon.infra.users.users_repo import UsersRepository
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.base import AppSettings
 

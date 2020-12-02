@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from loguru import logger
 from starlette import status
 
-from mirumon.application.devices.events_service import EventsService
+from mirumon.application.events.events_service import EventsService
+from mirumon.application.events.models import EventParams, EventTypes
 from mirumon.domain.devices.entities import DeviceID
 from mirumon.infra.api.dependencies.services import get_service
 from mirumon.infra.api.endpoints.devices.http.models.execute import ExecuteCommandParams
-from mirumon.infra.events.events import EventParams, EventTypes
 
 DEVICE_UNAVAILABLE_ERROR = HTTPException(
     status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"

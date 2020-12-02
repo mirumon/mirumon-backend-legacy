@@ -5,8 +5,8 @@ from starlette import status, websockets
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from mirumon.application.devices.auth_service import DevicesAuthService
-from mirumon.application.devices.events_service import EventsService
 from mirumon.application.devices.gateway import DeviceClientsManager
+from mirumon.application.events.events_service import EventsService
 from mirumon.infra.api.dependencies.devices.connections import (
     get_device_clients_manager,
 )

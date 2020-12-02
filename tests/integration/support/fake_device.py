@@ -5,7 +5,11 @@ from typing import Optional
 
 from async_asgi_testclient.websocket import WebSocketSession
 
-from mirumon.infra.events.events import EventInRequest, EventInResponse, StatusTypes
+from mirumon.application.events.models import (
+    EventInRequest,
+    EventInResponse,
+    StatusTypes,
+)
 
 
 class FakeDevice:

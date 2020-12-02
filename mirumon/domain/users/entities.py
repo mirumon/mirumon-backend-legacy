@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 from typing import List, NewType
 from uuid import UUID
@@ -19,3 +20,7 @@ class User(Entity):
     scopes: List[Scopes]
     salt: str
     hashed_password: HashedPassword
+
+    @classmethod
+    def generate_id(cls) -> UserID:
+        return UserID(uuid.uuid4())

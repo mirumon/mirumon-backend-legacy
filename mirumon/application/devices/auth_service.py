@@ -7,7 +7,6 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr
 
 from mirumon.domain.devices.entities import Device, DeviceID
-from mirumon.infra.api.endpoints.devices.http.models.auth import DeviceToken
 from mirumon.settings.environments.base import AppSettings
 
 
@@ -39,14 +38,13 @@ class DevicesAuthService:
             shared_key.get_secret_value() == self.settings.shared_key.get_secret_value()
         )
 
-    def create_device_token(self, device: Device) -> DeviceToken:
+    def create_device_token(self, device: Device) -> str:
         content = DeviceInToken(id=device.id).to_jwt_content()
         secret_key = self.settings.secret_key.get_secret_value()
         delta = self.token_expire
-        token = self.create_jwt_token(
+        return self.create_jwt_token(
             jwt_content=content, secret_key=secret_key, expires_delta=delta
         )
-        return DeviceToken(token)
 
     async def get_device_from_token(self, token: str) -> DeviceInToken:
         try:

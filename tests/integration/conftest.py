@@ -12,9 +12,10 @@ from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from passlib.context import CryptContext
 
+from mirumon.domain.users.entities import User
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
 from mirumon.infra.api.asgi import create_app
-from mirumon.infra.users.users_repo import UsersRepository
+from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.base import AppSettings
 from tests.integration.support.fake_device import FakeDevice
@@ -55,15 +56,17 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
         async with app.state.postgres_pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
             await transaction.start()
-            repo = UsersRepository(connection)
+            repo = UsersRepositoryImplementation(connection)
             salt = "fakesalt"
-            password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
+            hashed_password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
                 salt + superuser_password
             )
-            await repo.create(
+            user_id = User.generate_id()
+            new_user = User(
+                id=user_id,
                 username=superuser_username,
                 salt=salt,
-                password=password,
+                hashed_password=hashed_password,
                 scopes=[
                     DevicesScopes.write,
                     DevicesScopes.read,
@@ -71,6 +74,7 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
                     UsersScopes.write,
                 ],
             )
+            await repo.create(new_user)
             yield client
             await transaction.rollback()
         await app.state.postgres_pool.close()

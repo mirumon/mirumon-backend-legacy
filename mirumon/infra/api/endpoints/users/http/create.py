@@ -24,7 +24,9 @@ async def create_user(
     auth_users_service: AuthUsersService = Depends(get_service(AuthUsersService)),
 ) -> UserInCreateResponse:
     try:
-        user = await auth_users_service.register_new_user(new_user)
+        user = await auth_users_service.register_new_user(
+            new_user.username, new_user.password, new_user.scopes
+        )
     except RuntimeError:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
