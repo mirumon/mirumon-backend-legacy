@@ -7,10 +7,9 @@ ENV POETRY_GET_URL https://raw.githubusercontent.com/python-poetry/poetry/master
 RUN apt-get update && \
     apt-get install -y curl
 
-WORKDIR /mirumon
-
 # Create app directory for poetry packages. Required for running `poetry install`
-RUN mkdir app && touch ./app/__init__.py && \
+WORKDIR /mirumon
+RUN touch ./__init__.py && \
     curl -sSL "$POETRY_GET_URL" | python
 # Run to configure current shell run. It is same as `source $HOME/.poetry/env`
 ENV PATH="${PATH}:/root/.poetry/bin"

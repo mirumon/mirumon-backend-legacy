@@ -7,7 +7,7 @@ Docs: https://nox.thea.codes/en/stable/
 import nox
 from nox.sessions import Session
 
-TARGETS = ("app", "tests", "scripts", "noxfile.py")
+TARGETS = ("mirumon", "tests", "scripts", "noxfile.py")
 
 
 @nox.session(python=False, name="format")
@@ -48,13 +48,23 @@ def lint(session: Session) -> None:
     session.run("black", "--check", "--diff", *TARGETS)
     session.run("isort", "--check-only", *TARGETS)
     session.run("mypy", *TARGETS)
-    session.run("flake8", "app")
+    session.run("flake8", "mirumon")
 
 
 @nox.session(python=False)
 def test(session: Session) -> None:
     """Run pytest."""
-    session.run("pytest", "--cov-config=setup.cfg")
+    params = [
+        "--cov-config=setup.cfg",
+        "--cov=mirumon",
+        "--cov=tests",
+        "--cov-branch",
+        "--cov-report=term-missing",
+        "--cov-report=term-missing:skip-covered",
+        "--no-cov-on-fail",
+        "--cov-fail-under=90",
+    ]
+    session.run("pytest", " ".join(params))
 
 
 @nox.session(python=False)
@@ -63,9 +73,10 @@ def runserver(session: Session) -> None:
     import uvicorn
 
     uvicorn.run(
-        "app.main:app",
+        "mirumon.main:app",
         ws="websockets",
         loop="uvloop",
         http="httptools",
         workers=1,
+        reload=True,
     )

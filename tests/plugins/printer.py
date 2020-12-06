@@ -7,22 +7,23 @@ import pytest
 
 from tests.plugins.typing import CaptureManager, TerminalReporter
 
+# TODO: replace by plugin from pypi
 # typing for printer function
-Printer = NewType("Printer", Callable)
+Printer = NewType("Printer", Callable)  # type: ignore
 
 
-def _do_nothing(*_: Any) -> None:
+def _do_nothing(*_: Any) -> None:  # type: ignore
     """Do nothing."""
 
 
-def _create_printer_function(
+def _create_printer_function(  # type: ignore
     terminal_reporter: TerminalReporter,
     capture_manager: CaptureManager,
 ) -> Callable[..., None]:
     was_called = Event()
     start_time = time.monotonic()
 
-    def factory(msg: str, *_: Any) -> None:
+    def factory(msg: str, *_: Any) -> None:  # type: ignore
         """Print messages with time duration."""
         new_line = ""
         # in case of the first call we don't have a new empty line
@@ -39,7 +40,7 @@ def _create_printer_function(
 
 
 @pytest.fixture(scope="session")
-def printer(request) -> Printer:
+def printer(request) -> Printer:  # type: ignore
     """Print progress steps in verbose mode.
 
     Create public function `printer` for usage in any test helpers, not only fixtures.

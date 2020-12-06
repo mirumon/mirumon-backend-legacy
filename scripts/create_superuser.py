@@ -9,8 +9,9 @@ from asyncpg import Connection
 from asyncpg.transaction import Transaction
 from passlib.context import CryptContext
 
-from app.database.repositories.users_repo import UsersRepository
-from app.domain.users.scopes import DevicesScopes, UsersScopes
+from mirumon.domain.users.entities import User
+from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
+from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 
 
 async def create_superuser(
@@ -20,13 +21,15 @@ async def create_superuser(
 
     transaction: Transaction = conn.transaction()
     await transaction.start()
-    repo = UsersRepository(conn)
+    repo = UsersRepositoryImplementation(conn)
     salt = bcrypt.gensalt().decode()
     password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
         salt + superuser_password
     )
-    await repo.create(
-        username=superuser_username,  # type: ignore
+    user_id = User.generate_id()
+    new_user = User(
+        id=user_id,
+        username=superuser_username,
         salt=salt,
         password=password,
         scopes=[
@@ -36,6 +39,7 @@ async def create_superuser(
             UsersScopes.write,
         ],
     )
+    await repo.create(new_user)
     await transaction.commit()
     await conn.close()
 

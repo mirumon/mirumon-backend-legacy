@@ -7,12 +7,12 @@ authors = [
     "Nik Sidnev <sidnev.nick@gmail.com>"
 ]
 license = "MIT"
-packages = [{ include = "app" }]
+packages = [{ include = "mirumon" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 # web server
-fastapi = "^0.61.0"
+fastapi = "^0.62.0"
 uvicorn = { version = "^0.12.2", extras = ["standart"] }
 # serializers
 pydantic = { version = "^1.6.0", extras = ["dotenv"] }
@@ -31,6 +31,7 @@ async-timeout = "^3.0.1"
 uvloop = "^0.14.0"
 httptools = "^0.1.1"
 websockets = "^8.1"
+pytest-randomly = "^3.5.0"
 
 [tool.poetry.dev-dependencies]
 # tasks
@@ -65,7 +66,7 @@ websockets = "^8.1"
 
 [tool.isort]
 profile = "black"
-src_paths = ["app", "tests"]
+src_paths = ["mirumon", "tests"]
 combine_as_imports = true
 
 [tool.black]
@@ -110,14 +111,8 @@ python_files = [
 ]
 # https://docs.pytest.org/en/2.8.7/usage.html#modifying-python-traceback-printing
 addopts = [
-    "--strict",
-    "--cov=app",
-    "--cov=tests",
-    "--cov-branch",
-    "--cov-report=term-missing",
-    "--cov-report=term-missing:skip-covered",
-    "--no-cov-on-fail",
-    "--cov-fail-under=90",
+    "--failed-first",
+    "--strict"
 ]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
@@ -125,8 +120,6 @@ filterwarnings = ["error", "ignore::DeprecationWarning"]
 env = [
     # Set application runtime environment for testing
     "APP_ENV=test",
-    # This is used for constructing service fixtures for tests
-    "D:DOCKER_SERVICES=False"
 ]
 
 [build-system]

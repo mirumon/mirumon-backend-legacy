@@ -10,7 +10,13 @@ import websockets
 from loguru import logger
 from pydantic import ValidationError
 
-from app.api.models.ws.events.events import EventInRequest, EventInResponse
+from mirumon.application.events.models import (
+    EventError,
+    EventInRequest,
+    EventInResponse,
+    EventResult,
+    StatusTypes,
+)
 
 
 @logger.catch
@@ -44,14 +50,17 @@ async def start_connection(server_endpoint: str, token: str) -> None:
         except KeyError:
             logger.warning(f"event {request.method} is not supported")
             response = EventInResponse(
-                status="error",  # type: ignore
+                status=StatusTypes.error,
                 id=request.id,
                 method=request.method,
-                error={"code": 503, "detail": event_payload},  # type: ignore
+                error=EventError(code=503, detail="event not supported"),
             )
         else:
             response = EventInResponse(
-                status="ok", id=request.id, method=request.method, result=event_payload  # type: ignore
+                status=StatusTypes.ok,
+                id=request.id,
+                method=request.method,
+                result=EventResult(event_payload),
             )
 
         logger.bind(payload=response).debug(f"event response: {response.json()}")

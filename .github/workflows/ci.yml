@@ -58,7 +58,7 @@ jobs:
         env:
           POSTGRES_DSN: postgres://postgres:postgres@localhost/postgres
           RABBIT_DSN: amqp://rabbitmq:rabbitmq@localhost
-        run: poetry run pytest
+        run: poetry run nox -s test
       - name: Upload coverage to Codecov
         env:
           TOKEN: ${{ secrets.CODECOV_TOKEN }}
