@@ -8,12 +8,11 @@ RUN apt-get update && \
     apt-get install -y curl
 
 # Create app directory for poetry packages. Required for running `poetry install`
-WORKDIR /mirumon
-RUN touch ./__init__.py && \
+WORKDIR /mirumon-backend
+RUN mkdir ./mirumon/ && touch ./mirumon/__init__.py && \
     curl -sSL "$POETRY_GET_URL" | python
 # Run to configure current shell run. It is same as `source $HOME/.poetry/env`
 ENV PATH="${PATH}:/root/.poetry/bin"
-
 
 # Install deps
 COPY poetry.lock pyproject.toml ./

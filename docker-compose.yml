@@ -1,18 +1,16 @@
 version: '3'
 
 services:
-  app:
+  mirumon:
+    image: mirumon/mirumon-backend:dev
     container_name: mirumon-backend
     build:
       context: .
-    volumes:
-      - ./:/mirumon/
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
-      APP_ENV: dev
       POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres
       RABBIT_DSN: amqp://rabbitmq:rabbitmq@rabbitmq
     depends_on:
