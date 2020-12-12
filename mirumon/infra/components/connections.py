@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from loguru import logger
 
 from mirumon.application.devices.gateway import Connections, DeviceClientsManager
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 def create_devices_connections(app: FastAPI, settings: AppSettings) -> None:

@@ -7,8 +7,8 @@ from mirumon.application.events.events_service import EventsService
 from mirumon.application.events.models import EventTypes
 from mirumon.domain.devices.entities import DeviceID
 from mirumon.infra.api.dependencies.services import get_service
-from mirumon.infra.api.endpoints.devices.http.models.hardware import HardwareModel
-from mirumon.infra.api.endpoints.devices.http.models.software import (
+from mirumon.infra.api.devices.http_endpoints.models.hardware import HardwareModel
+from mirumon.infra.api.devices.http_endpoints.models.software import (
     ListInstalledProgram,
 )
 from mirumon.resources import strings

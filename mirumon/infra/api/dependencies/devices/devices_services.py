@@ -11,7 +11,7 @@ from mirumon.infra.api.dependencies.devices.connections import (
 )
 from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.settings.config import get_app_settings
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 def get_devices_auth_service(

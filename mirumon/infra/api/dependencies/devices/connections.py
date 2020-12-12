@@ -4,7 +4,7 @@ from starlette.datastructures import State
 from mirumon.application.devices.gateway import Connections, DeviceClientsManager
 from mirumon.infra.api.dependencies.state import get_state
 from mirumon.settings.config import get_app_settings
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 def _get_device_connections(state: State = Depends(get_state)) -> Connections:

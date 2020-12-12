@@ -2,7 +2,7 @@ import asyncpg
 from fastapi import FastAPI
 from loguru import logger
 
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 async def create_postgres_connection(app: FastAPI, settings: AppSettings) -> None:

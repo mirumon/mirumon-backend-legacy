@@ -3,7 +3,7 @@ from aio_pika.connection import Connection
 from fastapi import FastAPI
 from loguru import logger
 
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:

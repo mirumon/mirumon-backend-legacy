@@ -14,7 +14,7 @@ from mirumon.infra.devices.device_repo_impl import DevicesRepositoryImplementati
 from mirumon.infra.events.events_repo_impl import EventsRepositoryImplementation
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 def get_repository(  # type: ignore

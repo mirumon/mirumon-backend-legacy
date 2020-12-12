@@ -15,25 +15,6 @@ def user(superuser_username, superuser_password):
     }
 
 
-async def test_first_superuser_login_success(client: TestClient, user) -> None:
-    url = client.application.url_path_for("auth:token")
-    response = await client.post(url, form=user)
-    assert response.status_code == 200
-
-    # TODO decode token to check user payload
-    # TODO check user in db
-    resp_payload = response.json()
-    assert resp_payload["access_token"]
-    assert resp_payload["token_type"] == "Bearer"
-
-
-async def test_first_superuser_login_failed(client: TestClient) -> None:
-    url = client.application.url_path_for("auth:token")
-    response = await client.post(url, form={"username": "admin", "password": "admin"})
-    assert response.status_code == 400
-    assert response.json() == {"detail": "incorrect login or password or scopes"}
-
-
 async def test_first_superuser_create_new_user_with_empty_scopes_success(
     client: TestClient, token_header
 ) -> None:

@@ -3,7 +3,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.infra.api.dependencies.services import get_service
-from mirumon.infra.api.endpoints.users.http.models.crud import (
+from mirumon.infra.api.users.http_endpoints.models.crud import (
     UserInCreateRequest,
     UserInCreateResponse,
 )

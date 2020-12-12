@@ -4,7 +4,7 @@ from starlette.websockets import WebSocket
 
 from mirumon.application.devices.client import DeviceClient
 from mirumon.domain.devices.entities import DeviceID
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 Connections = Dict[DeviceID, DeviceClient]
 

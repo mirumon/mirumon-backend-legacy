@@ -12,7 +12,7 @@ from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.domain.users.entities import AccessToken, RawPassword, User, Username
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
 from mirumon.infra.api.dependencies.services import get_service
-from mirumon.infra.api.endpoints.users.http.models.auth import UserInLoginRequest
+from mirumon.infra.api.users.http_endpoints.models.auth import UserInLoginRequest
 from mirumon.resources import strings
 
 oauth2_schema = OAuth2PasswordBearer(

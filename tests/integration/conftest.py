@@ -17,7 +17,7 @@ from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
 from mirumon.infra.api.asgi import create_app
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 from tests.integration.support.fake_device import FakeDevice
 from tests.integration.support.fake_pool import FakePool
 from tests.integration.support.jwt import create_jwt_token

@@ -1,4 +1,4 @@
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 class ProdAppSettings(AppSettings):

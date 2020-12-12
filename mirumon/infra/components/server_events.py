@@ -14,7 +14,7 @@ from mirumon.infra.components.rabbitmq.pool import (
     close_rabbit_connection,
     create_rabbit_connection,
 )
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 EventHandlerType = Callable[[], Coroutine[None, None, None]]
 

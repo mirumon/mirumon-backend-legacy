@@ -6,7 +6,7 @@ from mirumon.application.devices.devices_service import DevicesService
 from mirumon.domain.users.scopes import DevicesScopes
 from mirumon.infra.api.dependencies.services import get_service
 from mirumon.infra.api.dependencies.users.permissions import check_user_scopes
-from mirumon.infra.api.endpoints.devices.http.models.auth import (
+from mirumon.infra.api.devices.http_endpoints.models.auth import (
     DeviceAuthInRequest,
     DeviceAuthInResponse,
 )

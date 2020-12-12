@@ -5,7 +5,7 @@ from mirumon.infra.components.server_events import (
     create_shutdown_events_handler,
     create_startup_events_handler,
 )
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
 def create_app(settings: AppSettings) -> FastAPI:

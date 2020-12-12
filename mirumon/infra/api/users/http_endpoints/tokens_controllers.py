@@ -4,7 +4,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.infra.api.dependencies.services import get_service
 from mirumon.infra.api.dependencies.users.permissions import get_user_in_login
-from mirumon.infra.api.endpoints.users.http.models.auth import (
+from mirumon.infra.api.users.http_endpoints.models.auth import (
     UserInLoginRequest,
     UserTokenInResponse,
 )

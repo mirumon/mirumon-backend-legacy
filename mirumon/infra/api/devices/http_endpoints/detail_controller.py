@@ -7,7 +7,7 @@ from mirumon.application.events.events_service import EventsService
 from mirumon.application.events.models import EventTypes
 from mirumon.domain.devices.entities import DeviceID
 from mirumon.infra.api.dependencies.services import get_service
-from mirumon.infra.api.endpoints.devices.http.models.detail import DeviceDetail
+from mirumon.infra.api.devices.http_endpoints.models.detail import DeviceDetail
 from mirumon.resources import strings
 
 DEVICE_UNAVAILABLE_ERROR = HTTPException(
