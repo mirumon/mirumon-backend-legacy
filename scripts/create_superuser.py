@@ -23,7 +23,7 @@ async def create_superuser(
     await transaction.start()
     repo = UsersRepositoryImplementation(conn)
     salt = bcrypt.gensalt().decode()
-    password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
+    hashed_password = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(
         salt + superuser_password
     )
     user_id = User.generate_id()
@@ -31,7 +31,7 @@ async def create_superuser(
         id=user_id,
         username=superuser_username,
         salt=salt,
-        password=password,
+        hashed_password=hashed_password,
         scopes=[
             DevicesScopes.write,
             DevicesScopes.read,
