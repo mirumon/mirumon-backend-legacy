@@ -12,8 +12,9 @@ packages = [{ include = "mirumon" }]
 [tool.poetry.dependencies]
 python = "^3.8"
 # web server
-fastapi = "^0.62.0"
-uvicorn = { version = "^0.12.2", extras = ["standart"] }
+# TODO: update after this pr https://github.com/tiangolo/fastapi/pull/2520
+fastapi = { git = "https://github.com/Slyfoxy/fastapi.git", branch = "fix/ws-router-prefix" }
+uvicorn = { version = "^0.13.1", extras = ["standart"] }
 # serializers
 pydantic = { version = "^1.6.0", extras = ["dotenv"] }
 python-multipart = "^0.0.5"
