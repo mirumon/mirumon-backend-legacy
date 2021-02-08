@@ -1,12 +1,11 @@
 import uuid
 from dataclasses import dataclass
 from typing import List, NewType
-from uuid import UUID
 
 from mirumon.domain.core.entity import Entity
 from mirumon.domain.users.scopes import Scopes
 
-UserID = NewType("UserID", UUID)
+UserID = NewType("UserID", uuid.UUID)
 RawPassword = NewType("RawPassword", str)
 HashedPassword = NewType("HashedPassword", str)
 Username = NewType("Username", str)

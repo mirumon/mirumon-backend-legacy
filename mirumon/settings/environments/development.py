@@ -16,8 +16,10 @@ class DevAppSettings(AppSettings):
     shared_key: SecretStr = SecretStr("dev-shared-key")
 
     # Infrastructure settings
-    postgres_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"
-    rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost"
+    postgres_dsn: PostgresDsn = (
+        "postgres://postgres:postgres@localhost/postgres"  # type:ignore
+    )
+    rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost"  # type:ignore
 
     class Config(AppSettings.Config):
         env_file = ".env"

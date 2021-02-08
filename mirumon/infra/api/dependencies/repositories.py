@@ -21,7 +21,7 @@ def get_repository(  # type: ignore
     repo_type: Type[Repository],
 ) -> Callable[..., Repository]:
     try:
-        return REPO_TYPES[repo_type]
+        return REPO_TYPES[repo_type]  # type: ignore
     except KeyError:
         raise RuntimeError(f"{repo_type} not found in registered repos for DI")
 

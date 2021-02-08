@@ -24,8 +24,8 @@ USERNAME_LENGTH = 255
 def register_uuid_extension() -> None:
     op.execute(
         """
-    CREATE EXTENSION "uuid-ossp"
-    """,
+        CREATE EXTENSION "uuid-ossp"
+    """
     )
 
 

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
-from starlette.status import HTTP_400_BAD_REQUEST
 
 from mirumon.application.devices.auth_service import DevicesAuthService
 from mirumon.application.devices.devices_service import DevicesService
@@ -49,7 +48,7 @@ async def create_device_by_shared_key(
     is_shared_token_valid = auth_service.is_valid_shared_key(credentials.shared_key)
     if not is_shared_token_valid:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=strings.INVALID_SHARED_KEY,
         )
 

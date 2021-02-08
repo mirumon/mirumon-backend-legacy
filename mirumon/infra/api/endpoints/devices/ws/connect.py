@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from pydantic import ValidationError
 from starlette import status, websockets
-from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from mirumon.application.devices.auth_service import DevicesAuthService
 from mirumon.application.devices.gateway import DeviceClientsManager
@@ -23,7 +22,7 @@ def get_token(token: str = Header(..., alias="Authorization")) -> str:
 
 @router.websocket("/service", name="devices:service")
 async def device_ws_endpoint(  # noqa: WPS231
-    websocket: WebSocket,
+    websocket: websockets.WebSocket,
     token: str = Depends(get_token),
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
     events_service: EventsService = Depends(get_service(EventsService)),
@@ -33,7 +32,7 @@ async def device_ws_endpoint(  # noqa: WPS231
         device = await auth_service.get_device_from_token(token)
     except RuntimeError as error:
         logger.debug(f"device token decode error:{error}")
-        raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
+        raise websockets.WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
 
     client = await clients_manager.connect(device.id, websocket)
 
