@@ -69,7 +69,7 @@ class AuthUsersService:  # noqa: WPS214
             secret_key=self.secret_key.get_secret_value(),
             expires_delta=self.access_token_expire,
         )
-        return dict(access_token=token, token_type=self.jwt_token_type)
+        return {"access_token": token, "token_type": self.jwt_token_type}
 
     async def find_user_by_token(self, token: AccessToken) -> User:
         try:

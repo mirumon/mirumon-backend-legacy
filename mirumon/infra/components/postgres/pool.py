@@ -9,7 +9,7 @@ async def create_postgres_connection(app: FastAPI, settings: AppSettings) -> Non
     logger.info("Connecting to {0}", settings.postgres_dsn)
 
     dsn = str(settings.postgres_dsn)
-    app.state.postgres_pool = await asyncpg.create_pool(dsn)  # type: ignore
+    app.state.postgres_pool = await asyncpg.create_pool(dsn)
 
     logger.info("Connection established")
 
@@ -17,6 +17,6 @@ async def create_postgres_connection(app: FastAPI, settings: AppSettings) -> Non
 async def close_postgres_connection(app: FastAPI) -> None:
     logger.info("Closing connection to infra")
 
-    await app.state.postgres_pool.close()  # type: ignore
+    await app.state.postgres_pool.close()
 
     logger.info("Connection closed")

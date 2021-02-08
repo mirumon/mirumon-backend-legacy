@@ -47,7 +47,7 @@ def lint(session: Session) -> None:
     """
     session.run("black", "--check", "--diff", *TARGETS)
     session.run("isort", "--check-only", *TARGETS)
-    session.run("mypy", *TARGETS)
+    session.run("mypy", "mirumon")
     session.run("flake8", "mirumon")
 
 

@@ -67,5 +67,5 @@ def get_user_in_login(
     return UserInLoginRequest(
         username=Username(user.username),
         password=RawPassword(user.password),
-        scopes=user.scopes,  # type: ignore
+        scopes=user.scopes,
     )

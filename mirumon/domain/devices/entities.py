@@ -1,11 +1,10 @@
 import uuid
 from dataclasses import dataclass
 from typing import NewType
-from uuid import UUID
 
 from mirumon.domain.core.entity import Entity
 
-DeviceID = NewType("DeviceID", UUID)
+DeviceID = NewType("DeviceID", uuid.UUID)
 
 
 @dataclass
