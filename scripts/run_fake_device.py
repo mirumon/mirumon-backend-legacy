@@ -151,7 +151,7 @@ EVENT_PAYLOADS = {
 def register_device(server_host: str, username: str, password: str) -> str:
     logger.info("starting user log in...")
     response = requests.post(
-        f"http://{server_host}/users/token",
+        f"{server_host}/users/token",
         data={"username": username, "password": password},
     )
     logger.info(response.json())
@@ -159,7 +159,7 @@ def register_device(server_host: str, username: str, password: str) -> str:
     access_token = response.json()["access_token"]
 
     response = requests.post(
-        f"http://{server_host}/devices",
+        f"{server_host}/devices",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     logger.info(response.json())
@@ -173,12 +173,16 @@ def run_service() -> None:
     loop = asyncio.get_event_loop()
     username, password = sys.argv[1:3]
     try:
-        host = sys.argv[4]
+        host = sys.argv[3]
     except IndexError:
         host = "127.0.0.1:8000"
 
     device_token = register_device(host, username, password)
-    device_endpoint = f"ws://{host}/devices/service"
+    if host.startswith("https://"):
+        _, host = host.split("https://")
+        device_endpoint = f"wss://{host}/devices/service"
+    else:
+        device_endpoint = f"ws://{host}/devices/service"
     try:
         task = connect_to_server(server_endpoint=device_endpoint, token=device_token)
         asyncio.run(task)

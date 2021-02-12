@@ -1,28 +1,31 @@
-FROM python:3.8.6-slim-buster
+FROM python:3.9.1-slim-buster
 
 ENV PYTHONUNBUFFERED 1
-ENV POETRY_VERSION 1.1.3
+ENV POETRY_VERSION 1.1.4
 ENV POETRY_GET_URL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py
 
 RUN apt-get update && \
-    apt-get install -y curl
+    apt-get install -y --no-install-recommends \
+      curl git \
+      libpq-dev libc-dev postgresql gcc make
 
-# Create app directory for poetry packages. Required for running `poetry install`
 WORKDIR /mirumon-backend
+
+# Poetry provides a custom installer that will install poetry isolated
+# from the rest of your system by vendorizing its dependencies.
+# This is the recommended way of installing poetry.
+# See https://python-poetry.org/docs/#installation
+# Run to configure current shell run. It is same as `source $HOME/.poetry/env`
 RUN mkdir ./mirumon/ && touch ./mirumon/__init__.py && \
     curl -sSL "$POETRY_GET_URL" | python
-# Run to configure current shell run. It is same as `source $HOME/.poetry/env`
 ENV PATH="${PATH}:/root/.poetry/bin"
 
-# Install deps
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-dev
+RUN  poetry install --no-dev
 
-# Copy code
 COPY . .
 
 EXPOSE 8000
 
-# Run migrations and start server
 CMD poetry run alembic upgrade head && \
     poetry run scripts/runserver

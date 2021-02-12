@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post(
-    path="/{device_id}/execute",
+    path="/devices/{device_id}/execute",
     name="devices:execute",
     summary="Execute Command on Device",
     status_code=status.HTTP_202_ACCEPTED,
