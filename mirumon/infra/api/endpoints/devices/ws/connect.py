@@ -20,7 +20,7 @@ def get_token(token: str = Header(..., alias="Authorization")) -> str:
     return token
 
 
-@router.websocket("/service", name="devices:service")
+@router.websocket("/devices/service", name="devices:service")
 async def device_ws_endpoint(  # noqa: WPS231
     websocket: websockets.WebSocket,
     token: str = Depends(get_token),

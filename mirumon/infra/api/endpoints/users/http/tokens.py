@@ -15,7 +15,7 @@ router = APIRouter()
 
 # TODO: remove scope, client_id, client_secret, gran_type
 @router.post(
-    "/token",
+    "/users/token",
     name="auth:token",
     summary="Get User Token",
     response_model=UserTokenInResponse,

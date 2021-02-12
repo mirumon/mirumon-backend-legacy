@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/",
+    "/devices",
     status_code=status.HTTP_201_CREATED,
     name="devices:create",
     summary="Create device",
@@ -34,7 +34,7 @@ async def create_device(
 
 
 @router.post(
-    "/by/shared",
+    "/devices/by/shared",
     status_code=status.HTTP_201_CREATED,
     name="devices:create-by-shared",
     summary="Create device by Shared Key",

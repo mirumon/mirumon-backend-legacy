@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post(
-    path="/{device_id}/shutdown",
+    path="/devices/{device_id}/shutdown",
     name="devices:shutdown",
     summary="Shutdown Device",
     status_code=status.HTTP_202_ACCEPTED,

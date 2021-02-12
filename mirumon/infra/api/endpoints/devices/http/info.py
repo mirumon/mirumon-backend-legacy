@@ -25,7 +25,7 @@ def name(event: str) -> str:
 
 
 def path(event: str) -> str:
-    return "/{0}/{1}".format("{device_id}", event)
+    return "/devices/{0}/{1}".format("{device_id}", event)
 
 
 @router.get(

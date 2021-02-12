@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
+    path="/devices",
     name="devices:list",
     summary="Get Devices",
     description=strings.DEVICES_LIST_DESCRIPTION,
