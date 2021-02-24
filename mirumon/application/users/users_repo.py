@@ -1,4 +1,4 @@
-from mirumon.application.repo_protocol import Repository
+from mirumon.application.repositories import Repository
 from mirumon.domain.users.entities import User
 
 

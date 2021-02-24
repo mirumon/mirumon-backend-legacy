@@ -1,10 +1,19 @@
-from mirumon.application.repo_protocol import Repository
+from aio_pika import Queue, Exchange
+
+from mirumon.application.repositories import Repository
 
 
 class RabbitMQRepository(Repository):
     """RabbitMQ repository implementation."""
 
-    def __init__(self, queue: object, exchange: object, process_timeout: float) -> None:
-        self.queue = queue
-        self.exchange = exchange
-        self.process_timeout = process_timeout
+    def __init__(
+        self, queue: Queue, exchange: Exchange
+    ) -> None:
+        self.queue: Queue = queue
+        self.exchange: Exchange = exchange
+
+    def publish(self, topic, body):
+        pass
+
+    def consume(self, topic):
+        pass

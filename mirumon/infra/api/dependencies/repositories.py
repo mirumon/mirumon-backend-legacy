@@ -7,7 +7,7 @@ from starlette.datastructures import State
 
 from mirumon.application.devices.device_repo import DevicesRepository
 from mirumon.application.events.events_repo import EventsRepository
-from mirumon.application.repo_protocol import Repository
+from mirumon.application.repositories import Repository
 from mirumon.application.users.users_repo import UsersRepository
 from mirumon.infra.api.dependencies.state import get_state
 from mirumon.infra.devices.device_repo_impl import DevicesRepositoryImplementation

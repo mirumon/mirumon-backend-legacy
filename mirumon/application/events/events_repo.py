@@ -1,7 +1,7 @@
 from typing import Optional
 
 from mirumon.application.events.models import EventID, EventInResponse, EventResult
-from mirumon.application.repo_protocol import Repository
+from mirumon.application.repositories import Repository
 
 
 class EventProcessError(Exception):
