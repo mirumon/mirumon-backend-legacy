@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, NewType, Optional, Union
 from uuid import UUID
 
@@ -37,7 +38,7 @@ class EventTypes(StrEnum):
 
 
 class EventInRequest(BaseModel):
-    id: EventID
+    id: EventID = uuid.uuid4()
     method: EventTypes
     params: Optional[EventParams] = None
 

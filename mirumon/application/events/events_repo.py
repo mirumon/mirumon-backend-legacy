@@ -16,3 +16,15 @@ class EventsRepository(Repository):
 
     async def publish_event_response(self, event: EventInResponse) -> None:
         raise NotImplementedError
+
+    async def publish_command(self, command):
+        raise NotImplementedError
+
+    async def publish_event(self, event):
+        raise NotImplementedError
+
+    async def consume(self, sync_id):
+        raise NotImplementedError
+
+    async def listen(self, process_message_callback):
+        raise NotImplementedError

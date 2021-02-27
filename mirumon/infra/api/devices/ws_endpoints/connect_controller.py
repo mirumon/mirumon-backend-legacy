@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, Header
 from loguru import logger
-from pydantic import ValidationError
 from starlette import status, websockets
 
 from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.events.system_info_synced import DeviceSystemInfoSynced
 from mirumon.application.devices.gateway import DeviceClientsManager
-from mirumon.application.events.events_service import EventsService
+from mirumon.application.devices.internal_protocol.models import DeviceAgentResponse
+from mirumon.application.repositories import BrokerRepo
 from mirumon.infra.api.dependencies.devices.connections import (
     get_device_clients_manager,
 )
+from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.infra.api.dependencies.services import get_service
 
 router = APIRouter()
@@ -25,7 +27,7 @@ async def device_ws_endpoint(  # noqa: WPS231
     websocket: websockets.WebSocket,
     token: str = Depends(get_token),
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
-    events_service: EventsService = Depends(get_service(EventsService)),
+    broker_repo: BrokerRepo = Depends(get_repository(BrokerRepo)),
     clients_manager: DeviceClientsManager = Depends(get_device_clients_manager),
 ) -> None:
     try:
@@ -34,22 +36,31 @@ async def device_ws_endpoint(  # noqa: WPS231
         logger.debug(f"device token decode error:{error}")
         raise websockets.WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
 
-    client = await clients_manager.connect(device.id, websocket)
+    await clients_manager.connect(device.id, websocket)
 
     while True:
         try:
-            event = await client.read_event()
-        except ValidationError as validation_error:
-            logger.debug("error {0}", validation_error.errors())
-            await client.send_errors(validation_error.errors())
+            payload = await websocket.receive_text()
+            response = DeviceAgentResponse.parse_raw(payload)
+            if response.is_success:
+                logger.debug(
+                    "device:{} send successful response:{}", device.id, response.result
+                )
+                event = DeviceSystemInfoSynced(
+                    sync_id=response.id, device_id=device.id, event_attributes=response.result
+                )
+                await broker_repo.publish_event(event)
+            else:
+                logger.debug(
+                    "device:{} send unsuccessful response:{}", device.id, response.error
+                )
+        except ValueError as validation_error:
+            logger.debug("error {0}", validation_error)
         except websockets.WebSocketDisconnect as disconnect_error:
             logger.info(
                 "device:{0} disconnected, reason {1}",
-                client.device_id,
+                device.id,
                 disconnect_error,
             )
-            await clients_manager.disconnect(client.device_id)
+            await clients_manager.disconnect(device.id)
             break
-        else:
-            logger.debug("received event from device")
-            await events_service.send_event_response(event)

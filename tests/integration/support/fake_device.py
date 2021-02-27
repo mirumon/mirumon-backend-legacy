@@ -5,9 +5,9 @@ from typing import Optional
 
 from async_asgi_testclient.websocket import WebSocketSession
 
-from mirumon.application.events.models import (
-    EventInRequest,
-    EventInResponse,
+from mirumon.application.devices.internal_protocol.models import (
+    DeviceAgentRequest,
+    DeviceAgentResponse,
     StatusTypes,
 )
 
@@ -25,24 +25,22 @@ class FakeDevice:
         try:
             payload = await self.ws.receive_json()
         except Exception as error:  # pragma: no cover
-            self.printer(f"{self} except error {error} during receive_json")
+            self.printer(f"{self} got error on receive_json:{error}")
             traceback.print_exc()
 
-        self.printer(f"{self} get request {payload} during receive_json")
-        request = EventInRequest.parse_obj(payload)
-        self.printer(f"{self} parsed")
+        self.printer(f"{self} received json: {repr(payload)}")
+        request = DeviceAgentRequest.parse_obj(payload)
 
         if not response_payload:
             self.printer(f"{self} make response...")
             try:
-                response_json = EventInResponse(
+                response_json = DeviceAgentResponse(
                     id=request.id,
                     status=StatusTypes.ok,
                     result=self.get_event_result(request.method),
-                    method=request.method,
                 ).json()
             except Exception as e:
-                self.printer(f"{self} get error during making response {e}")
+                self.printer(f"{self} get error during making response: {e}")
         else:
             response_json = json.dumps(response_payload)
 
@@ -57,7 +55,7 @@ class FakeDevice:
 
     def get_event_result(self, method: str):
         events = {}
-        events["detail"] = {
+        events["sync_device_system_info"] = {
             "name": "Manjaro-Desktop",
             "domain": "mirumon.dev",
             "workgroup": None,

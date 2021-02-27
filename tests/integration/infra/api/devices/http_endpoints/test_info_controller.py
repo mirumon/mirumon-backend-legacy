@@ -27,8 +27,6 @@ class BaseTestDevice:
 
     async def test_should_return_expected_status_code(self, response):
         assert response.status_code == self.expected_status_code
-
-    async def test_should_return_expected_payload(self, response):
         assert response.json() == self.expected_return_payload
 
 

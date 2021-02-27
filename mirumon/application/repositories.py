@@ -7,13 +7,17 @@ class Repository(Protocol):
     """Base repository class for typing and DI."""
 
 
-class BrokerRepo(Protocol):
+class BrokerRepo(Repository):
     """Base broker repository class for typing and DI."""
+
     def __init__(self):
         pass
 
-    async def publish(self):
-        pass
+    async def publish_event(self, event):
+        raise NotImplementedError
 
-    async def consume(self, *, timeout=None):
-        pass
+    async def publish_command(self, command):
+        raise NotImplementedError
+
+    async def consume(self, sync_id):
+        raise NotImplementedError
