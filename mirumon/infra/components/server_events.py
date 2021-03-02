@@ -37,6 +37,8 @@ def create_startup_events_handler(
         handler = DeviceCommandHandler(loop, connection, app.state.device_connections)
         scheduler = await aiojobs.create_scheduler()
         app.state.scheduler = scheduler
+        app.state.connection = connection
+
         app.state.job = await scheduler.spawn(handler.start())
 
     return startup
@@ -46,7 +48,7 @@ def create_shutdown_events_handler(app: FastAPI) -> EventHandlerType:
     async def shutdown() -> None:  # noqa: WPS430
         await app.state.job.close()
         await app.state.scheduler.close()
-
+        await app.state.connection.close()
         await close_devices_connections(app)
         await close_rabbit_connection(app)
         await close_postgres_connection(app)

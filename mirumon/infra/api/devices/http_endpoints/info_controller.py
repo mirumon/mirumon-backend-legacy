@@ -2,7 +2,6 @@ import asyncio
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import parse_obj_as
 from starlette import status
 
 from mirumon.application.devices.commands.sync_device_hardware_command import (
@@ -39,8 +38,8 @@ async def get_device_software(
 
     try:
         event = await broker_repo.consume(command.sync_id)
-        return parse_obj_as(
-            ListInstalledProgram, **event["event_attributes"]["installed_programs"]
+        return ListInstalledProgram(
+            __root__=event["event_attributes"]["installed_programs"]
         )
     except asyncio.exceptions.TimeoutError:
         raise HTTPException(

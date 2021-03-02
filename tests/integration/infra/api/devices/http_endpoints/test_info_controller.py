@@ -19,107 +19,131 @@ class BaseTestDevice:
 
     @pytest.fixture
     async def response(self, app: FastAPI, client, device_factory):
-        assert self.url_name, "set url_name for test class"
         async with device_factory(device_id=self.device_id) as device:
-            url = app.url_path_for(self.url_name, device_id=device.id)
+            url = app.url_path_for("devices:detail", device_id=device.id)
             response = await client.get(url)
             return response
 
-    async def test_should_return_expected_status_code(self, response):
+    async def test_should_return_expected_response(self, response):
         assert response.status_code == self.expected_status_code
         assert response.json() == self.expected_return_payload
 
 
-class TestDeviceDetail(BaseTestDevice):
-    url_name = "devices:detail"
-    expected_status_code = 200
-    expected_return_payload = {
-        "id": "baa81326-9953-4587-92ce-82bb1ca1373c",
-        "online": True,
-        "name": "Manjaro-Desktop",
-        "domain": "mirumon.dev",
-        "workgroup": None,
-        "os": [
-            {
-                "name": "Windows 10 Edu",
-                "version": "1.12.12",
-                "os_architecture": "amd64",
-                "serial_number": "AGFNE-34GS-RYHRE",
-                "number_of_users": 4,
-            }
-        ],
-        "last_user": {
-            "name": "nick",
-            "fullname": "Nick Khitrov",
+class TestDeviceDetail:
+    @pytest.fixture(scope="class")
+    def device_id(self):
+        return str(uuid.uuid4())
+
+    @pytest.fixture
+    async def response(self, app: FastAPI, client, device_id, device_factory):
+        async with device_factory(device_id=device_id) as device:
+            url = app.url_path_for("devices:detail", device_id=device.id)
+            response = await client.get(url)
+            return response
+
+    async def test_should_return_expected_response(self, response, device_id):
+        assert response.status_code == 200
+        assert response.json() == {
+            "id": device_id,
+            "online": True,
+            "name": "Manjaro-Desktop",
             "domain": "mirumon.dev",
-        },
-    }
+            "workgroup": None,
+            "os": [
+                {
+                    "name": "Windows 10 Edu",
+                    "version": "1.12.12",
+                    "os_architecture": "amd64",
+                    "serial_number": "AGFNE-34GS-RYHRE",
+                    "number_of_users": 4,
+                }
+            ],
+            "last_user": {
+                "name": "nick",
+                "fullname": "Nick Khitrov",
+                "domain": "mirumon.dev",
+            },
+        }
 
 
-class TestDeviceSoftware(BaseTestDevice):
-    url_name = "devices:software"
-    expected_status_code = 200
-    expected_return_payload = [
-        {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
-        {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
-    ]
+class TestDeviceSoftware:
+    @pytest.fixture
+    async def response(self, app: FastAPI, client, device_factory):
+        async with device_factory(device_id=str(uuid.uuid4())) as device:
+            url = app.url_path_for("devices:software", device_id=device.id)
+            response = await client.get(url)
+            return response
+
+    async def test_should_return_expected_response(self, response):
+        assert response.status_code == 200
+        assert response.json() == [
+            {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
+            {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
+        ]
 
 
-class TestDeviceHardware(BaseTestDevice):
-    url_name = "devices:hardware"
-    expected_status_code = 200
-    expected_return_payload = {
-        "motherboard": {
-            "name": "string",
-            "caption": "string",
-            "status": "string",
-            "product": "string",
-            "serial_number": "string",
-        },
-        "cpu": [
-            {
-                "status": "string",
+class TestDeviceHardware:
+    @pytest.fixture
+    async def response(self, app: FastAPI, client, device_factory):
+        async with device_factory(device_id=str(uuid.uuid4())) as device:
+            url = app.url_path_for("devices:hardware", device_id=device.id)
+            response = await client.get(url)
+            return response
+
+    async def test_should_return_expected_response(self, response):
+        assert response.status_code == 200
+        assert response.json() == {
+            "motherboard": {
                 "name": "string",
                 "caption": "string",
-                "current_clock_speed": "string",
-                "current_cthread_countlock_speed": 0,
-                "virtualization_firmware_enabled": True,
-                "load_percentage": 0,
-                "number_of_cores": 0,
-                "number_of_enabled_core": 0,
-                "number_of_logical_processors": 0,
-            }
-        ],
-        "gpu": [
-            {
                 "status": "string",
-                "name": "string",
-                "caption": "string",
-                "driver_version": "string",
-                "driver_date": "string",
-                "video_mode_description": "string",
-                "current_vertical_resolution": "string",
-            }
-        ],
-        "network": [
-            {
-                "description": "string",
-                "mac_address": "string",
-                "ip_addresses": ["string"],
-            }
-        ],
-        "disks": [
-            {
-                "status": "string",
-                "caption": "string",
+                "product": "string",
                 "serial_number": "string",
-                "size": 0,
-                "model": "string",
-                "description": "string",
-                "partitions": 0,
-            }
-        ],
-    }
+            },
+            "cpu": [
+                {
+                    "status": "string",
+                    "name": "string",
+                    "caption": "string",
+                    "current_clock_speed": "string",
+                    "current_cthread_countlock_speed": 0,
+                    "virtualization_firmware_enabled": True,
+                    "load_percentage": 0,
+                    "number_of_cores": 0,
+                    "number_of_enabled_core": 0,
+                    "number_of_logical_processors": 0,
+                }
+            ],
+            "gpu": [
+                {
+                    "status": "string",
+                    "name": "string",
+                    "caption": "string",
+                    "driver_version": "string",
+                    "driver_date": "string",
+                    "video_mode_description": "string",
+                    "current_vertical_resolution": "string",
+                }
+            ],
+            "network": [
+                {
+                    "description": "string",
+                    "mac_address": "string",
+                    "ip_addresses": ["string"],
+                }
+            ],
+            "disks": [
+                {
+                    "status": "string",
+                    "caption": "string",
+                    "serial_number": "string",
+                    "size": 0,
+                    "model": "string",
+                    "description": "string",
+                    "partitions": 0,
+                }
+            ],
+        }
 
 
 async def test_devices_list_without_registered_devices(app, client):

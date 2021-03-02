@@ -25,4 +25,4 @@ async def shutdown_device(
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> None:
     command = ShutdownDeviceCommand(device_id=device_id, sync_id=uuid.uuid4())
-    await broker_repo.send_command(command)
+    # await broker_repo.send_command(command)

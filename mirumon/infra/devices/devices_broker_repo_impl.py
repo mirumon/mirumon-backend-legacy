@@ -32,12 +32,12 @@ class DeviceBrokerRepoImpl(Repository):
 
         headers = {
             "device_id": str(event.device_id),
-            "command": event.event_type,
-            "command_attributes": event.event_attributes,
+            "event": event.event_type,
+            "event_attributes": event.event_attributes_to_dict,
         }
         body = event.json().encode()
         message = Message(body, headers=headers, correlation_id=event.sync_id)
-        logger.debug(f"publish event to broker: {message}")
+        logger.debug("publish event to broker: {}", message)
         await exchange.publish(message, routing_key="devices.events")
 
     async def consume(self, sync_id):
@@ -46,11 +46,24 @@ class DeviceBrokerRepoImpl(Repository):
         await queue.bind("devices", routing_key="devices.events")
 
         logger.debug("listen event with sync_id:{0}", sync_id)
-        async with timeout(timeout=5):
+        async with timeout(timeout=4):
             async with queue.iterator() as queue_iter:
                 async for message in queue_iter:
                     logger.debug("process message: {0}", message)
+                    logger.debug("raw message: {}", message.body)
                     if message.correlation_id == str(sync_id):
-                        payload = json.loads(message.body.decode())
-                        logger.debug("raw message: {}", message.body)
+                        logger.debug(
+                            "sync_id matched with correlation_id:{}",
+                            message.correlation_id,
+                        )
+                        try:
+                            payload = json.loads(message.body.decode())
+                        except Exception as e:
+                            logger.debug("got error on message body decode:{}", e)
                         return payload
+                    else:
+                        logger.debug(
+                            "sync_id:{} didnt match with correlation_id:{}",
+                            str(sync_id),
+                            message.correlation_id,
+                        )

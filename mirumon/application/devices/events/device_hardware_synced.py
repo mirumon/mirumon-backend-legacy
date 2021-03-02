@@ -60,7 +60,11 @@ class DeviceHardware(BaseModel):
 
 
 class DeviceHardwareSynced(BaseModel):
-    sync_id: Optional[uuid.UUID] = None
+    sync_id: uuid.UUID
     device_id: uuid.UUID
     event_type: str = "device_hardware_synced"
     event_attributes: DeviceHardware
+
+    @property
+    def event_attributes_to_dict(self):
+        return self.event_attributes.dict()

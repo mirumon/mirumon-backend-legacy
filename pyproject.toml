@@ -10,7 +10,7 @@ license = "MIT"
 packages = [{ include = "mirumon" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 # web server
 fastapi = { version="^0.63.0"}
 uvicorn = { version = "^0.13.1", extras = ["standart"] }
@@ -28,7 +28,7 @@ databases = { version = "0.4.0", extras = ["postgresql"] }
 asyncpg = "^0.22.0"
 aio-pika = "^6.6.1"
 async-timeout = "^3.0.1"
-uvloop = "^0.14.0"
+uvloop = "^0.15.0"
 httptools = "^0.1.1"
 websockets = "^8.1"
 aiojobs = "^0.3.0"

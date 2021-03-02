@@ -32,7 +32,7 @@ router.include_router(
 )
 router.include_router(
     shutdown_controller.router,
-    dependencies=[Depends(check_user_scopes([DevicesScopes.write]))],
+    # dependencies=[Depends(check_user_scopes([DevicesScopes.write]))],
 )
 router.include_router(
     execute_controller.router,

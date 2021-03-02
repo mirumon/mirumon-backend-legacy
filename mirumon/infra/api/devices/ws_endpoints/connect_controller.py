@@ -3,6 +3,9 @@ from loguru import logger
 from starlette import status, websockets
 
 from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.events.device_hardware_synced import (
+    DeviceHardwareSynced,
+)
 from mirumon.application.devices.events.device_software_synced import (
     DeviceSoftwareSynced,
 )
@@ -77,6 +80,8 @@ async def device_ws_endpoint(  # noqa: WPS231
                         response.method,
                         device.id,
                     )
+                except Exception as e:
+                    logger.exception("got error {}", e)
             else:
                 logger.error(
                     "received error from device:{}\n{}", device.id, response.error

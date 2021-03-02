@@ -31,3 +31,7 @@ class DeviceSystemInfoSynced(BaseModel):
     device_id: uuid.UUID
     event_type: str = "device_system_info_synced"
     event_attributes: SystemInfo
+
+    @property
+    def event_attributes_to_dict(self):
+        return self.event_attributes.dict()

@@ -79,10 +79,12 @@ class FakeDevice:
                 "domain": "mirumon.dev",
             },
         }
-        events["sync_device_software"] = [
-            {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
-            {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
-        ]
+        events["sync_device_software"] = {
+            "installed_programs": [
+                {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
+                {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
+            ]
+        }
         events["sync_device_hardware"] = {
             "motherboard": {
                 "name": "string",
