@@ -6,7 +6,7 @@ class DeviceDoesNotExist(Exception):
     """Raised when device was not found in infra layer."""
 
 
-class DevicesRepository(Repository):
+class DeviceRepository(Repository):
     async def create(self, device: Device) -> Device:
         raise NotImplementedError
 

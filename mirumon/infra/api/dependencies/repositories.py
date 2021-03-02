@@ -5,16 +5,12 @@ from asyncpg import Connection
 from fastapi import Depends
 from starlette.datastructures import State
 
-from mirumon.application.devices.device_repo import DevicesRepository
-from mirumon.application.events.events_repo import EventsRepository
-from mirumon.application.repositories import BrokerRepo, Repository
+from mirumon.application.devices.devices_repo import DeviceRepository
+from mirumon.application.repositories import DeviceBrokerRepo, Repository
 from mirumon.application.users.users_repo import UsersRepository
 from mirumon.infra.api.dependencies.state import get_state
 from mirumon.infra.devices.device_repo_impl import DevicesRepositoryImplementation
-from mirumon.infra.events.events_repo_impl import (
-    BrokerRepoImpl,
-    EventsRepositoryImplementation,
-)
+from mirumon.infra.devices.devices_broker_repo_impl import DeviceBrokerRepoImpl
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.app import AppSettings
@@ -23,7 +19,6 @@ from mirumon.settings.environments.app import AppSettings
 def get_repository(  # type: ignore
     repo_type: Type[Repository],
 ) -> Callable[..., Repository]:
-    print(f"hui {repo_type}")
     try:
         return REPO_TYPES[repo_type]  # type: ignore
     except KeyError:
@@ -49,23 +44,11 @@ def _devices_repo_depends(
     return DevicesRepositoryImplementation(conn)
 
 
-def _events_repo_depends(
-    state: State = Depends(get_state),
-    settings: AppSettings = Depends(get_app_settings),
-) -> EventsRepositoryImplementation:
-    return EventsRepositoryImplementation(
-        queue=state.rabbit_queue,
-        exchange=state.rabbit_exchange,
-        process_timeout=settings.event_timeout,
-    )
-
-
 def _broker_repo_depends(
     state: State = Depends(get_state),
     settings: AppSettings = Depends(get_app_settings),
-) -> BrokerRepo:
-    print("broker repo di")
-    return BrokerRepoImpl(
+) -> DeviceBrokerRepo:
+    return DeviceBrokerRepoImpl(
         connection=state.rabbit_conn,
         process_timeout=settings.event_timeout,
     )
@@ -74,8 +57,7 @@ def _broker_repo_depends(
 REPO_TYPES = MappingProxyType(
     {
         UsersRepository: _users_repo_depends,
-        DevicesRepository: _devices_repo_depends,
-        EventsRepository: _events_repo_depends,
-        BrokerRepo: _broker_repo_depends,
+        DeviceRepository: _devices_repo_depends,
+        DeviceBrokerRepo: _broker_repo_depends,
     }
 )

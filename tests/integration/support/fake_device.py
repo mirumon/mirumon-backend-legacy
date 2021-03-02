@@ -1,5 +1,4 @@
 import asyncio
-import json
 import traceback
 from typing import Optional
 
@@ -37,14 +36,20 @@ class FakeDevice:
                 response_json = DeviceAgentResponse(
                     id=request.id,
                     status=StatusTypes.ok,
+                    method=request.method,
                     result=self.get_event_result(request.method),
                 ).json()
             except Exception as e:
                 self.printer(f"{self} get error during making response: {e}")
         else:
-            response_json = json.dumps(response_payload)
+            response_json = DeviceAgentResponse(
+                id=request.id,
+                status=StatusTypes.ok,
+                method=request.method,
+                result=response_payload,
+            ).json()
 
-        self.printer(f"{self} send payload to server", response_json)
+        self.printer(f"{self} send payload to server {response_json}")
         await self.ws.send_text(response_json)
 
     def start_listen(self, response_payload: Optional[dict] = None):
@@ -74,11 +79,11 @@ class FakeDevice:
                 "domain": "mirumon.dev",
             },
         }
-        events["software"] = [
+        events["sync_device_software"] = [
             {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
             {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
         ]
-        events["hardware"] = {
+        events["sync_device_hardware"] = {
             "motherboard": {
                 "name": "string",
                 "caption": "string",
@@ -130,8 +135,8 @@ class FakeDevice:
                 }
             ],
         }
-        events["shutdown"] = {}
-        events["execute"] = {}
+        events["shutdown_device"] = {}
+        events["execute_on_device"] = {}
         return events[method]
 
     def __str__(self):

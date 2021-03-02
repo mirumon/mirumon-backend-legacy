@@ -3,10 +3,15 @@ from loguru import logger
 from starlette import status, websockets
 
 from mirumon.application.devices.auth_service import DevicesAuthService
-from mirumon.application.devices.events.system_info_synced import DeviceSystemInfoSynced
+from mirumon.application.devices.events.device_software_synced import (
+    DeviceSoftwareSynced,
+)
+from mirumon.application.devices.events.device_system_info_synced import (
+    DeviceSystemInfoSynced,
+)
 from mirumon.application.devices.gateway import DeviceClientsManager
 from mirumon.application.devices.internal_protocol.models import DeviceAgentResponse
-from mirumon.application.repositories import BrokerRepo
+from mirumon.application.repositories import DeviceBrokerRepo
 from mirumon.infra.api.dependencies.devices.connections import (
     get_device_clients_manager,
 )
@@ -22,12 +27,26 @@ def get_token(token: str = Header(..., alias="Authorization")) -> str:
     return token
 
 
+def build_event(device, response):
+    method_to_event_mapper = {
+        "sync_device_system_info": DeviceSystemInfoSynced,
+        "sync_device_hardware": DeviceHardwareSynced,
+        "sync_device_software": DeviceSoftwareSynced,
+    }
+    model = method_to_event_mapper[response.method]
+    return model(
+        sync_id=response.id,
+        device_id=device.id,
+        event_attributes=response.result,
+    )
+
+
 @router.websocket("/devices/service", name="devices:service")
 async def device_ws_endpoint(  # noqa: WPS231
     websocket: websockets.WebSocket,
     token: str = Depends(get_token),
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
-    broker_repo: BrokerRepo = Depends(get_repository(BrokerRepo)),
+    broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
     clients_manager: DeviceClientsManager = Depends(get_device_clients_manager),
 ) -> None:
     try:
@@ -41,18 +60,26 @@ async def device_ws_endpoint(  # noqa: WPS231
     while True:
         try:
             payload = await websocket.receive_text()
+            logger.debug("received response from device:{}\n{}", device.id, payload)
             response = DeviceAgentResponse.parse_raw(payload)
             if response.is_success:
                 logger.debug(
-                    "device:{} send successful response:{}", device.id, response.result
+                    "received successful result from device:{}\n{}",
+                    device.id,
+                    response.result,
                 )
-                event = DeviceSystemInfoSynced(
-                    sync_id=response.id, device_id=device.id, event_attributes=response.result
-                )
-                await broker_repo.publish_event(event)
+                try:
+                    event = build_event(device, response)
+                    await broker_repo.publish_event(event)
+                except KeyError:
+                    logger.error(
+                        "received unknown method:{} from device:{}",
+                        response.method,
+                        device.id,
+                    )
             else:
-                logger.debug(
-                    "device:{} send unsuccessful response:{}", device.id, response.error
+                logger.error(
+                    "received error from device:{}\n{}", device.id, response.error
                 )
         except ValueError as validation_error:
             logger.debug("error {0}", validation_error)

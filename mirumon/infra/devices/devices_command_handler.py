@@ -13,7 +13,7 @@ from mirumon.application.devices.internal_protocol.models import DeviceAgentRequ
 from mirumon.domain.devices.entities import DeviceID
 
 
-class DevicesCommandHandler:
+class DeviceCommandHandler:
     def __init__(self, loop, broker_connection: Connection, connections: Connections):
         self.loop = loop
         self.connection = broker_connection

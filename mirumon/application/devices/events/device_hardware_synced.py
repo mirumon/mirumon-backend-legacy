@@ -1,10 +1,10 @@
+import uuid
 from typing import List, Optional
 
-from mirumon.domain.core.event import DomainEvent, frozen_dataclass
+from pydantic import BaseModel
 
 
-@frozen_dataclass
-class MotherBoardModel:
+class MotherBoardModel(BaseModel):
     name: str
     caption: str
     status: str
@@ -12,8 +12,7 @@ class MotherBoardModel:
     serial_number: str
 
 
-@frozen_dataclass
-class ProcessorModel:
+class ProcessorModel(BaseModel):
     status: str
     name: str
     caption: str
@@ -26,8 +25,7 @@ class ProcessorModel:
     number_of_logical_processors: int
 
 
-@frozen_dataclass
-class VideoControllerModel:
+class VideoControllerModel(BaseModel):
     status: str
     name: str
     caption: str
@@ -37,15 +35,13 @@ class VideoControllerModel:
     current_vertical_resolution: str
 
 
-@frozen_dataclass
-class NetworkAdapterModel:
+class NetworkAdapterModel(BaseModel):
     description: str
     mac_address: str
     ip_addresses: List[str]
 
 
-@frozen_dataclass
-class PhysicalDiskModel:
+class PhysicalDiskModel(BaseModel):
     status: str
     caption: str
     serial_number: Optional[str]
@@ -55,10 +51,16 @@ class PhysicalDiskModel:
     partitions: int
 
 
-@frozen_dataclass
-class DeviceHardware(DomainEvent):
+class DeviceHardware(BaseModel):
     motherboard: MotherBoardModel
     cpu: List[ProcessorModel]
     gpu: List[VideoControllerModel]
     network: List[NetworkAdapterModel]
     disks: List[PhysicalDiskModel]
+
+
+class DeviceHardwareSynced(BaseModel):
+    sync_id: Optional[uuid.UUID] = None
+    device_id: uuid.UUID
+    event_type: str = "device_hardware_synced"
+    event_attributes: DeviceHardware

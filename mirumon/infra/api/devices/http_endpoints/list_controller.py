@@ -1,12 +1,9 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
-from loguru import logger
-from pydantic import ValidationError
 
-from mirumon.application.events.events_service import EventsService
-from mirumon.application.events.models import EventTypes
-from mirumon.infra.api.dependencies.services import get_service
+from mirumon.application.repositories import DeviceBrokerRepo
+from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.infra.api.devices.http_endpoints.models.detail import DeviceDetail
 from mirumon.resources import strings
 
@@ -21,28 +18,26 @@ router = APIRouter()
     response_model=List[DeviceDetail],
 )
 async def devices_list(
-    events_service: EventsService = Depends(get_service(EventsService)),
+    broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> List[DeviceDetail]:
     events = []
     # TODO: new method for broadcast sending; gather tasks
-    for device_id in events_service.gateway.client_ids:
-        event_id = await events_service.send_event_request(
-            event_type=EventTypes.detail, device_id=device_id
-        )
-        try:
-            event_result = await events_service.listen_event(
-                event_id, EventTypes.detail
-            )
-        except RuntimeError:
-            logger.warning(f"timeout on event:{event_id} for device:{device_id}")
-            continue
+    # for device_id in gateway.client_ids:
+    #     command = SyncDeviceSystemInfoCommand(device_id=device_id, sync_id=uuid.uuid4())
+    #     await broker_repo.send_command(command)
 
-        try:
-            events.append(
-                DeviceDetail(id=device_id, online=True, **event_result.dict())
-            )
-        except ValidationError as error:
-            logger.bind(payload=error.errors()).warning(
-                f"validation error on event:{event_id} for device:{device_id}"
-            )
+    # try:
+    #     event = await broker_repo.consume(command.sync_id)
+    # except asyncio.exceptions.TimeoutError:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
+    #     )
+    #     try:
+    #         events.append(
+    #             DeviceDetail(id=device_id, online=True, **event["event_attributes"])
+    #         )
+    #     except ValidationError as error:
+    #         logger.bind(payload=error.errors()).warning(
+    #             f"validation error on event:{event_id} for device:{device_id}"
+    #         )
     return events

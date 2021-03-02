@@ -1,6 +1,6 @@
 from typing import Dict
 
-from mirumon.application.devices.device_repo import DeviceDoesNotExist
+from mirumon.application.devices.devices_repo import DeviceDoesNotExist
 from mirumon.domain.devices.entities import Device, DeviceID
 from mirumon.infra.components.postgres.repo import PostgresRepository
 from mirumon.infra.infra_model import InfraModel

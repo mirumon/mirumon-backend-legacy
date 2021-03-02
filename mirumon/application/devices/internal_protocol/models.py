@@ -20,6 +20,7 @@ class StatusTypes(StrEnum):
 class DeviceAgentResponse(BaseModel):
     id: uuid.UUID
     status: StatusTypes
+    method: str
     result: Optional[dict]
     error: Optional[dict]
 

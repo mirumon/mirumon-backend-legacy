@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
-from loguru import logger
+import uuid
+
+from fastapi import APIRouter, Depends, Response
 from starlette import status
 
-from mirumon.application.events.events_service import EventsService
-from mirumon.application.events.models import EventParams, EventTypes
-from mirumon.domain.devices.entities import DeviceID
-from mirumon.infra.api.dependencies.services import get_service
-from mirumon.infra.api.devices.http_endpoints.models.execute import ExecuteCommandParams
-
-DEVICE_UNAVAILABLE_ERROR = HTTPException(
-    status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="device unavailable"
+from mirumon.application.devices.commands.execute_on_device_command import (
+    ExecuteOnDeviceCommand,
 )
+from mirumon.application.repositories import DeviceBrokerRepo
+from mirumon.domain.devices.entities import DeviceID
+from mirumon.infra.api.dependencies.repositories import get_repository
+from mirumon.infra.api.devices.http_endpoints.models.execute import ExecuteCommandParams
 
 router = APIRouter()
 
@@ -18,27 +17,16 @@ router = APIRouter()
 @router.post(
     path="/devices/{device_id}/execute",
     name="devices:execute",
-    summary="Execute Command on Device",
+    summary="Execute shell command on Device",
     status_code=status.HTTP_202_ACCEPTED,
     response_class=Response,
 )
 async def execute_command_on_device(
     device_id: DeviceID,
     execute_params: ExecuteCommandParams,
-    events_service: EventsService = Depends(get_service(EventsService)),
+    broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> None:
-    params = EventParams(execute_params.dict())
-    try:
-        event_id = await events_service.send_event_request(
-            event_type=EventTypes.execute, device_id=device_id, params=params
-        )
-    except RuntimeError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="device not found"
-        )
-
-    try:
-        await events_service.listen_event(event_id, EventTypes.execute)
-    except RuntimeError:
-        logger.debug(f"listening timeout for event:{event_id}")
-        raise DEVICE_UNAVAILABLE_ERROR
+    command = ExecuteOnDeviceCommand(
+        device_id=device_id, sync_id=uuid.uuid4(), command_attributes=execute_params
+    )
+    await broker_repo.send_command(command)

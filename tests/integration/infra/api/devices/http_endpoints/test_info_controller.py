@@ -195,6 +195,6 @@ async def test_device_unavailable_with_bad_payload(app, client, device_factory):
         start = time.monotonic()
         response = await client.get(url)
         response_time = time.monotonic() - start
-        assert response.status_code == 503
+        assert response.status_code == 504
         assert response.json() == {"detail": "device unavailable"}
         assert response_time <= 5 + 0.5  # default for event repo + offset for test
