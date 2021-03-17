@@ -14,6 +14,6 @@ class DevicesService:
 
     async def register_new_device(self) -> Device:
         device_id = Device.generate_id()
-        device = Device(id=device_id)
+        device = Device(id=device_id, properties={})
         device_db = await self.devices_repo.create(device)
         return Device(**device_db.dict())

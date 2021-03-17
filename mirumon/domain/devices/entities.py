@@ -10,6 +10,7 @@ DeviceID = NewType("DeviceID", uuid.UUID)
 @dataclass
 class Device(Entity):
     id: DeviceID
+    properties: dict[str, dict]
 
     @classmethod
     def generate_id(cls) -> DeviceID:

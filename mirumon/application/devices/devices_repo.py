@@ -12,3 +12,6 @@ class DeviceRepository(Repository):
 
     async def get(self, device_id: DeviceID) -> Device:
         raise NotImplementedError
+
+    async def all(self) -> list[Device]:
+        raise NotImplementedError

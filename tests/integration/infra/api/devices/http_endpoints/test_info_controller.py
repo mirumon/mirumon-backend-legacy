@@ -4,6 +4,8 @@ import uuid
 import pytest
 from fastapi import FastAPI
 
+from mirumon.domain.devices.entities import Device
+
 pytestmark = [pytest.mark.asyncio]
 
 
@@ -153,56 +155,111 @@ async def test_devices_list_without_registered_devices(app, client):
     assert response.json() == []
 
 
-async def test_devices_list_with_two_devices(app, client, device_factory) -> None:
-    async with device_factory() as device:
-        async with device_factory() as device2:
+async def test_devices_list_with_two_devices(
+    app, client, devices_repo, device_factory
+) -> None:
+    device_id = Device.generate_id()
+    device_id2 = Device.generate_id()
+    device_id3 = Device.generate_id()
+    system_info = {
+        "name": "Manjaro-Desktop",
+        "domain": "mirumon.dev",
+        "workgroup": None,
+        "last_user": {
+            "name": "nick",
+            "fullname": "Nick Khitrov",
+            "domain": "mirumon.dev",
+        },
+        "os": [
+            {
+                "name": "Windows 10 Edu",
+                "version": "1.12.12",
+                "os_architecture": "amd64",
+                "serial_number": "AGFNE-34GS-RYHRE",
+                "number_of_users": 4,
+            },
+        ],
+    }
+    properties = {"system_info": system_info}
+    await devices_repo.create(Device(id=device_id, properties=properties))
+    await devices_repo.create(Device(id=device_id2, properties=properties))
+    await devices_repo.create(Device(id=device_id3, properties=properties))
+
+    expected_device_1 = {
+        "id": str(device_id),
+        "online": True,
+        "name": "Manjaro-Desktop",
+        "domain": "mirumon.dev",
+        "workgroup": None,
+        "last_user": {
+            "name": "nick",
+            "fullname": "Nick Khitrov",
+            "domain": "mirumon.dev",
+        },
+        "os": [
+            {
+                "name": "Windows 10 Edu",
+                "version": "1.12.12",
+                "os_architecture": "amd64",
+                "serial_number": "AGFNE-34GS-RYHRE",
+                "number_of_users": 4,
+            },
+        ],
+    }
+    expected_device_2 = {
+        "id": str(device_id2),
+        "online": True,
+        "name": "Manjaro-Desktop",
+        "domain": "mirumon.dev",
+        "workgroup": None,
+        "last_user": {
+            "name": "nick",
+            "fullname": "Nick Khitrov",
+            "domain": "mirumon.dev",
+        },
+        "os": [
+            {
+                "name": "Windows 10 Edu",
+                "version": "1.12.12",
+                "os_architecture": "amd64",
+                "serial_number": "AGFNE-34GS-RYHRE",
+                "number_of_users": 4,
+            },
+        ],
+    }
+    expected_device_3 = {
+        "id": str(device_id3),
+        "online": False,
+        "name": "Manjaro-Desktop",
+        "domain": "mirumon.dev",
+        "workgroup": None,
+        "last_user": {
+            "name": "nick",
+            "fullname": "Nick Khitrov",
+            "domain": "mirumon.dev",
+        },
+        "os": [
+            {
+                "name": "Windows 10 Edu",
+                "version": "1.12.12",
+                "os_architecture": "amd64",
+                "serial_number": "AGFNE-34GS-RYHRE",
+                "number_of_users": 4,
+            },
+        ],
+    }
+
+    async with device_factory(device_id=device_id):
+        async with device_factory(device_id=device_id2):
             url = app.url_path_for("devices:list")
             response = await client.get(url)
+            items = response.json()
+
             assert response.status_code == 200
-            assert response.json() == [
-                {
-                    "id": device.id,
-                    "online": True,
-                    "name": "Manjaro-Desktop",
-                    "domain": "mirumon.dev",
-                    "workgroup": None,
-                    "last_user": {
-                        "name": "nick",
-                        "fullname": "Nick Khitrov",
-                        "domain": "mirumon.dev",
-                    },
-                    "os": [
-                        {
-                            "name": "Windows 10 Edu",
-                            "version": "1.12.12",
-                            "os_architecture": "amd64",
-                            "serial_number": "AGFNE-34GS-RYHRE",
-                            "number_of_users": 4,
-                        },
-                    ],
-                },
-                {
-                    "id": device2.id,
-                    "online": True,
-                    "name": "Manjaro-Desktop",
-                    "domain": "mirumon.dev",
-                    "workgroup": None,
-                    "last_user": {
-                        "name": "nick",
-                        "fullname": "Nick Khitrov",
-                        "domain": "mirumon.dev",
-                    },
-                    "os": [
-                        {
-                            "name": "Windows 10 Edu",
-                            "version": "1.12.12",
-                            "os_architecture": "amd64",
-                            "serial_number": "AGFNE-34GS-RYHRE",
-                            "number_of_users": 4,
-                        },
-                    ],
-                },
-            ]
+            assert len(items) == 3
+            assert expected_device_1 in items
+            assert expected_device_2 in items
+            assert expected_device_3 in items
 
 
 # 4xx and 5xx

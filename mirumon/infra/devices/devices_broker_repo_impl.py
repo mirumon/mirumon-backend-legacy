@@ -40,13 +40,13 @@ class DeviceBrokerRepoImpl(Repository):
         logger.debug("publish event to broker: {}", message)
         await exchange.publish(message, routing_key="devices.events")
 
-    async def consume(self, sync_id):
+    async def consume(self, sync_id, timeout_in_sec: int = 4):
         channel: Channel = await self.connection.channel()
         queue: Queue = await channel.declare_queue("devices_events")
         await queue.bind("devices", routing_key="devices.events")
 
         logger.debug("listen event with sync_id:{0}", sync_id)
-        async with timeout(timeout=4):
+        async with timeout(timeout=timeout_in_sec):
             async with queue.iterator() as queue_iter:
                 async for message in queue_iter:
                     logger.debug("process message: {0}", message)

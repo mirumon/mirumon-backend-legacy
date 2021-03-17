@@ -47,7 +47,7 @@ def _devices_repo_depends(
 def _broker_repo_depends(
     state: State = Depends(get_state),
     settings: AppSettings = Depends(get_app_settings),
-) -> DeviceBrokerRepo:
+) -> DeviceBrokerRepoImpl:
     return DeviceBrokerRepoImpl(
         connection=state.rabbit_conn,
         process_timeout=settings.event_timeout,
