@@ -11,7 +11,8 @@ from mirumon.application.devices.commands.sync_device_software_command import (
     SyncDeviceSoftwareCommand,
 )
 from mirumon.application.repositories import DeviceBrokerRepo
-from mirumon.domain.devices.entities import DeviceID
+from mirumon.domain.devices.entities import Device
+from mirumon.infra.api.dependencies.devices.datastore import get_registered_device
 from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.infra.api.devices.http_endpoints.models.hardware import HardwareModel
 from mirumon.infra.api.devices.http_endpoints.models.software import (
@@ -30,10 +31,10 @@ router = APIRouter()
     response_model=ListInstalledProgram,
 )
 async def get_device_software(
-    device_id: DeviceID,
+    device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> ListInstalledProgram:
-    command = SyncDeviceSoftwareCommand(device_id=device_id, sync_id=uuid.uuid4())
+    command = SyncDeviceSoftwareCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
 
     try:
@@ -55,10 +56,10 @@ async def get_device_software(
     response_model=HardwareModel,
 )
 async def get_device_hardware(
-    device_id: DeviceID,
+    device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> HardwareModel:
-    command = SyncDeviceHardwareCommand(device_id=device_id, sync_id=uuid.uuid4())
+    command = SyncDeviceHardwareCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
     try:
         event = await broker_repo.consume(command.sync_id)

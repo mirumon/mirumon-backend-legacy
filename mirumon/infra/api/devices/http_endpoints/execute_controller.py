@@ -7,7 +7,8 @@ from mirumon.application.devices.commands.execute_on_device_command import (
     ExecuteOnDeviceCommand,
 )
 from mirumon.application.repositories import DeviceBrokerRepo
-from mirumon.domain.devices.entities import DeviceID
+from mirumon.domain.devices.entities import Device
+from mirumon.infra.api.dependencies.devices.datastore import get_registered_device
 from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.infra.api.devices.http_endpoints.models.execute import ExecuteCommandParams
 
@@ -22,11 +23,11 @@ router = APIRouter()
     response_class=Response,
 )
 async def execute_command_on_device(
-    device_id: DeviceID,
     execute_params: ExecuteCommandParams,
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
+    device: Device = Depends(get_registered_device),
 ) -> None:
     command = ExecuteOnDeviceCommand(
-        device_id=device_id, sync_id=uuid.uuid4(), command_attributes=execute_params
+        device_id=device.id, sync_id=uuid.uuid4(), command_attributes=execute_params
     )
     await broker_repo.send_command(command)

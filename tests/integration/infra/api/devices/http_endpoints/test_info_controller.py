@@ -263,9 +263,23 @@ async def test_devices_list_with_two_devices(
 
 
 # 4xx and 5xx
-async def test_device_not_found(app, client):
-    url = app.url_path_for("devices:detail", device_id=str(uuid.uuid4()))
-    response = await client.get(url)
+
+
+@pytest.mark.parametrize(
+    "url_name,method",
+    [
+        ("devices:detail", "get"),
+        ("devices:software", "get"),
+        ("devices:hardware", "get"),
+        ("devices:shutdown", "post"),
+        ("devices:execute", "post"),
+    ],
+)
+async def test_device_not_found(app, client, url_name, method):
+    call = {"get": client.get, "post": client.post}[method]
+
+    url = app.url_path_for(url_name, device_id=str(uuid.uuid4()))
+    response = await call(url)
     assert response.status_code == 404
     assert response.json() == {"detail": "device not found"}
 

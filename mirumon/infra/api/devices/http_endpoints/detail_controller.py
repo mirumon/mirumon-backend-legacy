@@ -8,7 +8,8 @@ from mirumon.application.devices.commands.sync_device_system_info_command import
     SyncDeviceSystemInfoCommand,
 )
 from mirumon.application.repositories import DeviceBrokerRepo
-from mirumon.domain.devices.entities import DeviceID
+from mirumon.domain.devices.entities import Device
+from mirumon.infra.api.dependencies.devices.datastore import get_registered_device
 from mirumon.infra.api.dependencies.repositories import get_repository
 from mirumon.infra.api.devices.http_endpoints.models.detail import DeviceDetail
 from mirumon.resources import strings
@@ -24,10 +25,10 @@ router = APIRouter()
     response_model=DeviceDetail,
 )
 async def get_device_detail(
-    device_id: DeviceID,
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
+    device: Device = Depends(get_registered_device),
 ) -> DeviceDetail:
-    command = SyncDeviceSystemInfoCommand(device_id=device_id, sync_id=uuid.uuid4())
+    command = SyncDeviceSystemInfoCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
 
     try:
@@ -36,4 +37,4 @@ async def get_device_detail(
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
         )
-    return DeviceDetail(id=device_id, online=True, **event["event_attributes"])
+    return DeviceDetail(id=device.id, online=True, **event["event_attributes"])

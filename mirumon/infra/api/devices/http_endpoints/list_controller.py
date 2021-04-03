@@ -55,12 +55,22 @@ async def devices_list(
     device_ids = {d.id for d in devices}
     offline_ids = device_ids.difference(online_ids)
 
-    offline_devices = [
-        DeviceDetail(id=d.id, online=False, **d.properties["system_info"])
-        for d in devices
-        if d.id in offline_ids
-    ]
+    offline_devices = _prepare_offline_devices(devices, offline_ids)
     return online_devices + offline_devices
+
+
+def _prepare_offline_devices(devices, offline_ids):
+    result = []
+    for d in devices:
+        if d.id in offline_ids:
+            try:
+                device = DeviceDetail(
+                    id=d.id, online=False, **d.properties["system_info"]
+                )
+                result.append(device)
+            except KeyError:
+                logger.warning(f"not found system_info property for device:{d.id}")
+    return result
 
 
 async def _sync_online_device(

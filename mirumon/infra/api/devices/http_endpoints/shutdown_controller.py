@@ -7,7 +7,8 @@ from mirumon.application.devices.commands.shutdown_device_command import (
     ShutdownDeviceCommand,
 )
 from mirumon.application.repositories import DeviceBrokerRepo
-from mirumon.domain.devices.entities import DeviceID
+from mirumon.domain.devices.entities import Device
+from mirumon.infra.api.dependencies.devices.datastore import get_registered_device
 from mirumon.infra.api.dependencies.repositories import get_repository
 
 router = APIRouter()
@@ -21,8 +22,8 @@ router = APIRouter()
     response_class=Response,
 )
 async def shutdown_device(
-    device_id: DeviceID,
+    device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> None:
-    command = ShutdownDeviceCommand(device_id=device_id, sync_id=uuid.uuid4())
-    # await broker_repo.send_command(command)
+    command = ShutdownDeviceCommand(device_id=device.id, sync_id=uuid.uuid4())
+    await broker_repo.send_command(command)

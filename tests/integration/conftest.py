@@ -12,10 +12,14 @@ from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from passlib.context import CryptContext
 
+from mirumon.domain.devices.entities import Device
 from mirumon.domain.users.entities import User
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
 from mirumon.infra.api.asgi import create_app
-from mirumon.infra.devices.device_repo_impl import DevicesRepositoryImplementation
+from mirumon.infra.devices.device_repo_impl import (
+    DevicesRepositoryImplementation,
+    _storage,
+)
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.app import AppSettings
@@ -97,13 +101,16 @@ def token(superuser_username: str, secret_key):
 
 
 @pytest.fixture
-def device_factory(app: FastAPI, client, secret_key, event_loop, printer):
+def device_factory(app: FastAPI, client, secret_key, event_loop, devices_repo, printer):
     @asynccontextmanager
     async def create_device(
         *, device_id: Optional[str] = None, response_payload: Optional[dict] = None
     ):
-        url = app.url_path_for("devices:service")
         device_id = device_id or uuid.uuid4()
+        device = Device(id=device_id, properties={})
+        await devices_repo.create(device)
+
+        url = app.url_path_for("devices:service")
         content = {"device": {"id": str(device_id)}}
         token = create_jwt_token(
             jwt_content=content, secret_key=secret_key, expires_delta=timedelta(hours=1)
@@ -125,3 +132,5 @@ async def devices_repo(app: FastAPI, client):
         await transaction.start()
         yield DevicesRepositoryImplementation(connection)
         await transaction.rollback()
+        # todo remove when impl postgres device repo
+        _storage.clear()
