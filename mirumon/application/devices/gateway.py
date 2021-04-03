@@ -4,15 +4,13 @@ from loguru import logger
 from starlette.websockets import WebSocket
 
 from mirumon.domain.devices.entities import DeviceID
-from mirumon.settings.environments.app import AppSettings
 
 Connections = Dict[DeviceID, WebSocket]
 
 
 class DeviceClientsManager:
-    def __init__(self, settings: AppSettings, clients: Connections) -> None:
-        self.settings = settings
-        self.clients = clients
+    def __init__(self, clients: Connections = None) -> None:
+        self.clients = clients or {}
 
     async def connect(self, device_id: DeviceID, websocket: WebSocket) -> None:
         await websocket.accept()
@@ -36,3 +34,9 @@ class DeviceClientsManager:
     @property
     def client_ids(self) -> List[DeviceID]:
         return list(self.clients.keys())
+
+    def __str__(self) -> str:
+        return f"DeviceClientsManager<{self.clients}>"
+
+
+conn_manager = DeviceClientsManager()

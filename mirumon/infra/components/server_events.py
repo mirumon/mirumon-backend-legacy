@@ -5,6 +5,7 @@ import aiojobs
 from aio_pika import connect
 from fastapi import FastAPI
 
+from mirumon.application.devices.gateway import conn_manager
 from mirumon.infra.components.connections import (
     close_devices_connections,
     create_devices_connections,
@@ -34,7 +35,7 @@ def create_startup_events_handler(
         loop = asyncio.get_event_loop()
         dsn = str(settings.rabbit_dsn)
         connection = await connect(dsn)
-        handler = DeviceCommandHandler(loop, connection, app.state.device_connections)
+        handler = DeviceCommandHandler(loop, connection, conn_manager)
         scheduler = await aiojobs.create_scheduler()
         app.state.scheduler = scheduler
         app.state.connection = connection
