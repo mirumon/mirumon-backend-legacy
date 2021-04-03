@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from loguru import logger
 from starlette.websockets import WebSocket
 
 from mirumon.domain.devices.entities import DeviceID
@@ -19,8 +20,11 @@ class DeviceClientsManager:
         self.clients[device_id] = client
 
     async def disconnect(self, device_id: DeviceID) -> None:
-        client = self.clients.pop(device_id)
-        await client.close()
+        try:
+            client = self.clients.pop(device_id)
+            await client.close()
+        except KeyError:
+            logger.warning(f"device:{device_id} already disconnect")
 
     def get_client(self, device_id: DeviceID) -> WebSocket:
         return self.clients[device_id]

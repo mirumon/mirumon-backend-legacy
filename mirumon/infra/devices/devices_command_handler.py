@@ -37,7 +37,12 @@ class DeviceCommandHandler:
         logger.debug("device_id in command {}", device_id)
         logger.debug("devices conns {}", self.connections)
 
-        device_client: Optional[WebSocket] = self.connections.pop(device_id)
+        try:
+            device_client: Optional[WebSocket] = self.connections.pop(device_id)
+        except KeyError:
+            logger.debug(f"can not send event to unconnected device:{device_id}")
+            return
+
         logger.debug("client {}", device_client)
         if device_client:
             payload = json.loads(message.body.decode())
