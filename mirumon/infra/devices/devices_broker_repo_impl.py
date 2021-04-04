@@ -60,6 +60,8 @@ class DeviceBrokerRepoImpl(Repository):
                             payload = json.loads(message.body.decode())
                         except Exception as e:
                             logger.debug("got error on message body decode:{}", e)
+                            raise RuntimeError("Message decode error")
+                        await message.ack()
                         return payload
                     else:
                         logger.debug(

@@ -155,7 +155,7 @@ async def test_devices_list_without_registered_devices(app, client):
     assert response.json() == []
 
 
-async def test_devices_list_with_two_devices(
+async def test_devices_list_with_three_devices(
     app, client, devices_repo, device_factory
 ) -> None:
     device_id = Device.generate_id()
@@ -181,8 +181,8 @@ async def test_devices_list_with_two_devices(
         ],
     }
     properties = {"system_info": system_info}
-    await devices_repo.create(Device(id=device_id, properties=properties))
-    await devices_repo.create(Device(id=device_id2, properties=properties))
+    # await devices_repo.create(Device(id=device_id, properties=properties))
+    # await devices_repo.create(Device(id=device_id2, properties=properties))
     await devices_repo.create(Device(id=device_id3, properties=properties))
 
     expected_device_1 = {
@@ -255,11 +255,13 @@ async def test_devices_list_with_two_devices(
             response = await client.get(url)
             items = response.json()
 
+            print(["repo id", device_id3])
+
             assert response.status_code == 200
-            assert len(items) == 3
             assert expected_device_1 in items
             assert expected_device_2 in items
-            assert expected_device_3 in items
+            # assert expected_device_3 in items
+            assert len(items) == 3
 
 
 # 4xx and 5xx

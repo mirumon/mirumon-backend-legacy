@@ -186,8 +186,13 @@ def get_event_result(method: str):
             }
         ],
     }
-    events["shutdown_device"] = {}
-    events["execute_on_device"] = {}
+    # events["shutdown_device"] = {}
+    # events["execute_on_device"] = {}
+
+    if "shutdown_device":
+        exit(0)
+    elif "execute_on_device":
+        print("called execute_on_device...")
     return events[method]
 
 

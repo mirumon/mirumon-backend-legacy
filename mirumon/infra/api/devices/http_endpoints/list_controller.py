@@ -55,6 +55,9 @@ async def devices_list(
     device_ids = {d.id for d in devices}
     offline_ids = device_ids.difference(online_ids)
 
+    print(devices)
+    print(offline_ids)
+    print(online_devices)
     offline_devices = _prepare_offline_devices(devices, offline_ids)
     return online_devices + offline_devices
 
@@ -64,6 +67,7 @@ def _prepare_offline_devices(devices, offline_ids):
     for d in devices:
         if d.id in offline_ids:
             try:
+                print(d)
                 device = DeviceDetail(
                     id=d.id, online=False, **d.properties["system_info"]
                 )
@@ -81,8 +85,7 @@ async def _sync_online_device(
 
     try:
         event = await broker_repo.consume(command.sync_id)
-        device = DeviceDetail(id=device.id, online=True, **event["event_attributes"])
-        return device
+        return DeviceDetail(id=device.id, online=True, **event["event_attributes"])
     except asyncio.exceptions.TimeoutError:
         raise RuntimeError("Timeout error on fetching device online status")
     except ValidationError as error:
