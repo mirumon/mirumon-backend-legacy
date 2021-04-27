@@ -24,13 +24,14 @@ class DeviceBrokerRepoImpl(Repository):
         body = command.json().encode()
         message = Message(body, headers=headers, correlation_id=command.sync_id)
         logger.debug(f"publish command to broker: {message}")
-        await exchange.publish(message, routing_key="devices.commands")
+        await exchange.publish(message, routing_key=f"devices.commands")
 
     async def publish_event(self, event) -> None:
         channel: Channel = await self.connection.channel()
         exchange = await channel.declare_exchange("devices")
 
         headers = {
+            "correlation_id": str(event.sync_id),
             "device_id": str(event.device_id),
             "event": event.event_type,
             "event_attributes": event.event_attributes_to_dict,
@@ -38,12 +39,12 @@ class DeviceBrokerRepoImpl(Repository):
         body = event.json().encode()
         message = Message(body, headers=headers, correlation_id=event.sync_id)
         logger.debug("publish event to broker: {}", message)
-        await exchange.publish(message, routing_key="devices.events")
+        await exchange.publish(message, routing_key=f"devices.{event.device_id}.events")
 
-    async def consume(self, sync_id, timeout_in_sec: int = 4):
+    async def consume(self, device_id, sync_id, timeout_in_sec: int = 4):
         channel: Channel = await self.connection.channel()
         queue: Queue = await channel.declare_queue("devices_events")
-        await queue.bind("devices", routing_key="devices.events")
+        await queue.bind("devices", routing_key=f"devices.{device_id}.events")
 
         logger.debug("listen event with sync_id:{0}", sync_id)
         async with timeout(timeout=timeout_in_sec):

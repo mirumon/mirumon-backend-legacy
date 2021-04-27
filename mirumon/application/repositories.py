@@ -17,5 +17,5 @@ class DeviceBrokerRepo(Repository):
     async def send_command(self, command):
         raise NotImplementedError
 
-    async def consume(self, sync_id):
+    async def consume(self, device_id, sync_id):
         raise NotImplementedError

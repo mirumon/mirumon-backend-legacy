@@ -6,7 +6,6 @@ from aio_pika import connect
 from fastapi import FastAPI
 
 from mirumon.application.devices.gateway import conn_manager
-
 from mirumon.infra.components.postgres.pool import (
     close_postgres_connection,
     create_postgres_connection,

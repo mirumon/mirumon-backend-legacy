@@ -14,7 +14,9 @@ from mirumon.domain.devices.entities import DeviceID
 
 
 class DeviceCommandHandler:
-    def __init__(self, loop, broker_connection: Connection, conn_manager: DeviceClientsManager):
+    def __init__(
+        self, loop, broker_connection: Connection, conn_manager: DeviceClientsManager
+    ):
         self.loop = loop
         self.connection = broker_connection
         self.conn_manager = conn_manager
@@ -27,7 +29,7 @@ class DeviceCommandHandler:
         # Declare a queue and disable saving messages,
         # since messages have a small life cycle and we can save memory
         queue = await channel.declare_queue("devices_commands", auto_delete=True)
-        await queue.bind(exchange, "devices.commands")
+        await queue.bind(exchange, routing_key="devices.commands")
         self.task = self.loop.create_task(queue.consume(self.handle))
 
     async def handle(self, message: IncomingMessage):

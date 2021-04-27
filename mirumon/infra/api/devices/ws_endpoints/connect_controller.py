@@ -30,20 +30,6 @@ def get_token(token: str = Header(..., alias="Authorization")) -> str:
     return token
 
 
-def build_event(device, response):
-    method_to_event_mapper = {
-        "sync_device_system_info": DeviceSystemInfoSynced,
-        "sync_device_hardware": DeviceHardwareSynced,
-        "sync_device_software": DeviceSoftwareSynced,
-    }
-    model = method_to_event_mapper[response.method]
-    return model(
-        sync_id=response.id,
-        device_id=device.id,
-        event_attributes=response.result,
-    )
-
-
 @router.websocket("/devices/service", name="devices:service")
 async def device_ws_endpoint(  # noqa: WPS231
     websocket: websockets.WebSocket,
@@ -72,7 +58,7 @@ async def device_ws_endpoint(  # noqa: WPS231
                     response.result,
                 )
                 try:
-                    event = build_event(device, response)
+                    event = _build_event(device, response)
                     await broker_repo.publish_event(event)
                 except KeyError:
                     logger.error(
@@ -96,3 +82,17 @@ async def device_ws_endpoint(  # noqa: WPS231
             )
             await clients_manager.disconnect(device.id)
             break
+
+
+def _build_event(device, response):
+    method_to_event_mapper = {
+        "sync_device_system_info": DeviceSystemInfoSynced,
+        "sync_device_hardware": DeviceHardwareSynced,
+        "sync_device_software": DeviceSoftwareSynced,
+    }
+    model = method_to_event_mapper[response.method]
+    return model(
+        sync_id=response.id,
+        device_id=device.id,
+        event_attributes=response.result,
+    )

@@ -32,7 +32,7 @@ async def get_device_detail(
     await broker_repo.send_command(command)
 
     try:
-        event = await broker_repo.consume(command.sync_id)
+        event = await broker_repo.consume(device.id, command.sync_id)
     except asyncio.exceptions.TimeoutError:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
