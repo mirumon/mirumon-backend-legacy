@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Any, Dict
 
-from pydantic import AnyUrl, PostgresDsn, SecretStr
+from pydantic import AnyUrl, PostgresDsn, RedisDsn, SecretStr
 
 from mirumon.settings.environments.base import BaseAppSettings
 
@@ -40,6 +40,7 @@ class AppSettings(BaseAppSettings):
     # Infrastructure settings
     postgres_dsn: PostgresDsn
     rabbit_dsn: AnyUrl
+    redis_dsn: RedisDsn
 
     @property
     def fastapi_kwargs(self) -> Dict[str, Any]:  # type: ignore

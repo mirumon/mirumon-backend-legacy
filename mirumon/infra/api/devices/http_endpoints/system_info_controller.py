@@ -7,7 +7,7 @@ from starlette import status
 from mirumon.application.devices.commands.sync_device_system_info_command import (
     SyncDeviceSystemInfoCommand,
 )
-from mirumon.application.repositories import DeviceBrokerRepo
+from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
 from mirumon.domain.devices.entities import Device
 from mirumon.infra.api.dependencies.devices.datastore import get_registered_device
 from mirumon.infra.api.dependencies.repositories import get_repository

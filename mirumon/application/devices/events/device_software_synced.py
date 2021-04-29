@@ -3,6 +3,8 @@ from typing import List
 
 from pydantic import BaseModel
 
+from mirumon.application.devices.events.device_base_event import DeviceBaseEvent
+
 
 class InstalledProgram(BaseModel):
     name: str
@@ -14,7 +16,7 @@ class InstalledProgramsList(BaseModel):
     installed_programs: List[InstalledProgram]
 
 
-class DeviceSoftwareSynced(BaseModel):
+class DeviceSoftwareSynced(DeviceBaseEvent):
     sync_id: uuid.UUID
     device_id: uuid.UUID
     event_type: str = "device_software_synced"

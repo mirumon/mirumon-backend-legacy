@@ -1,5 +1,5 @@
-from mirumon.application.devices.gateway import DeviceClientsManager, conn_manager
+from mirumon.application.devices.device_socket_manager import DeviceSocketManager, socket_manager
 
 
-def get_device_clients_manager() -> DeviceClientsManager:
-    return conn_manager
+def get_device_clients_manager() -> DeviceSocketManager:
+    return socket_manager

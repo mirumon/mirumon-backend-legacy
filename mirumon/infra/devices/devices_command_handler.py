@@ -8,14 +8,14 @@ from loguru import logger
 from pydantic import parse_obj_as
 from starlette.websockets import WebSocket
 
-from mirumon.application.devices.gateway import DeviceClientsManager
+from mirumon.application.devices.device_socket_manager import DeviceSocketManager
 from mirumon.application.devices.internal_protocol.models import DeviceAgentRequest
 from mirumon.domain.devices.entities import DeviceID
 
 
 class DeviceCommandHandler:
     def __init__(
-        self, loop, broker_connection: Connection, conn_manager: DeviceClientsManager
+        self, loop, broker_connection: Connection, conn_manager: DeviceSocketManager
     ):
         self.loop = loop
         self.connection = broker_connection

@@ -8,35 +8,35 @@ from mirumon.domain.devices.entities import DeviceID
 Connections = Dict[DeviceID, WebSocket]
 
 
-class DeviceClientsManager:
-    def __init__(self, clients: Connections = None) -> None:
-        self.clients = clients or {}
+class DeviceSocketManager:
+    def __init__(self, sockets: Connections = None) -> None:
+        self._sockets = sockets or {}
 
     async def connect(self, device_id: DeviceID, websocket: WebSocket) -> None:
         await websocket.accept()
-        client = websocket
-        self.clients[device_id] = client
+        socket = websocket
+        self._sockets[device_id] = socket
 
     async def disconnect(self, device_id: DeviceID) -> None:
         try:
-            client = self.clients.pop(device_id)
-            await client.close()
+            socket = self._sockets.pop(device_id)
+            await socket.close()
         except KeyError:
             logger.warning(f"device:{device_id} already disconnect")
 
     def get_client(self, device_id: DeviceID) -> WebSocket:
-        return self.clients[device_id]
+        return self._sockets[device_id]
 
     async def close(self) -> None:
-        for client in self.clients.values():
-            await client.close()
+        for socket in self._sockets.values():
+            await socket.close()
 
     @property
     def client_ids(self) -> List[DeviceID]:
-        return list(self.clients.keys())
+        return list(self._sockets.keys())
 
     def __str__(self) -> str:
-        return f"DeviceClientsManager<{self.clients}>"
+        return f"DeviceSocketManager<{self._sockets}>"
 
 
-conn_manager = DeviceClientsManager()
+socket_manager = DeviceSocketManager()

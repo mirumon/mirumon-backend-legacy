@@ -1,8 +1,5 @@
-from typing import Protocol
-
-
-class Repository(Protocol):
-    """Base repository class for typing and DI."""
+from mirumon.application.repo_protocol import Repository
+from mirumon.domain.devices.entities import DeviceID
 
 
 class DeviceBrokerRepo(Repository):
@@ -17,5 +14,5 @@ class DeviceBrokerRepo(Repository):
     async def send_command(self, command):
         raise NotImplementedError
 
-    async def consume(self, device_id, sync_id):
+    async def consume(self, device_id: DeviceID, sync_id):
         raise NotImplementedError

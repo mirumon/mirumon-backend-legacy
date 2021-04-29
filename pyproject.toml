@@ -26,12 +26,13 @@ loguru = "^0.5.3"
 alembic = "^1.3"
 databases = { version = "0.4.0", extras = ["postgresql"] }
 asyncpg = "^0.22.0"
-aio-pika = "^6.6.1"
+aio-pika = "^6.8.0"
 async-timeout = "^3.0.1"
 uvloop = "^0.15.0"
 httptools = "^0.1.1"
 websockets = "^8.1"
 aiojobs = "^0.3.0"
+aioredis = "^1.3.1"
 
 [tool.poetry.dev-dependencies]
 # tasks

@@ -3,6 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from mirumon.application.devices.events.device_base_event import DeviceBaseEvent
+
 
 class MotherBoardModel(BaseModel):
     name: str
@@ -59,7 +61,7 @@ class DeviceHardware(BaseModel):
     disks: List[PhysicalDiskModel]
 
 
-class DeviceHardwareSynced(BaseModel):
+class DeviceHardwareSynced(DeviceBaseEvent):
     sync_id: uuid.UUID
     device_id: uuid.UUID
     event_type: str = "device_hardware_synced"
