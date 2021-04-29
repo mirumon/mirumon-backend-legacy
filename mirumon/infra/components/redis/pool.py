@@ -1,5 +1,4 @@
 import aioredis
-
 from fastapi import FastAPI
 from loguru import logger
 

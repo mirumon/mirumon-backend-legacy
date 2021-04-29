@@ -8,18 +8,18 @@ from loguru import logger
 from pydantic import parse_obj_as
 from starlette.websockets import WebSocket
 
-from mirumon.application.devices.device_socket_manager import DeviceSocketManager
-from mirumon.application.devices.internal_protocol.models import DeviceAgentRequest
+from mirumon.application.devices.device_socket_manager import DevicesSocketManager
+from mirumon.application.devices.internal_api_protocol.models import DeviceAgentRequest
 from mirumon.domain.devices.entities import DeviceID
 
 
 class DeviceCommandHandler:
     def __init__(
-        self, loop, broker_connection: Connection, conn_manager: DeviceSocketManager
+        self, loop, broker_connection: Connection, socket_manager: DevicesSocketManager
     ):
         self.loop = loop
         self.connection = broker_connection
-        self.conn_manager = conn_manager
+        self.socket_manager = socket_manager
 
     async def start(self):
         channel: Channel = await self.connection.channel()
@@ -37,10 +37,12 @@ class DeviceCommandHandler:
         id = message.headers["device_id"]
         device_id = parse_obj_as(DeviceID, id)
         logger.debug("device_id in command {}", device_id)
-        logger.debug("devices conns {}", self.conn_manager)
+        logger.debug("devices conns {}", self.socket_manager)
 
         try:
-            device_client: Optional[WebSocket] = self.conn_manager.get_client(device_id)
+            device_client: Optional[WebSocket] = self.socket_manager.get_client(
+                device_id
+            )
         except KeyError:
             logger.debug(f"can not send event to unconnected device:{device_id}")
             return
@@ -56,4 +58,4 @@ class DeviceCommandHandler:
             logger.debug(f"send request to agent {repr(payload_json)}")
             await device_client.send_text(payload_json)
         else:
-            logger.debug(f"device:{device_id} not found in {self.conn_manager}")
+            logger.debug(f"device:{device_id} not found in {self.socket_manager}")

@@ -9,6 +9,7 @@ from mirumon.infra.api.dependencies.users.permissions import check_user_scopes
 from mirumon.infra.api.devices.http_endpoints.models.auth import (
     DeviceAuthInRequest,
     DeviceAuthInResponse,
+    DeviceCreateRequest,
 )
 from mirumon.resources import strings
 
@@ -25,12 +26,13 @@ router = APIRouter()
     dependencies=[Depends(check_user_scopes([DevicesScopes.write]))],
 )
 async def create_device(
+    device_params: DeviceCreateRequest,
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
     devices_service: DevicesService = Depends(get_service(DevicesService)),
 ) -> DeviceAuthInResponse:
-    device = await devices_service.register_new_device()
+    device = await devices_service.register_new_device(name=device_params.name)
     token = auth_service.create_device_token(device)
-    return DeviceAuthInResponse(token=token)
+    return DeviceAuthInResponse(token=token, name=device.name)
 
 
 @router.post(
@@ -52,6 +54,6 @@ async def create_device_by_shared_key(
             detail=strings.INVALID_SHARED_KEY,
         )
 
-    device = await devices_service.register_new_device()
+    device = await devices_service.register_new_device(name=credentials.name)
     token = auth_service.create_device_token(device)
-    return DeviceAuthInResponse(token=token)
+    return DeviceAuthInResponse(token=token, name=device.name)

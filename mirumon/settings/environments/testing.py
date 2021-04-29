@@ -1,4 +1,4 @@
-from pydantic import AnyUrl, PostgresDsn, SecretStr, RedisDsn
+from pydantic import AnyUrl, PostgresDsn, RedisDsn, SecretStr
 
 from mirumon.settings.environments.app import AppSettings
 
@@ -22,7 +22,7 @@ class TestAppSettings(AppSettings):
     # Infrastructure settings
     postgres_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"  # type: ignore  # noqa: E501
     rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost"  # type: ignore
-    redis_dsn: RedisDsn = "redis://localhost/0"
+    redis_dsn: RedisDsn = "redis://user:redis@localhost/0"
 
     class Config(AppSettings.Config):
         env_file = "test.env"

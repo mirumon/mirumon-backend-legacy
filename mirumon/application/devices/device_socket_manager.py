@@ -7,8 +7,8 @@ from mirumon.domain.devices.entities import DeviceID
 
 Connections = Dict[DeviceID, WebSocket]
 
-
-class DeviceSocketManager:
+# TODO: move to infra or make protocol for device socket
+class DevicesSocketManager:
     def __init__(self, sockets: Connections = None) -> None:
         self._sockets = sockets or {}
 
@@ -39,4 +39,4 @@ class DeviceSocketManager:
         return f"DeviceSocketManager<{self._sockets}>"
 
 
-socket_manager = DeviceSocketManager()
+socket_manager = DevicesSocketManager()

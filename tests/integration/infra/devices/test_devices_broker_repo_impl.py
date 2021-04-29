@@ -4,19 +4,19 @@ import pytest
 from aio_pika import Connection, connect
 
 from mirumon.application.devices.events.device_base_event import DeviceBaseEvent
-from mirumon.infra.devices.devices_broker_repo_impl import DeviceBrokerRepoImpl
+from mirumon.infra.devices.devices_broker_repo_impl import DevicesBrokerRepoImpl
 
 pytestmark = [pytest.mark.asyncio]
 
 
 @pytest.fixture
-async def broker_repo(default_settings) -> DeviceBrokerRepoImpl:
+async def broker_repo(default_settings) -> DevicesBrokerRepoImpl:
     dsn = str(default_settings.rabbit_dsn)
     connection: Connection = await connect(dsn)
-    return DeviceBrokerRepoImpl(connection=connection, process_timeout=2)
+    return DevicesBrokerRepoImpl(connection=connection, process_timeout=2)
 
 
-async def test_broker_repo_consume_published_event(broker_repo: DeviceBrokerRepoImpl):
+async def test_broker_repo_consume_published_event(broker_repo: DevicesBrokerRepoImpl):
     event = DeviceBaseEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
@@ -35,7 +35,9 @@ async def test_broker_repo_consume_published_event(broker_repo: DeviceBrokerRepo
     }
 
 
-async def test_broker_repo_consume_three_published_events(broker_repo: DeviceBrokerRepoImpl):
+async def test_broker_repo_consume_three_published_events(
+    broker_repo: DevicesBrokerRepoImpl,
+):
     event1 = DeviceBaseEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
@@ -82,7 +84,10 @@ async def test_broker_repo_consume_three_published_events(broker_repo: DeviceBro
         "sync_id": str(event3.sync_id),
     }
 
-async def test_broker_repo_consume_published_event_with_given_params_only(broker_repo: DeviceBrokerRepoImpl):
+
+async def test_broker_repo_consume_published_event_with_given_params_only(
+    broker_repo: DevicesBrokerRepoImpl,
+):
     device_id = uuid.uuid4()
     sync_id = uuid.uuid4()
     event = DeviceBaseEvent(
@@ -115,10 +120,12 @@ async def test_broker_repo_consume_published_event_with_given_params_only(broker
 
     await broker_repo.publish_event(event)
 
-    published_event = await broker_repo.consume(event.device_id, event.sync_id, timeout_in_sec=10)
+    published_event = await broker_repo.consume(
+        event.device_id, event.sync_id, timeout_in_sec=10
+    )
     assert published_event == {
         "device_id": str(device_id),
         "event_attributes": {},
         "event_type": "test_consume_with_params_passed",
-        "sync_id": str(sync_id)
+        "sync_id": str(sync_id),
     }

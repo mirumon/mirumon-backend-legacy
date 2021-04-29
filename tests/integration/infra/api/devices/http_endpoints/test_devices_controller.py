@@ -23,20 +23,20 @@ async def test_create_device_without_token(
 async def test_create_device(app: FastAPI, client, secret_key) -> None:
     url = app.url_path_for("devices:create")
 
-    response = await client.post(url)
+    response = await client.post(url, json={"name": "new device"})
     assert response.status_code == 201
 
     token = response.json()["token"]
     content = decode_jwt_token(token, secret_key)
 
     assert DeviceID(content["device"]["id"])
-    assert response.json() == {"token": token}
+    assert response.json() == {"token": token, "name": "new device"}
 
 
 async def test_create_device_by_shared_key(
     app: FastAPI, client, shared_key, secret_key
 ) -> None:
-    payload = {"shared_key": shared_key}
+    payload = {"shared_key": shared_key, "name": "agent 1"}
     url = app.url_path_for("devices:create-by-shared")
 
     response = await client.post(url, json=payload)
@@ -46,13 +46,13 @@ async def test_create_device_by_shared_key(
     content = decode_jwt_token(token, secret_key)
 
     assert DeviceID(content["device"]["id"])
-    assert response.json() == {"token": token}
+    assert response.json() == {"token": token, "name": "agent 1"}
 
 
 async def test_device_registration_with_invalid_shared_key_failed(
     app: FastAPI, client
 ) -> None:
-    payload = {"shared_key": "not-secret"}
+    payload = {"shared_key": "not-secret", "name": "some name"}
     url = app.url_path_for("devices:create-by-shared")
 
     response = await client.post(url, json=payload)

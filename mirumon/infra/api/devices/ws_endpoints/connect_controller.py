@@ -3,6 +3,9 @@ from loguru import logger
 from starlette import status, websockets
 
 from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.device_socket_manager import DevicesSocketManager
+from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
+from mirumon.application.devices.devices_socket_repo import DevicesSocketRepo
 from mirumon.application.devices.events.device_hardware_synced import (
     DeviceHardwareSynced,
 )
@@ -12,9 +15,7 @@ from mirumon.application.devices.events.device_software_synced import (
 from mirumon.application.devices.events.device_system_info_synced import (
     DeviceSystemInfoSynced,
 )
-from mirumon.application.devices.device_socket_manager import DeviceSocketManager
-from mirumon.application.devices.internal_protocol.models import DeviceAgentResponse
-from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
+from mirumon.application.devices.internal_api_protocol.models import DeviceAgentResponse
 from mirumon.infra.api.dependencies.devices.connections import (
     get_device_clients_manager,
 )
@@ -36,7 +37,8 @@ async def device_ws_endpoint(  # noqa: WPS231
     token: str = Depends(get_token),
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
-    clients_manager: DeviceSocketManager = Depends(get_device_clients_manager),
+    clients_manager: DevicesSocketManager = Depends(get_device_clients_manager),
+    socket_repo: DevicesSocketRepo = Depends(get_repository(DevicesSocketRepo)),
 ) -> None:
     try:
         device = await auth_service.get_device_from_token(token)
@@ -45,6 +47,7 @@ async def device_ws_endpoint(  # noqa: WPS231
         raise websockets.WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION)
 
     await clients_manager.connect(device.id, websocket)
+    await socket_repo.set_connected(device.id)
 
     while True:
         try:
@@ -81,6 +84,7 @@ async def device_ws_endpoint(  # noqa: WPS231
                 disconnect_error,
             )
             await clients_manager.disconnect(device.id)
+            await socket_repo.set_disconnected(device.id)
             break
 
 

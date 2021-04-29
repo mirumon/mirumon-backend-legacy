@@ -5,9 +5,6 @@ from mirumon.domain.devices.entities import DeviceID
 class DeviceBrokerRepo(Repository):
     """Base broker repository class for typing and DI."""
 
-    def __init__(self):
-        pass
-
     async def publish_event(self, event):
         raise NotImplementedError
 

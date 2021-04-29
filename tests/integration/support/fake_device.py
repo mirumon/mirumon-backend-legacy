@@ -4,7 +4,7 @@ from typing import Optional
 
 from async_asgi_testclient.websocket import WebSocketSession
 
-from mirumon.application.devices.internal_protocol.models import (
+from mirumon.application.devices.internal_api_protocol.models import (
     DeviceAgentRequest,
     DeviceAgentResponse,
     StatusTypes,

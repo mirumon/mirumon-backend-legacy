@@ -1,4 +1,4 @@
-from aio_pika import Channel, ExchangeType, Queue, connect
+from aio_pika import connect
 from aio_pika.connection import Connection
 from fastapi import FastAPI
 from loguru import logger
@@ -12,21 +12,8 @@ async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
     dsn = str(settings.rabbit_dsn)
     connection: Connection = await connect(dsn)
 
-    channel: Channel = await connection.channel()
-
-    # Configure exchange for pushing events to all consumers (http views)
-    exchange = await channel.declare_exchange("events", ExchangeType.FANOUT)
-
-    # Declare a queue and disable saving messages,
-    # since messages have a small life cycle and we can save memory
-    queue: Queue = await channel.declare_queue(exclusive=True, durable=False)
-    await queue.bind(exchange)
-
     # add to app state to use later
     app.state.rabbit_conn = connection
-    app.state.rabbit_channel = channel
-    app.state.rabbit_queue = queue
-    app.state.rabbit_exchange = exchange
 
     logger.info("Connection established")
 

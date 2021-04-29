@@ -1,4 +1,3 @@
-import time
 import uuid
 
 import pytest
@@ -48,9 +47,6 @@ async def test_should_return_expected_response(response, device_id):
 async def test_device_unavailable_with_bad_payload(app, client, device_factory):
     async with device_factory(response_payload={"bad": "payload"}) as device:
         url = app.url_path_for("devices:detail", device_id=device.id)
-        start = time.monotonic()
         response = await client.get(url)
-        response_time = time.monotonic() - start
         assert response.status_code == 504
         assert response.json() == {"detail": "device unavailable"}
-        assert response_time <= 5 + 0.5  # default for event repo + offset for test

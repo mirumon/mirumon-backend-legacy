@@ -10,7 +10,7 @@ import websockets
 from loguru import logger
 from pydantic import ValidationError
 
-from mirumon.application.devices.internal_protocol.models import (
+from mirumon.application.devices.internal_api_protocol.models import (
     DeviceAgentRequest,
     DeviceAgentResponse,
     StatusTypes,
