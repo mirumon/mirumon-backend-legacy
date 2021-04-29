@@ -59,7 +59,7 @@ def _broker_repo_depends(
 
 def _devices_socket_repo_depends(
     state: State = Depends(get_state),
-) -> DevicesBrokerRepoImpl:
+) -> DevicesSocketRepo:
     return DevicesSocketRepoImpl(state.redis_conn)
 
 

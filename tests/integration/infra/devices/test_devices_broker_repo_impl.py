@@ -3,7 +3,7 @@ import uuid
 import pytest
 from aio_pika import Connection, connect
 
-from mirumon.application.devices.events.device_base_event import DeviceBaseEvent
+from mirumon.application.devices.events.device_event import DeviceEvent
 from mirumon.infra.devices.devices_broker_repo_impl import DevicesBrokerRepoImpl
 
 pytestmark = [pytest.mark.asyncio]
@@ -17,7 +17,7 @@ async def broker_repo(default_settings) -> DevicesBrokerRepoImpl:
 
 
 async def test_broker_repo_consume_published_event(broker_repo: DevicesBrokerRepoImpl):
-    event = DeviceBaseEvent(
+    event = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="test_consume_passed",
@@ -38,19 +38,19 @@ async def test_broker_repo_consume_published_event(broker_repo: DevicesBrokerRep
 async def test_broker_repo_consume_three_published_events(
     broker_repo: DevicesBrokerRepoImpl,
 ):
-    event1 = DeviceBaseEvent(
+    event1 = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event1",
         event_attributes={},
     )
-    event2 = DeviceBaseEvent(
+    event2 = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event2",
         event_attributes={},
     )
-    event3 = DeviceBaseEvent(
+    event3 = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event3",
@@ -90,25 +90,25 @@ async def test_broker_repo_consume_published_event_with_given_params_only(
 ):
     device_id = uuid.uuid4()
     sync_id = uuid.uuid4()
-    event = DeviceBaseEvent(
+    event = DeviceEvent(
         sync_id=sync_id,
         device_id=device_id,
         event_type="test_consume_with_params_passed",
         event_attributes={},
     )
-    skip_event_with_same_device = DeviceBaseEvent(
+    skip_event_with_same_device = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=device_id,
         event_type="skip_consume",
         event_attributes={},
     )
-    skip_event_with_same_sync_id = DeviceBaseEvent(
+    skip_event_with_same_sync_id = DeviceEvent(
         sync_id=sync_id,
         device_id=uuid.uuid4(),
         event_type="skip_consume",
         event_attributes={},
     )
-    skip_event = DeviceBaseEvent(
+    skip_event = DeviceEvent(
         sync_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="skip_consume",

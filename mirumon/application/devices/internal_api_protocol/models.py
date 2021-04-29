@@ -9,7 +9,7 @@ from mirumon.domain.core.enums import StrEnum
 class DeviceAgentRequest(BaseModel):
     id: uuid.UUID = uuid.uuid4()
     method: str
-    params: Optional[dict] = None
+    params: Optional[dict] = None  # type: ignore
 
 
 class StatusTypes(StrEnum):
@@ -21,8 +21,8 @@ class DeviceAgentResponse(BaseModel):
     id: uuid.UUID
     status: StatusTypes
     method: str
-    result: Optional[dict]
-    error: Optional[dict]
+    result: Optional[dict]  # type: ignore
+    error: Optional[dict]  # type: ignore
 
     @property
     def is_success(self) -> bool:
@@ -40,7 +40,7 @@ class DeviceAgentResponse(BaseModel):
         cls,
         value: Any,
         values: dict,  # type: ignore
-    ) -> Optional[dict]:
+    ) -> Optional[dict]:  # type: ignore
         if value is not None and values["result"] is not None:
             raise ValueError("must not provide both result and error")
         if value is None and values.get("result") is None:

@@ -15,7 +15,7 @@ class DeviceInfraModel(InfraModel):
     def from_entity(cls, device: Device) -> "DeviceInfraModel":  # type: ignore
         return cls.parse_obj(device.dict())
 
-    def to_entity(self) -> Device:
+    def to_entity(self) -> Device:  # type: ignore
         return Device(id=self.id, name=self.name, properties=self.properties)
 
 

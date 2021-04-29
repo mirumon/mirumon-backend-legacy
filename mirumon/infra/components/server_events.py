@@ -1,6 +1,7 @@
 import asyncio
 from typing import Callable, Coroutine
 
+import aio_pika
 import aiojobs
 from aio_pika import connect
 from fastapi import FastAPI
@@ -35,7 +36,7 @@ def create_startup_events_handler(
 
         loop = asyncio.get_event_loop()
         dsn = str(settings.rabbit_dsn)
-        connection = await connect(dsn)
+        connection: aio_pika.Connection = await connect(dsn)
         handler = DeviceCommandHandler(loop, connection, socket_manager)
         scheduler = await aiojobs.create_scheduler()
         app.state.scheduler = scheduler

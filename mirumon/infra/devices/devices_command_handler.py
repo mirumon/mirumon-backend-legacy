@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Optional
 
@@ -15,13 +16,16 @@ from mirumon.domain.devices.entities import DeviceID
 
 class DeviceCommandHandler:
     def __init__(
-        self, loop, broker_connection: Connection, socket_manager: DevicesSocketManager
-    ):
+        self,
+        loop: asyncio.AbstractEventLoop,
+        broker_connection: Connection,
+        socket_manager: DevicesSocketManager,
+    ) -> None:
         self.loop = loop
         self.connection = broker_connection
         self.socket_manager = socket_manager
 
-    async def start(self):
+    async def start(self) -> None:
         channel: Channel = await self.connection.channel()
 
         exchange = await channel.declare_exchange("devices", ExchangeType.DIRECT)
@@ -32,7 +36,7 @@ class DeviceCommandHandler:
         await queue.bind(exchange, routing_key="devices.commands")
         self.task = self.loop.create_task(queue.consume(self.handle))
 
-    async def handle(self, message: IncomingMessage):
+    async def handle(self, message: IncomingMessage) -> None:
         logger.debug("handle message:{0}", message)
         id = message.headers["device_id"]
         device_id = parse_obj_as(DeviceID, id)

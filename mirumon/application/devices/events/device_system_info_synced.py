@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from mirumon.application.devices.events.device_base_event import DeviceBaseEvent
+from mirumon.application.devices.events.device_event import DeviceEvent
 
 
 class OperatingSystem(BaseModel):
@@ -28,12 +28,12 @@ class SystemInfo(BaseModel):
     last_user: Optional[DeviceUser] = None
 
 
-class DeviceSystemInfoSynced(DeviceBaseEvent):
+class DeviceSystemInfoSynced(DeviceEvent):
     sync_id: Optional[uuid.UUID] = None
     device_id: uuid.UUID
     event_type: str = "device_system_info_synced"
     event_attributes: SystemInfo
 
     @property
-    def event_attributes_to_dict(self):
+    def event_attributes_to_dict(self) -> dict:  # type: ignore
         return self.event_attributes.dict()

@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from starlette import status, websockets
 
-from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.auth_service import DeviceInToken, DevicesAuthService
 from mirumon.application.devices.device_socket_manager import DevicesSocketManager
 from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
 from mirumon.application.devices.devices_socket_repo import DevicesSocketRepo
+from mirumon.application.devices.events.device_event import DeviceEvent
 from mirumon.application.devices.events.device_hardware_synced import (
     DeviceHardwareSynced,
 )
@@ -88,7 +89,7 @@ async def device_ws_endpoint(  # noqa: WPS231
             break
 
 
-def _build_event(device, response):
+def _build_event(device: DeviceInToken, response: DeviceAgentResponse) -> DeviceEvent:
     method_to_event_mapper = {
         "sync_device_system_info": DeviceSystemInfoSynced,
         "sync_device_hardware": DeviceHardwareSynced,

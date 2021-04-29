@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from loguru import logger
 from starlette.websockets import WebSocket
@@ -9,7 +9,7 @@ Connections = Dict[DeviceID, WebSocket]
 
 # TODO: move to infra or make protocol for device socket
 class DevicesSocketManager:
-    def __init__(self, sockets: Connections = None) -> None:
+    def __init__(self, sockets: Optional[Connections] = None) -> None:
         self._sockets = sockets or {}
 
     async def connect(self, device_id: DeviceID, websocket: WebSocket) -> None:

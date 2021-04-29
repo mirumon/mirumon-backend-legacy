@@ -1,18 +1,22 @@
 import json
+import uuid
 
 from aio_pika import Channel, Connection, ExchangeType, Message, Queue
 from loguru import logger
 
+from mirumon.application.devices.commands.device_command import DeviceCommand
+from mirumon.application.devices.events.device_event import DeviceEvent
 from mirumon.application.repo_protocol import Repository
+from mirumon.domain.devices.entities import DeviceID
 
 
 class DevicesBrokerRepoImpl(Repository):
     def __init__(self, connection: Connection, process_timeout: float) -> None:
         self.connection = connection
         self.process_timeout = process_timeout
-        self.exchange = "mirumon.devices.topic"
+        self.exchange: str = "mirumon.devices.topic"
 
-    async def send_command(self, command) -> None:
+    async def send_command(self, command: DeviceCommand) -> None:
         channel: Channel = await self.connection.channel()
         exchange = await channel.declare_exchange("devices")
 
@@ -26,7 +30,7 @@ class DevicesBrokerRepoImpl(Repository):
         logger.debug(f"publish command to broker: {message}")
         await exchange.publish(message, routing_key=f"devices.commands")
 
-    async def publish_event(self, event) -> None:
+    async def publish_event(self, event: DeviceEvent) -> None:
         channel: Channel = await self.connection.channel()
         exchange = await channel.declare_exchange(
             self.exchange, type=ExchangeType.TOPIC
@@ -42,10 +46,11 @@ class DevicesBrokerRepoImpl(Repository):
         message = Message(body, headers=headers, correlation_id=str(event.sync_id))
         logger.debug("publish event to broker: {}", message)
         key = f"devices.events.{event.event_type}"
-        print(f"publish event key: {key}")
         await exchange.publish(message, routing_key=key)
 
-    async def consume(self, device_id, sync_id, timeout_in_sec: int = 10):
+    async def consume(  # type: ignore
+        self, device_id: DeviceID, sync_id: uuid.UUID, timeout_in_sec: int = 10
+    ) -> dict:  # type: ignore
         channel: Channel = await self.connection.channel()
         queue: Queue = await channel.declare_queue("mirumon.devices.events")
 

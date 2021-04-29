@@ -1,11 +1,10 @@
 import uuid
-from typing import Optional
 
-from pydantic import BaseModel
+from mirumon.application.devices.commands.device_command import DeviceCommand
 
 
-class SyncDeviceSoftwareCommand(BaseModel):
-    sync_id: Optional[uuid.UUID] = None
+class SyncDeviceSoftwareCommand(DeviceCommand):
+    sync_id: uuid.UUID
     device_id: uuid.UUID
     command_type: str = "sync_device_software"
-    command_attributes: dict = {}
+    command_attributes: dict = {}  # type: ignore
