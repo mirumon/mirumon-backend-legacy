@@ -3,6 +3,7 @@
 import asyncio
 import json
 import sys
+import uuid
 from random import randint
 
 import requests
@@ -45,6 +46,7 @@ async def start_connection(server_endpoint: str, token: str) -> None:
 
         try:
             event_payload = get_event_result(request.method)
+            print(f"event payload {event_payload}")
         except KeyError:
             logger.warning(f"event {request.method} is not supported")
             response = DeviceAgentResponse(
@@ -54,6 +56,7 @@ async def start_connection(server_endpoint: str, token: str) -> None:
                 error={"detail": "event not supported"},
             )
         else:
+            print("make response")
             response = DeviceAgentResponse(
                 status=StatusTypes.ok,
                 id=request.id,
@@ -61,7 +64,7 @@ async def start_connection(server_endpoint: str, token: str) -> None:
                 result=event_payload,
             )
 
-        logger.bind(payload=response).debug(f"event response: {response.json()}")
+        logger.debug(f"event response: {response.json()}")
         await websocket.send(response.json())
 
 
@@ -77,6 +80,7 @@ def register_device(server_host: str, username: str, password: str) -> str:
 
     response = requests.post(
         f"{server_host}/devices",
+        json={"name": f"Device {uuid.uuid4()}"},
         headers={"Authorization": f"Bearer {access_token}"},
     )
     logger.info(response.json())
@@ -92,14 +96,15 @@ def run_service() -> None:
     try:
         host = sys.argv[3]
     except IndexError:
-        host = "127.0.0.1:8000"
+        host = "http://127.0.0.1:8000"
 
     device_token = register_device(host, username, password)
     if host.startswith("https://"):
-        _, host = host.split("https://")
-        device_endpoint = f"wss://{host}/devices/service"
+        _, ws_host = host.split("https://")
+        device_endpoint = f"wss://{ws_host}/devices/service"
     else:
-        device_endpoint = f"ws://{host}/devices/service"
+        _, ws_host = host.split("http://")
+        device_endpoint = f"ws://{ws_host}/devices/service"
     try:
         task = connect_to_server(server_endpoint=device_endpoint, token=device_token)
         asyncio.run(task)
@@ -189,10 +194,12 @@ def get_event_result(method: str):
     # events["shutdown_device"] = {}
     # events["execute_on_device"] = {}
 
-    if "shutdown_device":
+    if method == "shutdown_device":
         exit(0)
-    elif "execute_on_device":
+    elif method == "execute_on_device":
         print("called execute_on_device...")
+        return {}
+
     return events[method]
 
 
