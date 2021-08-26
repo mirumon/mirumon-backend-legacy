@@ -27,7 +27,7 @@ services:
     container_name: mirumon-rabbitmq
     image: rabbitmq:3-management-alpine
     volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit:z
     ports:
     - 5672:5672
     - 15672:15672

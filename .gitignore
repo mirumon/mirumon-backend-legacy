@@ -115,3 +115,6 @@ tmp.*
 # Docker containers volumes
 ./postgres/
 ./rabbitmq/
+/postgres/
+/rabbitmq/
+/redis/

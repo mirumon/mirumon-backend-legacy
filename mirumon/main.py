@@ -1,6 +1,6 @@
 import uvicorn
 
-from mirumon.infra.api.asgi import create_app
+from mirumon.api.asgi import create_app
 from mirumon.settings.config import get_app_settings
 
 settings = get_app_settings()

@@ -15,7 +15,7 @@ from passlib.context import CryptContext
 from mirumon.domain.devices.entities import Device
 from mirumon.domain.users.entities import User
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
-from mirumon.infra.api.asgi import create_app
+from mirumon.api.asgi import create_app
 from mirumon.infra.devices.device_repo_impl import DevicesRepoImpl, _storage
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
