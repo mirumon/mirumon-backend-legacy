@@ -16,3 +16,12 @@ class Device(Entity):
     @classmethod
     def generate_id(cls) -> DeviceID:
         return DeviceID(uuid.uuid4())
+
+    def get_hardware(self):
+        return self.properties.get("hardware")
+
+    def get_software(self):
+        return self.properties.get("software")
+
+    def get_system(self):
+        return self.properties.get("system")

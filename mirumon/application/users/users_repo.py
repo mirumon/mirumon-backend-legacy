@@ -6,7 +6,7 @@ class UserDoesNotExist(Exception):
     """Raised when user was not found in infra layer."""
 
 
-class UsersRepository(Repository):
+class UserRepository(Repository):
     async def create(self, user: User) -> User:
         raise NotImplementedError
 

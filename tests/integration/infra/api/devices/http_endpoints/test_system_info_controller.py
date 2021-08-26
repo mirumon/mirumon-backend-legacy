@@ -14,7 +14,7 @@ def device_id():
 @pytest.fixture
 async def response(app: FastAPI, client, device_id, device_factory):
     async with device_factory(device_id=device_id) as device:
-        url = app.url_path_for("devices:detail", device_id=device.id)
+        url = app.url_path_for("devices:get", device_id=device.id)
         response = await client.get(url)
         return response
 
@@ -46,7 +46,7 @@ async def test_should_return_expected_response(response, device_id):
 
 async def test_device_unavailable_with_bad_payload(app, client, device_factory):
     async with device_factory(response_payload={"bad": "payload"}) as device:
-        url = app.url_path_for("devices:detail", device_id=device.id)
+        url = app.url_path_for("devices:get", device_id=device.id)
         response = await client.get(url)
         assert response.status_code == 504
         assert response.json() == {"detail": "device unavailable"}

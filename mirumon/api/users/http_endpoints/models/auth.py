@@ -1,8 +1,8 @@
 from typing import List
 
+from mirumon.api.api_model import APIModel
 from mirumon.domain.users.entities import AccessToken, RawPassword, Username
 from mirumon.domain.users.scopes import Scopes
-from mirumon.api.api_model import APIModel
 
 
 class UserInLoginRequest(APIModel):

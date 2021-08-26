@@ -1,6 +1,6 @@
 from aioredis import Redis
 
-from mirumon.application.devices.devices_socket_repo import DevicesSocketRepo
+from mirumon.application.devices.device_socket_repo import DevicesSocketRepo
 from mirumon.domain.devices.entities import DeviceID
 
 

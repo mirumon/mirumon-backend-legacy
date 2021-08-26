@@ -1,9 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
-from mirumon.application.devices.auth_service import DevicesAuthService
-from mirumon.application.devices.devices_service import DevicesService
-from mirumon.domain.users.scopes import DevicesScopes
 from mirumon.api.dependencies.services import get_service
 from mirumon.api.dependencies.users.permissions import check_user_scopes
 from mirumon.api.devices.http_endpoints.models.auth import (
@@ -11,6 +8,9 @@ from mirumon.api.devices.http_endpoints.models.auth import (
     DeviceAuthInResponse,
     DeviceCreateRequest,
 )
+from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.device_service import DevicesService
+from mirumon.domain.users.scopes import DevicesScopes
 from mirumon.resources import strings
 
 router = APIRouter()

@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends, Header
 from loguru import logger
 from starlette import status, websockets
 
+from mirumon.api.dependencies.devices.connections import get_device_clients_manager
+from mirumon.api.dependencies.repositories import get_repository
+from mirumon.api.dependencies.services import get_service
 from mirumon.application.devices.auth_service import DeviceInToken, DevicesAuthService
+from mirumon.application.devices.device_broker_repo import DeviceBrokerRepo
 from mirumon.application.devices.device_socket_manager import DevicesSocketManager
-from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
-from mirumon.application.devices.devices_socket_repo import DevicesSocketRepo
+from mirumon.application.devices.device_socket_repo import DevicesSocketRepo
 from mirumon.application.devices.events.device_event import DeviceEvent
 from mirumon.application.devices.events.device_hardware_synced import (
     DeviceHardwareSynced,
@@ -17,11 +20,6 @@ from mirumon.application.devices.events.device_system_info_synced import (
     DeviceSystemInfoSynced,
 )
 from mirumon.application.devices.internal_api_protocol.models import DeviceAgentResponse
-from mirumon.api.dependencies.devices.connections import (
-    get_device_clients_manager,
-)
-from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.dependencies.services import get_service
 
 router = APIRouter()
 

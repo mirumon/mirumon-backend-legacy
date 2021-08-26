@@ -5,12 +5,12 @@ from asyncpg import Connection
 from fastapi import Depends
 from starlette.datastructures import State
 
-from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
-from mirumon.application.devices.devices_repo import DeviceRepository
-from mirumon.application.devices.devices_socket_repo import DevicesSocketRepo
-from mirumon.application.repo_protocol import Repository
-from mirumon.application.users.users_repo import UsersRepository
 from mirumon.api.dependencies.state import get_state
+from mirumon.application.devices.device_broker_repo import DeviceBrokerRepo
+from mirumon.application.devices.device_repo import DeviceRepository
+from mirumon.application.devices.device_socket_repo import DevicesSocketRepo
+from mirumon.application.repo_protocol import Repository
+from mirumon.application.users.users_repo import UserRepository
 from mirumon.infra.devices.device_repo_impl import DevicesRepoImpl
 from mirumon.infra.devices.devices_broker_repo_impl import DevicesBrokerRepoImpl
 from mirumon.infra.devices.devices_socket_repo_impl import DevicesSocketRepoImpl
@@ -65,7 +65,7 @@ def _devices_socket_repo_depends(
 
 REPO_TYPES = MappingProxyType(
     {
-        UsersRepository: _users_repo_depends,
+        UserRepository: _users_repo_depends,
         DeviceRepository: _devices_repo_depends,
         DeviceBrokerRepo: _broker_repo_depends,
         DevicesSocketRepo: _devices_socket_repo_depends,

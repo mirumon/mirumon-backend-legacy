@@ -1,4 +1,4 @@
-from mirumon.application.devices.devices_repo import DeviceRepository
+from mirumon.application.devices.device_repo import DeviceRepository
 from mirumon.domain.devices.entities import Device
 from mirumon.settings.environments.app import AppSettings
 

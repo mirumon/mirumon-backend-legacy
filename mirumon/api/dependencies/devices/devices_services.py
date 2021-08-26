@@ -1,9 +1,9 @@
 from fastapi import Depends
 
-from mirumon.application.devices.auth_service import DevicesAuthService
-from mirumon.application.devices.devices_repo import DeviceRepository
-from mirumon.application.devices.devices_service import DevicesService
 from mirumon.api.dependencies.repositories import get_repository
+from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.device_repo import DeviceRepository
+from mirumon.application.devices.device_service import DevicesService
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.app import AppSettings
 

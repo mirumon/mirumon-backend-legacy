@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
-from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.api.dependencies.services import get_service
 from mirumon.api.users.http_endpoints.models.crud import (
     UserInCreateRequest,
     UserInCreateResponse,
 )
+from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.resources import strings
 
 router = APIRouter()

@@ -1,13 +1,13 @@
 from asyncpg import UniqueViolationError
 from loguru import logger
 
-from mirumon.application.users.users_repo import UserDoesNotExist, UsersRepository
+from mirumon.application.users.users_repo import UserDoesNotExist, UserRepository
 from mirumon.domain.users.entities import HashedPassword, User, Username
 from mirumon.domain.users.scopes import Scopes
 
 
-class UsersService:
-    def __init__(self, users_repo: UsersRepository):
+class UserService:
+    def __init__(self, users_repo: UserRepository):
         self.users_repo = users_repo
 
     async def create_new_user(

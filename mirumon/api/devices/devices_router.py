@@ -1,29 +1,24 @@
 from fastapi import APIRouter, Depends
 
-from mirumon.domain.users.scopes import DevicesScopes
 from mirumon.api.dependencies.users.permissions import check_user_scopes
 from mirumon.api.devices.http_endpoints import (
-    devices_controller,
     execute_controller,
     hardware_controller,
-    list_controller,
+    index_controller,
+    registration_controller,
     shutdown_controller,
     software_controller,
 )
-from mirumon.api.devices.http_endpoints import system_info_controller
 from mirumon.api.devices.ws_endpoints import connect_controller
+from mirumon.domain.users.scopes import DevicesScopes
 
 router = APIRouter(tags=["Devices"])
 
-
 # http
-router.include_router(devices_controller.router)
+router.include_router(registration_controller.router)
+
 router.include_router(
-    system_info_controller.router,
-    dependencies=[Depends(check_user_scopes([DevicesScopes.read]))],
-)
-router.include_router(
-    list_controller.router,
+    index_controller.router,
     dependencies=[Depends(check_user_scopes([DevicesScopes.read]))],
 )
 router.include_router(

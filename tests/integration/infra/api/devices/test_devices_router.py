@@ -10,7 +10,7 @@ pytestmark = [pytest.mark.asyncio]
 @pytest.mark.parametrize(
     "url_name,method",
     [
-        ("devices:detail", "get"),
+        ("devices:get", "get"),
         ("devices:software", "get"),
         ("devices:hardware", "get"),
         ("devices:shutdown", "post"),

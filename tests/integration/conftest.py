@@ -12,10 +12,10 @@ from asyncpg.transaction import Transaction
 from fastapi import FastAPI
 from passlib.context import CryptContext
 
+from mirumon.api.asgi import create_app
 from mirumon.domain.devices.entities import Device
 from mirumon.domain.users.entities import User
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
-from mirumon.api.asgi import create_app
 from mirumon.infra.devices.device_repo_impl import DevicesRepoImpl, _storage
 from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings

@@ -20,7 +20,7 @@ services:
     container_name: mirumon-postgres
     image: postgres:11.5-alpine
     volumes:
-      - ./postgres/data:/var/lib/postgresql/data/
+      - ./postgres/data:/var/lib/postgresql/data/:z
     ports:
       - "5432:5432"
   rabbitmq:

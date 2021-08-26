@@ -8,11 +8,11 @@ from fastapi.security import (
 )
 from starlette import status
 
+from mirumon.api.dependencies.services import get_service
+from mirumon.api.users.http_endpoints.models.auth import UserInLoginRequest
 from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.domain.users.entities import AccessToken, RawPassword, User, Username
 from mirumon.domain.users.scopes import DevicesScopes, UsersScopes
-from mirumon.api.dependencies.services import get_service
-from mirumon.api.users.http_endpoints.models.auth import UserInLoginRequest
 from mirumon.resources import strings
 
 oauth2_schema = OAuth2PasswordBearer(

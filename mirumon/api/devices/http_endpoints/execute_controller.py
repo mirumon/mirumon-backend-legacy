@@ -3,14 +3,14 @@ import uuid
 from fastapi import APIRouter, Depends, Response
 from starlette import status
 
-from mirumon.application.devices.commands.execute_on_device_command import (
-    ExecuteOnDeviceCommand,
-)
-from mirumon.application.devices.devices_broker_repo import DeviceBrokerRepo
-from mirumon.domain.devices.entities import Device
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
 from mirumon.api.devices.http_endpoints.models.execute import ExecuteCommandParams
+from mirumon.application.devices.commands.execute_on_device_command import (
+    ExecuteOnDeviceCommand,
+)
+from mirumon.application.devices.device_broker_repo import DeviceBrokerRepo
+from mirumon.domain.devices.entities import Device
 
 router = APIRouter()
 

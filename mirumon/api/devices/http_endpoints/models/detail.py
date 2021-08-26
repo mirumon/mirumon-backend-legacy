@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from mirumon.domain.devices.entities import DeviceID
 from mirumon.api.api_model import APIModel
+from mirumon.domain.devices.entities import DeviceID
 
 
 class OperatingSystem(APIModel):

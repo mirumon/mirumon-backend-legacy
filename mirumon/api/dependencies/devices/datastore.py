@@ -1,11 +1,8 @@
 from fastapi import Depends, HTTPException
 
-from mirumon.application.devices.devices_repo import (
-    DeviceDoesNotExist,
-    DeviceRepository,
-)
-from mirumon.domain.devices.entities import Device, DeviceID
 from mirumon.api.dependencies.repositories import get_repository
+from mirumon.application.devices.device_repo import DeviceDoesNotExist, DeviceRepository
+from mirumon.domain.devices.entities import Device, DeviceID
 
 
 async def get_registered_device(

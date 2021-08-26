@@ -1,14 +1,14 @@
 from types import MappingProxyType
 from typing import Callable, Type, Union
 
-from mirumon.application.devices.auth_service import DevicesAuthService
-from mirumon.application.devices.devices_service import DevicesService
-from mirumon.application.users.auth_service import AuthUsersService
 from mirumon.api.dependencies.devices.devices_services import (
     get_devices_auth_service,
     get_devices_service,
 )
 from mirumon.api.dependencies.users.users_services import get_auth_users_service
+from mirumon.application.devices.auth_service import DevicesAuthService
+from mirumon.application.devices.device_service import DevicesService
+from mirumon.application.users.auth_service import AuthUsersService
 
 ServiceTypes = Type[Union[AuthUsersService, DevicesService, DevicesAuthService]]
 
