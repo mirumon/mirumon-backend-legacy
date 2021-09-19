@@ -18,7 +18,7 @@ class DeviceUser(APIModel):
     domain: str
 
 
-class DeviceDetail(APIModel):
+class GetDeviceResponse(APIModel):
     id: DeviceID
     online: bool
     name: str

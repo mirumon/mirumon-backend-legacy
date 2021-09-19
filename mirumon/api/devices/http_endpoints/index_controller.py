@@ -1,15 +1,16 @@
 import asyncio
 import uuid
-from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.detail import DeviceDetail
-from mirumon.api.devices.http_endpoints.models.device_in_list_response import (
-    DeviceInListResponse,
+from mirumon.api.devices.http_endpoints.models.get_device_response import (
+    GetDeviceResponse,
+)
+from mirumon.api.devices.http_endpoints.models.list_devices_response import (
+    ListDevicesResponse,
 )
 from mirumon.application.devices.commands.sync_device_system_info_command import (
     SyncDeviceSystemInfoCommand,
@@ -28,21 +29,21 @@ router = APIRouter()
     name="devices:list",
     summary="List Devices",
     description=strings.DEVICES_LIST_DESCRIPTION,
-    response_model=List[DeviceInListResponse],
+    response_model=ListDevicesResponse,
 )
 async def list_devices(
     devices_repo: DeviceRepository = Depends(get_repository(DeviceRepository)),
     socket_repo: DevicesSocketRepo = Depends(get_repository(DevicesSocketRepo)),
-) -> List[DeviceInListResponse]:
+) -> ListDevicesResponse:
     devices = await devices_repo.all()
 
     results = []
     for device in devices:
         is_online = await socket_repo.is_connected(device.id)
-        result = DeviceInListResponse(id=device.id, name=device.name, online=is_online)
+        result = dict(id=device.id, name=device.name, online=is_online)
         results.append(result)
 
-    return results
+    return ListDevicesResponse.parse_obj(results)
 
 
 @router.get(
@@ -50,18 +51,18 @@ async def list_devices(
     name="devices:get",
     summary="Get Device",
     description=strings.DEVICES_DETAIL_DESCRIPTION,
-    response_model=DeviceDetail,
+    response_model=GetDeviceResponse,
 )
 async def get_device(
     device: Device = Depends(get_registered_device),
     socket_repo: DevicesSocketRepo = Depends(get_repository(DevicesSocketRepo)),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
-) -> DeviceDetail:
+) -> GetDeviceResponse:
     system = device.get_system()
     is_online = await socket_repo.is_connected(device.id)
 
     if system:
-        return DeviceDetail(id=device.id, online=is_online)
+        return GetDeviceResponse(id=device.id, online=is_online)
 
     command = SyncDeviceSystemInfoCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
@@ -72,4 +73,4 @@ async def get_device(
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
         )
-    return DeviceDetail(id=device.id, online=True, **event["event_attributes"])
+    return GetDeviceResponse(id=device.id, online=True, **event["event_attributes"])

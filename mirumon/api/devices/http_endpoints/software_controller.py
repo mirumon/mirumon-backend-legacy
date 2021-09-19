@@ -6,7 +6,9 @@ from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.software import ListInstalledProgram
+from mirumon.api.devices.http_endpoints.models.get_list_device_software_response import (
+    GetListDeviceSoftware,
+)
 from mirumon.application.devices.commands.sync_device_software_command import (
     SyncDeviceSoftwareCommand,
 )
@@ -22,23 +24,23 @@ router = APIRouter()
     name="devices:software",
     summary="Get Device Software",
     description=strings.DEVICES_SOFTWARE_DESCRIPTION,
-    response_model=ListInstalledProgram,
+    response_model=GetListDeviceSoftware,
 )
 async def get_device_software(
     device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
-) -> ListInstalledProgram:
+) -> GetListDeviceSoftware:
     software = device.get_software()
 
     if software:
-        return ListInstalledProgram.parse_obj(software)
+        return GetListDeviceSoftware.parse_obj(software)
 
     command = SyncDeviceSoftwareCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
 
     try:
         event = await broker_repo.consume(device.id, command.sync_id)
-        return ListInstalledProgram(
+        return GetListDeviceSoftware(
             __root__=event["event_attributes"]["installed_programs"]
         )
     except asyncio.exceptions.TimeoutError:

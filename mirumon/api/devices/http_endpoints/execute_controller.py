@@ -5,7 +5,9 @@ from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.execute import ExecuteCommandParams
+from mirumon.api.devices.http_endpoints.models.execute_shell_on_device_request import (
+    ExecuteShellOnDeviceRequest,
+)
 from mirumon.application.devices.commands.execute_on_device_command import (
     ExecuteOnDeviceCommand,
 )
@@ -23,7 +25,7 @@ router = APIRouter()
     response_class=Response,
 )
 async def execute_command_on_device(
-    execute_params: ExecuteCommandParams,
+    execute_params: ExecuteShellOnDeviceRequest,
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
     device: Device = Depends(get_registered_device),
 ) -> None:

@@ -6,7 +6,9 @@ from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.hardware import HardwareModel
+from mirumon.api.devices.http_endpoints.models.get_devices_hardware_response import (
+    GetDeviceHardwareResponse,
+)
 from mirumon.application.devices.commands.sync_device_hardware_command import (
     SyncDeviceHardwareCommand,
 )
@@ -22,16 +24,16 @@ router = APIRouter()
     name="devices:hardware",
     summary="Get Device Hardware",
     description=strings.DEVICES_HARDWARE_DESCRIPTION,
-    response_model=HardwareModel,
+    response_model=GetDeviceHardwareResponse,
 )
 async def get_device_hardware(
     device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
-) -> HardwareModel:
+) -> GetDeviceHardwareResponse:
     hardware = device.get_hardware()
 
     if hardware:
-        return HardwareModel.parse_obj(hardware)
+        return GetDeviceHardwareResponse.parse_obj(hardware)
 
     command = SyncDeviceHardwareCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
@@ -41,4 +43,4 @@ async def get_device_hardware(
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
         )
-    return HardwareModel(**event["event_attributes"])
+    return GetDeviceHardwareResponse(**event["event_attributes"])

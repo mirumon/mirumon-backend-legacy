@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import Optional
 
 from mirumon.api.api_model import APIModel
 
 
-class MotherBoardModel(APIModel):
+class MotherBoard(APIModel):
     name: str
     caption: str
     status: str
@@ -11,7 +11,7 @@ class MotherBoardModel(APIModel):
     serial_number: str
 
 
-class ProcessorModel(APIModel):
+class Processor(APIModel):
     status: str
     name: str
     caption: str
@@ -24,7 +24,7 @@ class ProcessorModel(APIModel):
     number_of_logical_processors: int
 
 
-class VideoControllerModel(APIModel):
+class VideoController(APIModel):
     status: str
     name: str
     caption: str
@@ -34,13 +34,13 @@ class VideoControllerModel(APIModel):
     current_vertical_resolution: str
 
 
-class NetworkAdapterModel(APIModel):
+class NetworkAdapter(APIModel):
     description: str
     mac_address: str
-    ip_addresses: List[str]
+    ip_addresses: list[str]
 
 
-class PhysicalDiskModel(APIModel):
+class PhysicalDisk(APIModel):
     status: str
     caption: str
     serial_number: Optional[str]
@@ -50,9 +50,9 @@ class PhysicalDiskModel(APIModel):
     partitions: int
 
 
-class HardwareModel(APIModel):
-    motherboard: MotherBoardModel
-    cpu: List[ProcessorModel]
-    gpu: List[VideoControllerModel]
-    network: List[NetworkAdapterModel]
-    disks: List[PhysicalDiskModel]
+class GetDeviceHardwareResponse(APIModel):
+    motherboard: MotherBoard
+    cpu: list[Processor]
+    gpu: list[VideoController]
+    network: list[NetworkAdapter]
+    disks: list[PhysicalDisk]
