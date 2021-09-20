@@ -112,10 +112,8 @@ python_files = [
 # https://docs.pytest.org/en/2.8.7/usage.html#modifying-python-traceback-printing
 addopts = [
     "--failed-first",
-    "--strict"
 ]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
-filterwarnings = ["error", "ignore::DeprecationWarning", "ignore::cryptography.utils.CryptographyDeprecationWarning"]
 # Pytest plugins:
 env = [
     # Set application runtime environment for testing

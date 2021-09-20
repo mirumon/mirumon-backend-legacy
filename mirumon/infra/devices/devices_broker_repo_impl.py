@@ -20,6 +20,7 @@ class DevicesBrokerRepoImpl(Repository):
         channel: Channel = await self.connection.channel()
         exchange = await channel.declare_exchange("devices")
 
+        # TODO: move command_attributes to body and build keys by device_id
         headers = {
             "device_id": str(command.device_id),
             "command": command.command_type,
@@ -43,7 +44,7 @@ class DevicesBrokerRepoImpl(Repository):
             "event": event.event_type,
             "event_attributes": event.event_attributes_to_dict,
         }
-        # todo: move attrs to body
+        # TODO: move event_attributes to body and build keys by device_id
         body = event.json().encode()
         message = Message(body, headers=headers, correlation_id=str(event.sync_id))
         logger.debug(f"publish message to broker: {message}")
