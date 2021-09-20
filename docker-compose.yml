@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres
+      POSTGRES_DSN: postgresql://postgres:postgres@postgres:5432/postgres
       RABBIT_DSN: amqp://rabbitmq:rabbitmq@rabbitmq
     depends_on:
       - postgres

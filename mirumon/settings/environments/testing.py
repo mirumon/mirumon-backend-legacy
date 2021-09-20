@@ -20,7 +20,7 @@ class TestAppSettings(AppSettings):
     shared_key: SecretStr = SecretStr("test-shared-key")
 
     # Infrastructure settings
-    postgres_dsn: PostgresDsn = "postgres://postgres:postgres@localhost/postgres"  # type: ignore  # noqa: E501
+    postgres_dsn: PostgresDsn = "postgresql://postgres:postgres@localhost/postgres"  # type: ignore  # noqa: E501
     rabbit_dsn: AnyUrl = "amqp://rabbitmq:rabbitmq@localhost"  # type: ignore
     redis_dsn: RedisDsn = "redis://user:redis@localhost/0"  # type: ignore
 

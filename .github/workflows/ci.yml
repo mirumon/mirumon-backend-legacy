@@ -56,7 +56,7 @@ jobs:
           poetry install
       - name: Run tests with pytest
         env:
-          POSTGRES_DSN: postgres://postgres:postgres@localhost/postgres
+          POSTGRES_DSN: postgresql://postgres:postgres@localhost/postgres
           RABBIT_DSN: amqp://rabbitmq:rabbitmq@localhost
         run: poetry run nox -s test
       - name: Upload coverage to Codecov

@@ -50,7 +50,7 @@ def run() -> None:
     try:
         postgres_dsn = sys.argv[4]
     except IndexError:
-        postgres_dsn = "postgres://postgres:postgres@localhost:5432/postgres"
+        postgres_dsn = "postgresql://postgres:postgres@localhost:5432/postgres"
     try:
         task = create_superuser(postgres_dsn, username, password)
         asyncio.run(task)
