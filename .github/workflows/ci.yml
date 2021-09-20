@@ -36,7 +36,11 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       rabbitmq:
         image: rabbitmq:3-management-alpine
         env:
@@ -44,6 +48,15 @@ jobs:
           RABBITMQ_DEFAULT_PASS: rabbitmq
         ports:
           - 5672:5672
+      redis:
+        image: redis:5.0-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.9

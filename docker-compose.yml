@@ -37,6 +37,5 @@ services:
   redis:
     container_name: mirumon-redis
     image: redis:5.0-alpine
-    command: redis-server --requirepass redis
     ports:
       - "6379:6379"
