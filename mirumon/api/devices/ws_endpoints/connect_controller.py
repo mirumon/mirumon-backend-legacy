@@ -22,16 +22,16 @@ from mirumon.application.devices.internal_api_protocol.models import DeviceAgent
 router = APIRouter()
 
 
-def get_token(token: str = Header(..., alias="Authorization")) -> str:
+def get_bearer_token(token: str = Header(..., alias="Authorization")) -> str:
     if token.startswith("Bearer "):
         return token.split(" ", 1)[1]
     return token
 
 
-@router.websocket("/devices/service", name="devices:service")
+@router.websocket("/devices/connect/ws", name="devices:connect")
 async def device_ws_endpoint(  # noqa: WPS231
     websocket: websockets.WebSocket,
-    token: str = Depends(get_token),
+    token: str = Depends(get_bearer_token),
     auth_service: DevicesAuthService = Depends(get_service(DevicesAuthService)),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
     clients_manager: DevicesSocketManager = Depends(get_device_clients_manager),
@@ -47,42 +47,42 @@ async def device_ws_endpoint(  # noqa: WPS231
     await socket_repo.set_connected(device.id)
 
     while True:
-        try:
+        try:  # noqa: WPS229
             payload = await websocket.receive_text()
-            logger.debug("received response from device:{}\n{}", device.id, payload)
+            logger.debug(f"received response from device:{device.id}\n{payload}")
             response = DeviceAgentResponse.parse_raw(payload)
-            if response.is_success:
-                logger.debug(
-                    "received successful result from device:{}\n{}",
-                    device.id,
-                    response.result,
-                )
-                try:
-                    event = _build_event(device, response)
-                    await broker_repo.publish_event(event)
-                except KeyError:
-                    logger.error(
-                        "received unknown method:{} from device:{}",
-                        response.method,
-                        device.id,
-                    )
-                except Exception as e:
-                    logger.exception("got error {}", e)
-            else:
-                logger.error(
-                    "received error from device:{}\n{}", device.id, response.error
-                )
         except ValueError as validation_error:
-            logger.debug("error {0}", validation_error)
+            logger.error(f"ws payload validation error {validation_error}")
         except websockets.WebSocketDisconnect as disconnect_error:
-            logger.info(
-                "device:{0} disconnected, reason {1}",
-                device.id,
-                disconnect_error,
-            )
+            logger.info(f"device:{device.id} disconnected, reason {disconnect_error}")
             await clients_manager.disconnect(device.id)
             await socket_repo.set_disconnected(device.id)
             break
+        else:
+            if response.is_success:
+                await _publish_event(broker_repo, device, response)
+            else:
+                logger.error(
+                    f"received error from device:{device.id}\n{response.error}"
+                )
+
+
+async def _publish_event(
+    broker_repo: DeviceBrokerRepo, device: DeviceInToken, response: DeviceAgentResponse
+) -> None:
+    logger.debug(
+        f"received successful result from device:{device.id}\n{response.result}",
+    )
+    try:
+        event = _build_event(device, response)
+    except KeyError:
+        logger.error(
+            f"received unknown method:{response.method} from device:{device.id}"
+        )
+    except Exception as unhandled_error:
+        logger.exception(f"got error {unhandled_error}")
+    else:
+        await broker_repo.publish_event(event)
 
 
 def _build_event(device: DeviceInToken, response: DeviceAgentResponse) -> DeviceEvent:

@@ -6,7 +6,7 @@ from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.get_list_device_software_response import (
+from mirumon.api.devices.http_endpoints.models.get_list_device_software_response import (  # noqa: E501
     GetListDeviceSoftware,
 )
 from mirumon.application.devices.commands.sync_device_software_command import (
@@ -40,10 +40,11 @@ async def get_device_software(
 
     try:
         event = await broker_repo.consume(device.id, command.sync_id)
-        return GetListDeviceSoftware(
-            __root__=event["event_attributes"]["installed_programs"]
-        )
     except asyncio.exceptions.TimeoutError:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
+        )
+    else:
+        return GetListDeviceSoftware(
+            __root__=event["event_attributes"]["installed_programs"]
         )

@@ -4,14 +4,14 @@ from typing import Optional
 
 from aio_pika import Channel, Connection, ExchangeType, IncomingMessage
 from loguru import logger
-
-# https://github.com/STUDITEMPS/aio-restrabbit/blob/master/aiorestrabbit/client.py
 from pydantic import parse_obj_as
 from starlette.websockets import WebSocket
 
 from mirumon.application.devices.device_socket_manager import DevicesSocketManager
 from mirumon.application.devices.internal_api_protocol.models import DeviceAgentRequest
 from mirumon.domain.devices.entities import DeviceID
+
+# Example https://github.com/STUDITEMPS/aio-restrabbit/blob/master/aiorestrabbit/client.py  # noqa: E501
 
 
 class DeviceCommandHandler:
@@ -37,11 +37,11 @@ class DeviceCommandHandler:
         self.task = self.loop.create_task(queue.consume(self.handle))
 
     async def handle(self, message: IncomingMessage) -> None:
-        logger.debug("handle message:{0}", message)
+        logger.debug(f"handle message:{message}")
         id = message.headers["device_id"]
         device_id = parse_obj_as(DeviceID, id)
-        logger.debug("device_id in command {}", device_id)
-        logger.debug("devices conns {}", self.socket_manager)
+        logger.debug(f"device_id in command {device_id}")
+        logger.debug(f"devices conns {self.socket_manager}")
 
         try:
             device_client: Optional[WebSocket] = self.socket_manager.get_client(
@@ -51,7 +51,7 @@ class DeviceCommandHandler:
             logger.debug(f"can not send event to unconnected device:{device_id}")
             return
 
-        logger.debug("client {}", device_client)
+        logger.debug(f"device client {device_client}")
         if device_client:
             payload = json.loads(message.body.decode())
             method = payload["command_type"]
@@ -59,7 +59,7 @@ class DeviceCommandHandler:
             payload_json = DeviceAgentRequest(
                 id=message.correlation_id, method=method, params=params
             ).json()
-            logger.debug(f"send request to agent {repr(payload_json)}")
+            logger.debug(f"send request to agent {repr(payload_json)}")  # noqa: WPS237
             await device_client.send_text(payload_json)
         else:
             logger.debug(f"device:{device_id} not found in {self.socket_manager}")

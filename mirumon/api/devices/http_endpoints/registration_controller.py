@@ -3,10 +3,10 @@ from starlette import status
 
 from mirumon.api.dependencies.services import get_service
 from mirumon.api.dependencies.users.permissions import check_user_scopes
-from mirumon.api.devices.http_endpoints.models.create_device_by_shared_key_request import (
+from mirumon.api.devices.http_endpoints.models.create_device_by_shared_key_request import (  # noqa: E501
     CreateDeviceBySharedKeyRequest,
 )
-from mirumon.api.devices.http_endpoints.models.create_device_by_shared_key_response import (
+from mirumon.api.devices.http_endpoints.models.create_device_by_shared_key_response import (  # noqa: E501
     CreateDeviceBySharedKeyResponse,
 )
 from mirumon.api.devices.http_endpoints.models.create_device_request import (

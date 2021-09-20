@@ -3,7 +3,6 @@ from typing import Callable, Coroutine
 
 import aio_pika
 import aiojobs
-from aio_pika import connect
 from fastapi import FastAPI
 
 from mirumon.application.devices.device_socket_manager import socket_manager
@@ -36,7 +35,7 @@ def create_startup_events_handler(
 
         loop = asyncio.get_event_loop()
         dsn = str(settings.rabbit_dsn)
-        connection: aio_pika.Connection = await connect(dsn)
+        connection: aio_pika.Connection = await aio_pika.connect(dsn)
         handler = DeviceCommandHandler(loop, connection, socket_manager)
         scheduler = await aiojobs.create_scheduler()
         app.state.scheduler = scheduler

@@ -8,6 +8,8 @@ from mirumon.domain.devices.entities import DeviceID
 Connections = Dict[DeviceID, WebSocket]
 
 # TODO: move to infra or make protocol for device socket
+
+
 class DevicesSocketManager:
     def __init__(self, sockets: Optional[Connections] = None) -> None:
         self._sockets = sockets or {}
@@ -20,9 +22,10 @@ class DevicesSocketManager:
     async def disconnect(self, device_id: DeviceID) -> None:
         try:
             socket = self._sockets.pop(device_id)
-            await socket.close()
         except KeyError:
             logger.warning(f"device:{device_id} already disconnect")
+        else:
+            await socket.close()
 
     def get_client(self, device_id: DeviceID) -> WebSocket:
         return self._sockets[device_id]

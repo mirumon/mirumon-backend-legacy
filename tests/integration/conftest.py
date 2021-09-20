@@ -111,7 +111,7 @@ def device_factory(app: FastAPI, client, secret_key, event_loop, devices_repo, p
         device = Device(id=device_id, name=name, properties={})
         await devices_repo.create(device)
 
-        url = app.url_path_for("devices:service")
+        url = app.url_path_for("devices:connect")
         content = {"device": {"id": str(device_id)}}
         token = create_jwt_token(
             jwt_content=content, secret_key=secret_key, expires_delta=timedelta(hours=1)

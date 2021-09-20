@@ -46,7 +46,7 @@ class DevicesBrokerRepoImpl(Repository):
         # todo: move attrs to body
         body = event.json().encode()
         message = Message(body, headers=headers, correlation_id=str(event.sync_id))
-        logger.debug("publish event to broker: {}", message)
+        logger.debug(f"publish message to broker: {message}")
         key = f"devices.events.{event.event_type}"
         await exchange.publish(message, routing_key=key)
 
@@ -56,33 +56,35 @@ class DevicesBrokerRepoImpl(Repository):
         channel: Channel = await self.connection.channel()
         queue: Queue = await channel.declare_queue("mirumon.devices.events")
 
-        key = f"devices.events.*"
+        key = "devices.events.*"
 
         await queue.bind(self.exchange, routing_key=key)
 
-        logger.debug("listen event with sync_id:{0}", sync_id)
+        logger.debug(f"listen event with sync_id:{sync_id}")
         async with queue.iterator(timeout=timeout_in_sec) as queue_iter:
             async for message in queue_iter:
-                logger.critical(
-                    f"message: corr_id: {message.correlation_id}, device_id: {message.headers.get('device_id')}"
-                )
-                if str(message.correlation_id) != str(sync_id):
-                    logger.debug(
-                        f"correlation_id {message.correlation_id} != {sync_id}"
-                    )
-                    continue
-                if str(message.headers.get("device_id")) != str(device_id):
-                    logger.debug(
-                        f"device_id {message.headers.get('device_id')} != {device_id}"
-                    )
+                if _skip_message(message, device_id, sync_id):
                     continue
 
-                logger.debug("process message for device:{0}: {0}", device_id, message)
-                logger.debug("raw message: {}", message.body)
+                logger.debug(f"process message for device:{device_id}: {message}")
+                logger.debug(f"message body: {message.body}")
                 try:
                     payload = json.loads(message.body.decode())
-                except Exception as error:
-                    logger.debug("got error on message body decode:{}", error)
+                except json.decoder.JSONDecodeError as error:
+                    logger.error(f"got error on message body decode:{error}")
                     raise RuntimeError("Message decode error")
 
                 return payload
+
+
+def _skip_message(message: Message, device_id: DeviceID, sync_id: uuid.UUID) -> bool:
+    if str(message.correlation_id) != str(sync_id):
+        logger.debug(f"correlation_id {message.correlation_id} != {sync_id}")
+        return True
+
+    header_id = message.headers.get("device_id")
+    if str(header_id) != str(device_id):
+        logger.debug(f"device_id {header_id} != {device_id}")
+        return True
+
+    return False

@@ -32,7 +32,7 @@ async def list_devices(
     results = []
     for device in devices:
         is_online = await socket_repo.is_connected(device.id)
-        result = dict(id=device.id, name=device.name, online=is_online)
+        result = {"id": device.id, "name": device.name, "online": is_online}
         results.append(result)
 
     return ListDevicesResponse.parse_obj(results)
