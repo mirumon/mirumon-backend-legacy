@@ -16,9 +16,7 @@ from mirumon.application.devices.events.device_hardware_synced import (
 from mirumon.application.devices.events.device_software_synced import (
     DeviceSoftwareSynced,
 )
-from mirumon.application.devices.events.device_system_info_synced import (
-    DeviceSystemInfoSynced,
-)
+from mirumon.application.devices.events.device_system_synced import DeviceSystemSynced
 from mirumon.application.devices.internal_api_protocol.models import DeviceAgentResponse
 
 router = APIRouter()
@@ -89,7 +87,7 @@ async def device_ws_endpoint(  # noqa: WPS231
 
 def _build_event(device: DeviceInToken, response: DeviceAgentResponse) -> DeviceEvent:
     method_to_event_mapper = {
-        "sync_device_system_info": DeviceSystemInfoSynced,
+        "sync_device_system": DeviceSystemSynced,
         "sync_device_hardware": DeviceHardwareSynced,
         "sync_device_software": DeviceSoftwareSynced,
     }

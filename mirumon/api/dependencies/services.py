@@ -18,7 +18,7 @@ def get_service(  # type: ignore
 ) -> Callable[..., object]:
     for registered_service_type, factory in SERVICE_FACTORIES.items():
         if issubclass(service_type, registered_service_type):
-            return factory
+            return factory  # type:ignore
     raise ValueError(f"{service_type} not found in registered repos")
 
 

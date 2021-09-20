@@ -28,10 +28,10 @@ class SystemInfo(BaseModel):
     last_user: Optional[DeviceUser] = None
 
 
-class DeviceSystemInfoSynced(DeviceEvent):
+class DeviceSystemSynced(DeviceEvent):
     sync_id: Optional[uuid.UUID] = None
     device_id: uuid.UUID
-    event_type: str = "device_system_info_synced"
+    event_type: str = "device_system_synced"
     event_attributes: SystemInfo
 
     @property

@@ -30,7 +30,7 @@ async def get_device_software(
     device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
 ) -> GetListDeviceSoftware:
-    software = device.get_software()
+    software = device.get_software()  # type: ignore
 
     if software:
         return GetListDeviceSoftware.parse_obj(software)

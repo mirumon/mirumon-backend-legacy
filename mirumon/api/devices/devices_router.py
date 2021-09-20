@@ -8,6 +8,7 @@ from mirumon.api.devices.http_endpoints import (
     registration_controller,
     shutdown_controller,
     software_controller,
+    system_controller,
 )
 from mirumon.api.devices.ws_endpoints import connect_controller
 from mirumon.domain.users.scopes import DevicesScopes
@@ -19,6 +20,11 @@ router.include_router(registration_controller.router)
 
 router.include_router(
     index_controller.router,
+    dependencies=[Depends(check_user_scopes([DevicesScopes.read]))],
+)
+
+router.include_router(
+    system_controller.router,
     dependencies=[Depends(check_user_scopes([DevicesScopes.read]))],
 )
 router.include_router(

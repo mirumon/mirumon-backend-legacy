@@ -6,41 +6,40 @@ from starlette import status
 
 from mirumon.api.dependencies.devices.datastore import get_registered_device
 from mirumon.api.dependencies.repositories import get_repository
-from mirumon.api.devices.http_endpoints.models.get_devices_hardware_response import (
-    GetDeviceHardwareResponse,
+from mirumon.api.devices.http_endpoints.models.get_device_system_response import (
+    GetDeviceSystemResponse,
 )
-from mirumon.application.devices.commands.sync_device_hardware_command import (
-    SyncDeviceHardwareCommand,
+from mirumon.application.devices.commands.sync_device_system_command import (
+    SyncDeviceSystemCommand,
 )
 from mirumon.application.devices.device_broker_repo import DeviceBrokerRepo
 from mirumon.domain.devices.entities import Device
-from mirumon.resources import strings
 
 router = APIRouter()
 
 
 @router.get(
-    path="/devices/{device_id}/hardware",
-    name="devices:hardware",
-    summary="Get Device Hardware",
-    description=strings.DEVICES_HARDWARE_DESCRIPTION,
-    response_model=GetDeviceHardwareResponse,
+    path="/devices/{device_id}/system",
+    name="devices:system",
+    summary="Get Device System",
+    response_model=GetDeviceSystemResponse,
 )
-async def get_device_hardware(
+async def get_device_system(
     device: Device = Depends(get_registered_device),
     broker_repo: DeviceBrokerRepo = Depends(get_repository(DeviceBrokerRepo)),
-) -> GetDeviceHardwareResponse:
-    hardware = device.get_hardware()  # type:ignore
+) -> GetDeviceSystemResponse:
+    system = device.get_system()  # type: ignore
 
-    if hardware:
-        return GetDeviceHardwareResponse.parse_obj(hardware)
+    if system:
+        return GetDeviceSystemResponse(system_attributes=system)
 
-    command = SyncDeviceHardwareCommand(device_id=device.id, sync_id=uuid.uuid4())
+    command = SyncDeviceSystemCommand(device_id=device.id, sync_id=uuid.uuid4())
     await broker_repo.send_command(command)
+
     try:
         event = await broker_repo.consume(device.id, command.sync_id)
     except asyncio.exceptions.TimeoutError:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
         )
-    return GetDeviceHardwareResponse(**event["event_attributes"])
+    return GetDeviceSystemResponse(system_attributes=event["event_attributes"])

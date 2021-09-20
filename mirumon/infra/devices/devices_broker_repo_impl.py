@@ -26,9 +26,11 @@ class DevicesBrokerRepoImpl(Repository):
             "command_attributes": command.command_attributes,
         }
         body = command.json().encode()
-        message = Message(body, headers=headers, correlation_id=command.sync_id)
+        message = Message(
+            body, headers=headers, correlation_id=command.sync_id, expiration=10
+        )
         logger.debug(f"publish command to broker: {message}")
-        await exchange.publish(message, routing_key=f"devices.commands")
+        await exchange.publish(message, routing_key="devices.commands")
 
     async def publish_event(self, event: DeviceEvent) -> None:
         channel: Channel = await self.connection.channel()
@@ -79,8 +81,8 @@ class DevicesBrokerRepoImpl(Repository):
                 logger.debug("raw message: {}", message.body)
                 try:
                     payload = json.loads(message.body.decode())
-                except Exception as e:
-                    logger.debug("got error on message body decode:{}", e)
+                except Exception as error:
+                    logger.debug("got error on message body decode:{}", error)
                     raise RuntimeError("Message decode error")
 
                 return payload

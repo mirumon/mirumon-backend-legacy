@@ -60,7 +60,7 @@ class FakeDevice:
 
     def get_event_result(self, method: str):
         events = {}
-        events["sync_device_system_info"] = {
+        events["sync_device_system"] = {
             "name": "Manjaro-Desktop",
             "domain": "mirumon.dev",
             "workgroup": None,
