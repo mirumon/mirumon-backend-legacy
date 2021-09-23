@@ -71,6 +71,8 @@ jobs:
         env:
           POSTGRES_DSN: postgresql://postgres:postgres@localhost/postgres
           RABBIT_DSN: amqp://rabbitmq:rabbitmq@localhost
+          REST_MAX_RESPONSE_TIME: 20.0
+          EVENT_TIMEOUT: 10
         run: poetry run nox -s test
       - name: Upload coverage to Codecov
         env:
