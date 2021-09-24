@@ -37,6 +37,7 @@ class FakeDevice:
                     id=request.id,
                     status=StatusTypes.ok,
                     method=request.method,
+                    correlation_id=request.correlation_id,
                     result=self.get_event_result(request.method),
                 ).json()
             except Exception as e:

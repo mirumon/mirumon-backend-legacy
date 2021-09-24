@@ -31,7 +31,7 @@ async def execute_command_on_device(
 ) -> None:
     command = ExecuteOnDeviceCommand(
         device_id=device.id,
-        sync_id=uuid.uuid4(),
+        correlation_id=uuid.uuid4(),
         command_attributes=execute_params.dict(),
     )
     await broker_repo.send_command(command)

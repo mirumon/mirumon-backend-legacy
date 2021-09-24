@@ -1,4 +1,3 @@
-import asyncio
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -35,11 +34,13 @@ async def get_device_hardware(
     if hardware:
         return GetDeviceHardwareResponse.parse_obj(hardware)
 
-    command = SyncDeviceHardwareCommand(device_id=device.id, sync_id=uuid.uuid4())
+    command = SyncDeviceHardwareCommand(
+        device_id=device.id, correlation_id=uuid.uuid4()
+    )
     await broker_repo.send_command(command)
     try:
-        event = await broker_repo.consume(device.id, command.sync_id)
-    except asyncio.exceptions.TimeoutError:
+        event = await broker_repo.get(device.id, command.correlation_id)  # type: ignore
+    except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="device unavailable"
         )

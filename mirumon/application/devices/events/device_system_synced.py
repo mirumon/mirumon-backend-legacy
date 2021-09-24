@@ -29,7 +29,7 @@ class SystemInfo(BaseModel):
 
 
 class DeviceSystemSynced(DeviceEvent):
-    sync_id: Optional[uuid.UUID] = None
+    event_id: Optional[uuid.UUID] = None
     device_id: uuid.UUID
     event_type: str = "device_system_synced"
     event_attributes: SystemInfo

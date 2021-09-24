@@ -80,7 +80,7 @@ async def _publish_event(
             f"received unknown method:{response.method} from device:{device.id}"
         )
     except Exception as unhandled_error:
-        logger.exception(f"got error {unhandled_error}")
+        logger.exception(f"device socket got unhandled error {unhandled_error}")
     else:
         await broker_repo.publish_event(event)
 
@@ -93,7 +93,8 @@ def _build_event(device: DeviceInToken, response: DeviceAgentResponse) -> Device
     }
     model = method_to_event_mapper[response.method]
     return model(
-        sync_id=response.id,
+        event_id=response.id,
         device_id=device.id,
+        correlation_id=response.correlation_id,
         event_attributes=response.result,
     )

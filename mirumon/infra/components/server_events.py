@@ -28,14 +28,20 @@ def create_startup_events_handler(
     app: FastAPI, settings: AppSettings
 ) -> EventHandlerType:
     async def startup() -> None:  # noqa: WPS430
-        # TODO: refactor to return conns and init state in server events
-        await create_postgres_connection(app=app, settings=settings)
-        await create_redis_connection(app=app, settings=settings)
-        await create_rabbit_connection(app=app, settings=settings)
+        postgres_conn = await create_postgres_connection(settings=settings)
+        redis_conn = await create_redis_connection(settings=settings)
+        rabbit_conn = await create_rabbit_connection(settings=settings)
+
+        app.state.postgres_pool = postgres_conn
+        app.state.redis_conn = redis_conn
+        app.state.rabbit_conn = rabbit_conn
+
+        dsn = str(settings.rabbit_dsn)
+        connection: aio_pika.Connection = await aio_pika.connect(
+            dsn, client_properties={"connection_name": "Read connection"}
+        )
 
         loop = asyncio.get_event_loop()
-        dsn = str(settings.rabbit_dsn)
-        connection: aio_pika.Connection = await aio_pika.connect(dsn)
         handler = DeviceCommandHandler(loop, connection, socket_manager)
         scheduler = await aiojobs.create_scheduler()
         app.state.scheduler = scheduler
@@ -51,8 +57,9 @@ def create_shutdown_events_handler(app: FastAPI) -> EventHandlerType:
         await app.state.job.close()
         await app.state.scheduler.close()
         await app.state.connection.close()
-        await close_rabbit_connection(app)
-        await close_redis_connection(app)
-        await close_postgres_connection(app)
+
+        await close_rabbit_connection(app.state.rabbit_conn)
+        await close_redis_connection(app.state.redis_conn)
+        await close_postgres_connection(app.state.postgres_pool)
 
     return shutdown

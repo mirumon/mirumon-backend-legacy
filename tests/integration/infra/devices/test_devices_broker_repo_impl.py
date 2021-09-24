@@ -13,25 +13,29 @@ pytestmark = [pytest.mark.asyncio]
 async def broker_repo(default_settings) -> DevicesBrokerRepoImpl:
     dsn = str(default_settings.rabbit_dsn)
     connection: Connection = await connect(dsn)
-    return DevicesBrokerRepoImpl(connection=connection, process_timeout=2)
+    repo = DevicesBrokerRepoImpl(connection=connection, process_timeout=2)
+    await repo.start()
+    return repo
 
 
 async def test_broker_repo_consume_published_event(broker_repo: DevicesBrokerRepoImpl):
     event = DeviceEvent(
-        sync_id=uuid.uuid4(),
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="test_consume_passed",
         event_attributes={},
+        correlation_id=uuid.uuid4(),
     )
 
     await broker_repo.publish_event(event)
 
-    published_event = await broker_repo.consume(event.device_id, event.sync_id)
+    published_event = await broker_repo.get(event.device_id, event.correlation_id)
     assert published_event == {
         "device_id": str(event.device_id),
         "event_attributes": {},
         "event_type": "test_consume_passed",
-        "sync_id": str(event.sync_id),
+        "event_id": str(event.event_id),
+        "correlation_id": str(event.correlation_id),
     }
 
 
@@ -39,93 +43,102 @@ async def test_broker_repo_consume_three_published_events(
     broker_repo: DevicesBrokerRepoImpl,
 ):
     event1 = DeviceEvent(
-        sync_id=uuid.uuid4(),
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event1",
         event_attributes={},
+        correlation_id=uuid.uuid4(),
     )
     event2 = DeviceEvent(
-        sync_id=uuid.uuid4(),
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event2",
         event_attributes={},
+        correlation_id=uuid.uuid4(),
     )
     event3 = DeviceEvent(
-        sync_id=uuid.uuid4(),
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
         event_type="event3",
         event_attributes={},
+        correlation_id=uuid.uuid4(),
     )
 
     await broker_repo.publish_event(event1)
     await broker_repo.publish_event(event2)
     await broker_repo.publish_event(event3)
 
-    published_event1 = await broker_repo.consume(event1.device_id, event1.sync_id)
-    published_event2 = await broker_repo.consume(event2.device_id, event2.sync_id)
-    published_event3 = await broker_repo.consume(event3.device_id, event3.sync_id)
+    published_event1 = await broker_repo.get(event1.device_id, event1.correlation_id)
+    published_event2 = await broker_repo.get(event2.device_id, event2.correlation_id)
+    published_event3 = await broker_repo.get(event3.device_id, event3.correlation_id)
 
     assert published_event1 == {
         "device_id": str(event1.device_id),
         "event_attributes": {},
         "event_type": "event1",
-        "sync_id": str(event1.sync_id),
+        "event_id": str(event1.event_id),
+        "correlation_id": str(event1.correlation_id),
     }
     assert published_event2 == {
         "device_id": str(event2.device_id),
         "event_attributes": {},
         "event_type": "event2",
-        "sync_id": str(event2.sync_id),
+        "event_id": str(event2.event_id),
+        "correlation_id": str(event2.correlation_id),
     }
     assert published_event3 == {
         "device_id": str(event3.device_id),
         "event_attributes": {},
         "event_type": "event3",
-        "sync_id": str(event3.sync_id),
+        "event_id": str(event3.event_id),
+        "correlation_id": str(event3.correlation_id),
     }
 
 
 async def test_broker_repo_consume_published_event_with_given_params_only(
     broker_repo: DevicesBrokerRepoImpl,
 ):
-    device_id = uuid.uuid4()
-    sync_id = uuid.uuid4()
     event = DeviceEvent(
-        sync_id=sync_id,
-        device_id=device_id,
+        event_id=uuid.uuid4(),
+        device_id=uuid.uuid4(),
+        correlation_id=uuid.uuid4(),
         event_type="test_consume_with_params_passed",
         event_attributes={},
     )
     skip_event_with_same_device = DeviceEvent(
-        sync_id=uuid.uuid4(),
-        device_id=device_id,
-        event_type="skip_consume",
+        event_id=uuid.uuid4(),
+        device_id=event.device_id,
+        event_type="skip",
         event_attributes={},
+        correlation_id=uuid.uuid4(),
     )
-    skip_event_with_same_sync_id = DeviceEvent(
-        sync_id=sync_id,
+    skip_event_with_same_correlation_id = DeviceEvent(
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
-        event_type="skip_consume",
+        event_type="skip",
+        correlation_id=event.correlation_id,
         event_attributes={},
     )
     skip_event = DeviceEvent(
-        sync_id=uuid.uuid4(),
+        event_id=uuid.uuid4(),
         device_id=uuid.uuid4(),
-        event_type="skip_consume",
+        event_type="skip",
         event_attributes={},
+        correlation_id=None,
     )
-    await broker_repo.publish_event(skip_event_with_same_sync_id)
+    await broker_repo.publish_event(skip_event_with_same_correlation_id)
     await broker_repo.publish_event(skip_event_with_same_device)
     await broker_repo.publish_event(skip_event)
 
     await broker_repo.publish_event(event)
 
-    published_event = await broker_repo.consume(
-        event.device_id, event.sync_id, timeout_in_sec=10
+    published_event = await broker_repo.get(
+        event.device_id, event.correlation_id, timeout_in_sec=10
     )
     assert published_event == {
-        "device_id": str(device_id),
-        "event_attributes": {},
+        "event_id": str(event.event_id),
         "event_type": "test_consume_with_params_passed",
-        "sync_id": str(sync_id),
+        "event_attributes": {},
+        "device_id": str(event.device_id),
+        "correlation_id": str(event.correlation_id),
     }

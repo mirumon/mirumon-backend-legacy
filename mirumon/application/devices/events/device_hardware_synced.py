@@ -62,7 +62,7 @@ class DeviceHardware(BaseModel):
 
 
 class DeviceHardwareSynced(DeviceEvent):
-    sync_id: uuid.UUID
+    event_id: uuid.UUID
     device_id: uuid.UUID
     event_type: str = "device_hardware_synced"
     event_attributes: DeviceHardware

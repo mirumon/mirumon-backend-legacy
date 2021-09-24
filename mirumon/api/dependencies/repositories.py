@@ -47,14 +47,17 @@ def _devices_repo_depends(
     return DevicesRepoImpl(conn)
 
 
-def _broker_repo_depends(
+async def _broker_repo_depends(
     state: State = Depends(get_state),
     settings: AppSettings = Depends(get_app_settings),
 ) -> DevicesBrokerRepoImpl:
-    return DevicesBrokerRepoImpl(
+    repo = DevicesBrokerRepoImpl(
         connection=state.rabbit_conn,
         process_timeout=settings.event_timeout,
     )
+    # TODO: move to startup event
+    await repo.start()
+    return repo
 
 
 def _devices_socket_repo_depends(

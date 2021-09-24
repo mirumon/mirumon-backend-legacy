@@ -10,6 +10,7 @@ class DeviceAgentRequest(BaseModel):
     id: uuid.UUID = uuid.uuid4()
     method: str
     params: Optional[dict] = None  # type: ignore
+    correlation_id: Optional[uuid.UUID] = None
 
 
 class StatusTypes(StrEnum):
@@ -21,6 +22,7 @@ class DeviceAgentResponse(BaseModel):
     id: uuid.UUID
     status: StatusTypes
     method: str
+    correlation_id: Optional[uuid.UUID] = None
     result: Optional[dict]  # type: ignore
     error: Optional[dict]  # type: ignore
 

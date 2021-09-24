@@ -1,27 +1,22 @@
-from aio_pika import connect
-from aio_pika.connection import Connection
-from fastapi import FastAPI
+import aio_pika
 from loguru import logger
 
 from mirumon.settings.environments.app import AppSettings
 
 
-async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
-    logger.info("Connecting to {0}", settings.rabbit_dsn)
+async def create_rabbit_connection(settings: AppSettings) -> aio_pika.Connection:
+    logger.info(f"Connecting to RabbitMQ with DSN `{settings.rabbit_dsn}`")
 
     dsn = str(settings.rabbit_dsn)
-    connection: Connection = await connect(dsn)
+    connection: aio_pika.Connection = await aio_pika.connect(dsn)
 
-    # add to app state to use later
-    app.state.rabbit_conn = connection
-
-    logger.info("Connection established")
+    logger.info("Connection to RabbitMQ established")
+    return connection
 
 
-async def close_rabbit_connection(app: FastAPI) -> None:
-    logger.info("Closing connection to rabbit")
+async def close_rabbit_connection(connection: aio_pika.Connection) -> None:
+    logger.info("Closing connection to RabbitMQ")
 
-    connection = app.state.rabbit_conn
-    await connection.close()
+    await connection.close()  # type: ignore
 
-    logger.info("Connection closed")
+    logger.info("Connection to RabbitMQ closed")

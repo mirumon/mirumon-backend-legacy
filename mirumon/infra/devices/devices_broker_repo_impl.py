@@ -1,7 +1,8 @@
+import asyncio
 import json
 import uuid
 
-from aio_pika import Channel, Connection, ExchangeType, Message, Queue
+import aio_pika
 from loguru import logger
 
 from mirumon.application.devices.commands.device_command import DeviceCommand
@@ -11,81 +12,127 @@ from mirumon.domain.devices.entities import DeviceID
 
 
 class DevicesBrokerRepoImpl(Repository):
-    def __init__(self, connection: Connection, process_timeout: float) -> None:
+    _channel: aio_pika.Channel
+    _commands_exchange: aio_pika.Exchange
+    _events_exchange: aio_pika.Exchange
+    _events_queue: aio_pika.Queue
+
+    def __init__(
+        self,
+        connection: aio_pika.Connection,
+        process_timeout: float = 5,
+        expiration: float = 15,
+    ) -> None:
         self.connection = connection
         self.process_timeout = process_timeout
-        self.exchange: str = "mirumon.devices.topic"
+        self.expiration = expiration
+
+    async def start(self) -> None:
+        logger.debug(f"{self.__class__} start() called")
+        self._channel: aio_pika.Channel = await self.connection.channel()
+
+        self._commands_exchange = await self._channel.declare_exchange(
+            "mirumon.devices.commands", type="topic", auto_delete=False, durable=True
+        )
+        self._events_exchange = await self._channel.declare_exchange(
+            "mirumon.devices.events", type="topic", auto_delete=False, durable=True
+        )
+        self._events_queue: aio_pika.Queue = await self._channel.declare_queue(
+            "devices.events.queue"
+        )
+        await self._events_queue.bind(
+            self._events_exchange, routing_key="devices.*.events.*"
+        )
+
+    async def close(self) -> None:
+        await self._channel.close()  # type: ignore
 
     async def send_command(self, command: DeviceCommand) -> None:
-        channel: Channel = await self.connection.channel()
-        exchange = await channel.declare_exchange("devices")
-
-        # TODO: move command_attributes to body and build keys by device_id
+        key = _build_command_routing_key(command)
+        body = json.dumps(command.command_attributes).encode()
         headers = {
             "device_id": str(command.device_id),
-            "command": command.command_type,
-            "command_attributes": command.command_attributes,
+            "command_type": str(command.command_type),
         }
-        body = command.json().encode()
-        message = Message(
-            body, headers=headers, correlation_id=command.sync_id, expiration=10
+        message = aio_pika.Message(
+            body,
+            message_id=str(command.command_id),
+            type="application/json",
+            headers=headers,
+            correlation_id=command.correlation_id,
+            expiration=self.expiration,
         )
-        logger.debug(f"publish command to broker: {message}")
-        await exchange.publish(message, routing_key="devices.commands")
+
+        logger.debug(f"publish command to broker: {command}")
+        await self._commands_exchange.publish(message, routing_key=key)
 
     async def publish_event(self, event: DeviceEvent) -> None:
-        channel: Channel = await self.connection.channel()
-        exchange = await channel.declare_exchange(
-            self.exchange, type=ExchangeType.TOPIC
-        )
-
+        key = _build_event_routing_key(event)
         headers = {
             "device_id": str(event.device_id),
-            "event": event.event_type,
-            "event_attributes": event.event_attributes_to_dict,
+            "event_type": str(event.event_type),
         }
-        # TODO: move event_attributes to body and build keys by device_id
         body = event.json().encode()
-        message = Message(body, headers=headers, correlation_id=str(event.sync_id))
-        logger.debug(f"publish message to broker: {message}")
-        key = f"devices.events.{event.event_type}"
-        await exchange.publish(message, routing_key=key)
+        message = aio_pika.Message(
+            body,
+            message_id=str(event.event_id),
+            headers=headers,
+            correlation_id=str(event.correlation_id),
+            expiration=self.expiration,
+        )
 
-    async def consume(  # type: ignore
-        self, device_id: DeviceID, sync_id: uuid.UUID, timeout_in_sec: int = 10
+        logger.debug(f"publish event to broker: {event}")
+        await self._events_exchange.publish(message, routing_key=key)
+
+    async def get(
+        self, device_id: DeviceID, correlation_id: uuid.UUID, timeout_in_sec: int = 10
     ) -> dict:  # type: ignore
-        channel: Channel = await self.connection.channel()
-        queue: Queue = await channel.declare_queue("mirumon.devices.events")
+        logger.debug(
+            f"trying to get event by device_id:{device_id}, correlation_id:{correlation_id}"  # noqa: E501
+        )
+        try:
+            return await self._get(device_id, correlation_id, timeout_in_sec)
+        except asyncio.exceptions.TimeoutError as error:
+            raise RuntimeError("Consume timeout") from error
 
-        key = "devices.events.*"
-
-        await queue.bind(self.exchange, routing_key=key)
-
-        logger.debug(f"listen event with sync_id:{sync_id}")
-        async with queue.iterator(timeout=timeout_in_sec) as queue_iter:
+    async def _get(  # type: ignore
+        self, device_id: DeviceID, correlation_id: uuid.UUID, timeout_in_sec: int
+    ) -> dict:  # type: ignore
+        async with self._events_queue.iterator(timeout=timeout_in_sec) as queue_iter:
             async for message in queue_iter:
-                if _skip_message(message, device_id, sync_id):
+                logger.debug(f"iter message with message_id:{message.message_id}")
+                if _skip_message(message, device_id, correlation_id):
                     continue
 
-                logger.debug(f"process message for device:{device_id}: {message}")
-                logger.debug(f"message body: {message.body}")
+                body = message.body
                 try:
-                    payload = json.loads(message.body.decode())
+                    payload = json.loads(body.decode())
                 except json.decoder.JSONDecodeError as error:
-                    logger.error(f"got error on message body decode:{error}")
-                    raise RuntimeError("Message decode error")
+                    message.nack()
+                    raise RuntimeError("Message body decode error") from error
+                message.ack()
 
                 return payload
 
 
-def _skip_message(message: Message, device_id: DeviceID, sync_id: uuid.UUID) -> bool:
-    if str(message.correlation_id) != str(sync_id):
-        logger.debug(f"correlation_id {message.correlation_id} != {sync_id}")
+def _build_command_routing_key(command: DeviceCommand) -> str:
+    return f"devices.{command.device_id}.commands.{command.command_id}"
+
+
+def _build_event_routing_key(event: DeviceEvent) -> str:
+    return f"devices.{event.device_id}.events.{event.event_id}"
+
+
+def _skip_message(
+    message: aio_pika.Message, device_id: DeviceID, correlation_id: uuid.UUID
+) -> bool:
+    if str(message.correlation_id) != str(correlation_id):
+        logger.debug(f"skip event with correlation_id {message.correlation_id}")
         return True
 
-    header_id = message.headers.get("device_id")
-    if str(header_id) != str(device_id):
-        logger.debug(f"device_id {header_id} != {device_id}")
+    message_device_id = message.headers.get("device_id")
+    if str(message_device_id) != str(device_id):
+        logger.debug(f"skip event with device_id {message_device_id}")
         return True
 
     return False

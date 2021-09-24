@@ -17,7 +17,7 @@ class InstalledProgramsList(BaseModel):
 
 
 class DeviceSoftwareSynced(DeviceEvent):
-    sync_id: uuid.UUID
+    event_id: uuid.UUID
     device_id: uuid.UUID
     event_type: str = "device_software_synced"
     event_attributes: InstalledProgramsList
