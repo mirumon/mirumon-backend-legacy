@@ -54,6 +54,7 @@ def lint(session: Session) -> None:
 @nox.session(python=False)
 def test(session: Session) -> None:
     """Run pytest."""
+    session.run("alembic", "upgrade", "head", env={"APP_ENV": "test"})
     session.run("pytest")
 
 
