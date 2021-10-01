@@ -54,17 +54,7 @@ def lint(session: Session) -> None:
 @nox.session(python=False)
 def test(session: Session) -> None:
     """Run pytest."""
-    params = [
-        "--cov-config=setup.cfg",
-        "--cov=mirumon",
-        "--cov=tests",
-        "--cov-branch",
-        "--cov-report=term-missing",
-        "--cov-report=term-missing:skip-covered",
-        "--no-cov-on-fail",
-        "--cov-fail-under=90",
-    ]
-    session.run("pytest", " ".join(params))
+    session.run("pytest")
 
 
 @nox.session(python=False)

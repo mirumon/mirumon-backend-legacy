@@ -25,7 +25,7 @@ async def connect_to_server(server_endpoint: str, token: str) -> None:
             await start_connection(server_endpoint, token)
         except Exception as error:
             seconds = randint(5, 10)
-            logger.error(f"got error {error}. Try to reconect after {seconds} seconds")
+            logger.error(f"got error {error}. Try to reconnect after {seconds} seconds")
             await asyncio.sleep(seconds)
 
 
@@ -101,10 +101,10 @@ def run_service() -> None:
     device_token = register_device(host, username, password)
     if host.startswith("https://"):
         _, ws_host = host.split("https://")
-        device_endpoint = f"wss://{ws_host}/devices/service"
+        device_endpoint = f"wss://{ws_host}/devices/connect/ws"
     else:
         _, ws_host = host.split("http://")
-        device_endpoint = f"ws://{ws_host}/devices/service"
+        device_endpoint = f"ws://{ws_host}/devices/connect/ws"
     try:
         task = connect_to_server(server_endpoint=device_endpoint, token=device_token)
         asyncio.run(task)
@@ -191,8 +191,6 @@ def get_event_result(method: str):
             }
         ],
     }
-    # events["shutdown_device"] = {}
-    # events["execute_on_device"] = {}
 
     if method == "shutdown_device":
         exit(0)

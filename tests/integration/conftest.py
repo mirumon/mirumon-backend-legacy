@@ -21,7 +21,7 @@ from mirumon.infra.users.users_repo_impl import UsersRepositoryImplementation
 from mirumon.settings.config import get_app_settings
 from mirumon.settings.environments.app import AppSettings
 from tests.integration.support.fake_device import FakeDevice
-from tests.integration.support.fake_pool import FakePool
+from tests.integration.support.fake_pool import FakeAsyncPGPool
 from tests.integration.support.jwt import create_jwt_token
 
 
@@ -31,17 +31,9 @@ def default_settings() -> AppSettings:
 
 
 @pytest.fixture
-async def app(default_settings, migrations) -> FastAPI:
+async def app(default_settings) -> FastAPI:
     app = create_app(default_settings)
     return app
-
-
-@pytest.fixture
-def migrations():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    alembic.config.main(argv=["upgrade", "head"])
-    yield
-    alembic.config.main(argv=["downgrade", "base"])
 
 
 @pytest.fixture
@@ -53,7 +45,7 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
     ) as client:
         # Change db pools in client because
         # TestClient trigger server events for connections init
-        app.state.postgres_pool = await FakePool.create_pool(app.state.postgres_pool)
+        app.state.postgres_pool = await FakeAsyncPGPool.create_pool(app.state.postgres_pool)
         connection: Connection
         async with app.state.postgres_pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
@@ -79,7 +71,6 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
             await repo.create(new_user)
             yield client
             await transaction.rollback()
-        await app.state.postgres_pool.close()
 
 
 @pytest.fixture

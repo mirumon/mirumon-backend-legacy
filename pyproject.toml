@@ -92,6 +92,10 @@ exclude = '''
 
 [tool.pytest.ini_options]
 testpaths = "tests"
+filterwarnings = [
+    "ignore::DeprecationWarning:aiojobs.*:",
+    "ignore::DeprecationWarning:asyncio.*:"
+]
 # Directories that are not visited by pytest collector:
 norecursedirs = [
     "*.egg",
@@ -112,6 +116,12 @@ python_files = [
 # https://docs.pytest.org/en/2.8.7/usage.html#modifying-python-traceback-printing
 addopts = [
     "--failed-first",
+    "--cov-fail-under=90",
+    "--cov-report=term-missing:skip-covered",
+    "--cov=mirumon",
+    "--cov=tests",
+    "--cov-branch",
+    "--cov-report=html",
 ]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 # Pytest plugins:

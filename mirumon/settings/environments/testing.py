@@ -12,8 +12,8 @@ class TestAppSettings(AppSettings):
     title: str = "Test Mirumon Service"
 
     # Timeout settings
-    rest_max_response_time: float = 2.0
-    event_timeout: int = 2
+    rest_max_response_time: float = 1.0
+    event_timeout: int = 1
 
     # Auth settings
     secret_key: SecretStr = SecretStr("test-secret-key")

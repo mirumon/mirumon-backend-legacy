@@ -66,7 +66,3 @@ class DeviceHardwareSynced(DeviceEvent):
     device_id: uuid.UUID
     event_type: str = "device_hardware_synced"
     event_attributes: DeviceHardware
-
-    @property
-    def event_attributes_to_dict(self) -> dict:  # type: ignore
-        return self.event_attributes.dict()

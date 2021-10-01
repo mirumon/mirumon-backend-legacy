@@ -30,12 +30,6 @@ class DeviceAgentResponse(BaseModel):
     def is_success(self) -> bool:
         return self.status == StatusTypes.ok and self.result is not None
 
-    @property
-    def payload(self) -> dict[str, Any]:  # type: ignore
-        if not self.is_success:
-            raise RuntimeError("event contains error")
-        return self.result  # type: ignore
-
     @classmethod
     @validator("error", always=True)
     def check_event_or_error(  # type:ignore
