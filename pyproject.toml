@@ -12,7 +12,7 @@ packages = [{ include = "mirumon" }]
 [tool.poetry.dependencies]
 python = "^3.9"
 # web server
-fastapi = { version="^0.63.0"}
+fastapi = { version="^0.65.2"}
 uvicorn = { version = "^0.13.1", extras = ["standart"] }
 # serializers
 pydantic = { version = "^1.6.0", extras = ["dotenv"] }
