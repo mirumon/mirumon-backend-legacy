@@ -1,13 +1,12 @@
 import asyncio
-import json
 import traceback
 from typing import Optional
 
 from async_asgi_testclient.websocket import WebSocketSession
 
-from mirumon.application.events.models import (
-    EventInRequest,
-    EventInResponse,
+from mirumon.application.devices.internal_api_protocol.models import (
+    DeviceAgentRequest,
+    DeviceAgentResponse,
     StatusTypes,
 )
 
@@ -25,28 +24,33 @@ class FakeDevice:
         try:
             payload = await self.ws.receive_json()
         except Exception as error:  # pragma: no cover
-            self.printer(f"{self} except error {error} during receive_json")
+            self.printer(f"{self} got error on receive_json:{error}")
             traceback.print_exc()
 
-        self.printer(f"{self} get request {payload} during receive_json")
-        request = EventInRequest.parse_obj(payload)
-        self.printer(f"{self} parsed")
+        self.printer(f"{self} received json: {repr(payload)}")
+        request = DeviceAgentRequest.parse_obj(payload)
 
         if not response_payload:
             self.printer(f"{self} make response...")
             try:
-                response_json = EventInResponse(
+                response_json = DeviceAgentResponse(
                     id=request.id,
                     status=StatusTypes.ok,
-                    result=self.get_event_result(request.method),
                     method=request.method,
+                    correlation_id=request.correlation_id,
+                    result=self.get_event_result(request.method),
                 ).json()
             except Exception as e:
-                self.printer(f"{self} get error during making response {e}")
+                self.printer(f"{self} get error during making response: {e}")
         else:
-            response_json = json.dumps(response_payload)
+            response_json = DeviceAgentResponse(
+                id=request.id,
+                status=StatusTypes.ok,
+                method=request.method,
+                result=response_payload,
+            ).json()
 
-        self.printer(f"{self} send payload to server", response_json)
+        self.printer(f"{self} send payload to server {response_json}")
         await self.ws.send_text(response_json)
 
     def start_listen(self, response_payload: Optional[dict] = None):
@@ -57,7 +61,7 @@ class FakeDevice:
 
     def get_event_result(self, method: str):
         events = {}
-        events["detail"] = {
+        events["sync_device_system"] = {
             "name": "Manjaro-Desktop",
             "domain": "mirumon.dev",
             "workgroup": None,
@@ -76,64 +80,66 @@ class FakeDevice:
                 "domain": "mirumon.dev",
             },
         }
-        events["software"] = [
-            {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
-            {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
-        ]
-        events["hardware"] = {
+        events["sync_device_software"] = {
+            "installed_programs": [
+                {"name": "7zip", "vendor": "7zip", "version": "1.0.0"},
+                {"name": "Python3.8", "vendor": "python", "version": "3.8.0"},
+            ]
+        }
+        events["sync_device_hardware"] = {
             "motherboard": {
-                "name": "string",
-                "caption": "string",
-                "status": "string",
-                "product": "string",
-                "serial_number": "string",
+                "status": "ok",
+                "name": "MSI b450",
+                "caption": "MSI b450 Tomahawk",
+                "product": "MSI",
+                "serial_number": "384134g141ghwg92",
             },
             "cpu": [
                 {
-                    "status": "string",
-                    "name": "string",
-                    "caption": "string",
-                    "current_clock_speed": "string",
+                    "status": "ok",
+                    "name": "AMD Ryzen 5",
+                    "caption": "AMD Ryzen 5",
+                    "current_clock_speed": "100",
                     "current_cthread_countlock_speed": 0,
                     "virtualization_firmware_enabled": True,
-                    "load_percentage": 0,
-                    "number_of_cores": 0,
-                    "number_of_enabled_core": 0,
-                    "number_of_logical_processors": 0,
+                    "load_percentage": 50,
+                    "number_of_cores": 12,
+                    "number_of_enabled_core": 6,
+                    "number_of_logical_processors": 6,
                 }
             ],
             "gpu": [
                 {
-                    "status": "string",
-                    "name": "string",
-                    "caption": "string",
-                    "driver_version": "string",
-                    "driver_date": "string",
-                    "video_mode_description": "string",
-                    "current_vertical_resolution": "string",
+                    "status": "ok",
+                    "name": "gtx 970",
+                    "caption": "Nvidea GTX 970",
+                    "driver_version": "370.9",
+                    "driver_date": "12.12.12",
+                    "video_mode_description": "no description",
+                    "current_vertical_resolution": "1024x1024",
                 }
             ],
             "network": [
                 {
-                    "description": "string",
-                    "mac_address": "string",
-                    "ip_addresses": ["string"],
+                    "description": "eth0",
+                    "mac_address": "00:1B:44:11:3A:B7",
+                    "ip_addresses": ["192.158.1.37", "192.158.1.38"],
                 }
             ],
             "disks": [
                 {
-                    "status": "string",
-                    "caption": "string",
-                    "serial_number": "string",
-                    "size": 0,
-                    "model": "string",
-                    "description": "string",
-                    "partitions": 0,
+                    "status": "ok",
+                    "caption": "Disk 1",
+                    "serial_number": "123123213123",
+                    "size": 10000,
+                    "model": "samsung",
+                    "description": "HDD",
+                    "partitions": 2,
                 }
             ],
         }
-        events["shutdown"] = {}
-        events["execute"] = {}
+        events["shutdown_device"] = {}
+        events["execute_on_device"] = {}
         return events[method]
 
     def __str__(self):

@@ -110,8 +110,11 @@ venv.bak/
 .vscode/
 
 # Temp files
-tmp.*
+tmp*
 
 # Docker containers volumes
 ./postgres/
 ./rabbitmq/
+/postgres/
+/rabbitmq/
+/redis/

@@ -8,7 +8,7 @@ from loguru import logger
 from passlib.context import CryptContext
 from pydantic import BaseModel, SecretStr, ValidationError
 
-from mirumon.application.users.users_service import UsersService
+from mirumon.application.users.users_service import UserService
 from mirumon.domain.users.entities import (
     AccessToken,
     HashedPassword,
@@ -37,7 +37,7 @@ class AuthUsersService:  # noqa: WPS214
 
     def __init__(
         self,
-        users_service: UsersService,
+        users_service: UserService,
         secret_key: SecretStr,
         access_token_expire: timedelta,
     ):

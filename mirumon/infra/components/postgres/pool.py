@@ -1,22 +1,22 @@
 import asyncpg
-from fastapi import FastAPI
 from loguru import logger
 
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
-async def create_postgres_connection(app: FastAPI, settings: AppSettings) -> None:
-    logger.info("Connecting to {0}", settings.postgres_dsn)
+async def create_postgres_connection(settings: AppSettings) -> asyncpg.Pool:
+    logger.info(f"Connecting to PostgreSQL with DSN `{settings.postgres_dsn}`")
 
     dsn = str(settings.postgres_dsn)
-    app.state.postgres_pool = await asyncpg.create_pool(dsn)
+    postgres_pool = await asyncpg.create_pool(dsn)
 
-    logger.info("Connection established")
+    logger.info("Connection to PostgreSQL established")
+    return postgres_pool
 
 
-async def close_postgres_connection(app: FastAPI) -> None:
-    logger.info("Closing connection to infra")
+async def close_postgres_connection(postgres_pool: asyncpg.Pool) -> None:
+    logger.info("Closing connection to PostgreSQL")
 
-    await app.state.postgres_pool.close()
+    await postgres_pool.close()
 
-    logger.info("Connection closed")
+    logger.info("Connection to PostgreSQL closed")

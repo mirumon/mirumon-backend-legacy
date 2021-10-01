@@ -8,20 +8,24 @@ from mirumon.infra.infra_model import InfraModel
 
 class DeviceInfraModel(InfraModel):
     id: DeviceID
-    version: int = 1
-    data: Dict[str, dict] = {}  # type: ignore
+    name: str
+    properties: Dict[str, dict] = {}  # type: ignore
 
     @classmethod
     def from_entity(cls, device: Device) -> "DeviceInfraModel":  # type: ignore
         return cls.parse_obj(device.dict())
 
+    def to_entity(self) -> Device:  # type: ignore
+        return Device(id=self.id, name=self.name, properties=self.properties)
+
 
 _storage: Dict[DeviceID, DeviceInfraModel] = {}
 
 
-class DevicesRepositoryImplementation(PostgresRepository):
+class DevicesRepoImpl(PostgresRepository):
     """Fake storage implementation for devices."""
 
+    # TODO: change to real tables
     async def create(self, device: Device) -> Device:
         infra_device = DeviceInfraModel.from_entity(device)
         _storage[infra_device.id] = infra_device
@@ -34,3 +38,6 @@ class DevicesRepositoryImplementation(PostgresRepository):
             raise DeviceDoesNotExist()
 
         return infra_device.to_entity()
+
+    async def all(self) -> list[Device]:
+        return [infra_device.to_entity() for _, infra_device in _storage.items()]

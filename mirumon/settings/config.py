@@ -2,7 +2,8 @@
 from functools import lru_cache
 from typing import Dict, Type
 
-from mirumon.settings.environments.base import AppEnvTypes, AppSettings, BaseAppSettings
+from mirumon.settings.environments.app import AppSettings
+from mirumon.settings.environments.base import AppEnvTypes, BaseAppSettings
 from mirumon.settings.environments.development import DevAppSettings
 from mirumon.settings.environments.production import ProdAppSettings
 from mirumon.settings.environments.testing import TestAppSettings

@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres
+      POSTGRES_DSN: postgresql://postgres:postgres@postgres:5432/postgres
       RABBIT_DSN: amqp://rabbitmq:rabbitmq@rabbitmq
     depends_on:
       - postgres
@@ -20,14 +20,14 @@ services:
     container_name: mirumon-postgres
     image: postgres:11.5-alpine
     volumes:
-      - ./postgres/data:/var/lib/postgresql/data/
+      - ./postgres/data:/var/lib/postgresql/data/:z
     ports:
       - "5432:5432"
   rabbitmq:
     container_name: mirumon-rabbitmq
     image: rabbitmq:3-management-alpine
     volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit:z
     ports:
     - 5672:5672
     - 15672:15672
@@ -37,6 +37,5 @@ services:
   redis:
     container_name: mirumon-redis
     image: redis:5.0-alpine
-    command: redis-server --requirepass redis
     ports:
       - "6379:6379"

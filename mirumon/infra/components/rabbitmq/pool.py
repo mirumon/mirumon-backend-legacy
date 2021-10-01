@@ -1,40 +1,22 @@
-from aio_pika import Channel, ExchangeType, Queue, connect
-from aio_pika.connection import Connection
-from fastapi import FastAPI
+import aio_pika
 from loguru import logger
 
-from mirumon.settings.environments.base import AppSettings
+from mirumon.settings.environments.app import AppSettings
 
 
-async def create_rabbit_connection(app: FastAPI, settings: AppSettings) -> None:
-    logger.info("Connecting to {0}", settings.rabbit_dsn)
+async def create_rabbit_connection(settings: AppSettings) -> aio_pika.Connection:
+    logger.info(f"Connecting to RabbitMQ with DSN `{settings.rabbit_dsn}`")
 
     dsn = str(settings.rabbit_dsn)
-    connection: Connection = await connect(dsn)
+    connection: aio_pika.Connection = await aio_pika.connect(dsn)
 
-    channel: Channel = await connection.channel()
-
-    # Configure exchange for pushing events to all consumers (http views)
-    exchange = await channel.declare_exchange("events", ExchangeType.FANOUT)
-
-    # Declare a queue and disable saving messages,
-    # since messages have a small life cycle and we can save memory
-    queue: Queue = await channel.declare_queue(exclusive=True, durable=False)
-    await queue.bind(exchange)
-
-    # add to app state to use later
-    app.state.rabbit_conn = connection
-    app.state.rabbit_channel = channel
-    app.state.rabbit_queue = queue
-    app.state.rabbit_exchange = exchange
-
-    logger.info("Connection established")
+    logger.info("Connection to RabbitMQ established")
+    return connection
 
 
-async def close_rabbit_connection(app: FastAPI) -> None:
-    logger.info("Closing connection to rabbit")
+async def close_rabbit_connection(connection: aio_pika.Connection) -> None:
+    logger.info("Closing connection to RabbitMQ")
 
-    connection = app.state.rabbit_conn
-    await connection.close()
+    await connection.close()  # type: ignore
 
-    logger.info("Connection closed")
+    logger.info("Connection to RabbitMQ closed")

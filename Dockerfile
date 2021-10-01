@@ -1,4 +1,4 @@
-FROM python:3.9.1-slim-buster
+FROM python:3.9.3-slim-buster
 
 ENV PYTHONUNBUFFERED 1
 ENV POETRY_VERSION 1.1.4
