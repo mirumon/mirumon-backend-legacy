@@ -12,8 +12,8 @@ class TestAppSettings(AppSettings):
     title: str = "Test Mirumon Service"
 
     # Timeout settings
-    rest_max_response_time: float = 1.0
-    event_timeout: int = 1
+    rest_max_response_time: float = 4.0
+    event_timeout: int = 4
 
     # Auth settings
     secret_key: SecretStr = SecretStr("test-secret-key")
@@ -25,4 +25,4 @@ class TestAppSettings(AppSettings):
     redis_dsn: RedisDsn = "redis://user@localhost/0"  # type: ignore
 
     class Config(AppSettings.Config):
-        env_file = "test.env"
+        env_file = ".env.test"

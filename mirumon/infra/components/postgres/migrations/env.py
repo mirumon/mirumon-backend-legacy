@@ -12,7 +12,7 @@ sys.path.append(str(project_root_dir))
 
 config = context.config
 
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)  # type: ignore
 
 target_metadata = None  # type: ignore
 

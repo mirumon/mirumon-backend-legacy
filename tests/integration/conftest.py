@@ -1,10 +1,8 @@
 import uuid
-import warnings
 from contextlib import asynccontextmanager
 from datetime import timedelta
 from typing import Optional
 
-import alembic.config
 import pytest
 from async_asgi_testclient import TestClient
 from asyncpg import Connection
@@ -45,7 +43,9 @@ async def client(app: FastAPI, token_header, superuser_username, superuser_passw
     ) as client:
         # Change db pools in client because
         # TestClient trigger server events for connections init
-        app.state.postgres_pool = await FakeAsyncPGPool.create_pool(app.state.postgres_pool)
+        app.state.postgres_pool = await FakeAsyncPGPool.create_pool(
+            app.state.postgres_pool
+        )
         connection: Connection
         async with app.state.postgres_pool.acquire() as connection:
             transaction: Transaction = connection.transaction()
